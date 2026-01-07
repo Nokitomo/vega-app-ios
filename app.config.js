@@ -88,7 +88,7 @@ module.exports = () => {
     expo: {
       name: 'Vega',
       displayName: 'Vega',
-      newArchEnabled: true,
+      newArchEnabled: false,
       autolinking: {exclude: ['expo-splash-screen']},
       plugins,
       slug: 'vega',
