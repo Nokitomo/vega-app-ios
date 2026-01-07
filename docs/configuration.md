@@ -2,9 +2,10 @@
 
 ## Expo
 File: app.config.js
-- newArchEnabled: true
+- newArchEnabled: false (disabilitato per stabilita).
 - android.package: com.vega
-- plugins: bootsplash, edge-to-edge, react-native-video, build-properties, firebase (solo se presenti i file google-services).
+- plugins: bootsplash, edge-to-edge, react-native-video, build-properties.
+- firebase: i plugin @react-native-firebase/* vengono aggiunti solo se esistono google-services.json o GoogleService-Info.plist.
 - permissions Android e intentFilters.
 
 ## Metro
@@ -20,8 +21,7 @@ File: babel.config.js
 ## Tailwind / NativeWind
 - tailwind.config.js: content su src/**
 - nativewind: plugin babel
-- patch-package: patches/nativewind+2.0.11.patch
-  (fix per plugin PostCSS async con Tailwind)
+- patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 
 ## Typescript
 - tsconfig.json definisce target e path.
