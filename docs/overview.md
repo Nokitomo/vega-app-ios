@@ -1,6 +1,6 @@
 # Panoramica
 
-Vega e una app Android per lo streaming di contenuti multimediali. La UI e costruita con React Native + Expo (SDK 52) e integra un sistema di provider esterni caricati dinamicamente.
+Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e costruita con React Native + Expo (SDK 52) e integra un sistema di provider esterni caricati dinamicamente. Il web non e supportato.
 
 ## Obiettivo principale
 - Consentire all'utente di cercare contenuti, consultarne i dettagli e riprodurli.
