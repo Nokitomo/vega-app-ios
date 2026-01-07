@@ -16,13 +16,15 @@ npx expo start -c --dev-client --scheme com.vega --port 8081
 ```
 3) Se in logcat compare:
 "TurboModuleRegistry.getEnforcing(...): 'PlatformConstants' could not be found"
-- Disinstalla l'app dal device/emulatore:
+il problema e quasi sempre la New Architecture.
+   - Assicurati che sia disattivata:
+     - app.config.js: `newArchEnabled: false`
+     - android/gradle.properties: `newArchEnabled=false`
+   - Poi ricostruisci:
 ```
 adb uninstall com.vega
-```
-- Ricostruisci e reinstalla:
-```
-npx expo run:android --device "Medium_phone_API_35"
+npx expo prebuild -p android --clean
+npx expo run:android --device "Medium_Phone_API_35"
 ```
 Questo riallinea binario nativo e bundle JS.
 
