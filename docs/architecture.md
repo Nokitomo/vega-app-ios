@@ -17,7 +17,8 @@
 - Stato globale: Zustand (store per tema, contenuti, watchlist, download, ecc.).
 - Provider: moduli remoti caricati dinamicamente via ExtensionManager.
 - Download e notifiche: DownloadManager + Notifee.
+- Networking/cache: TanStack React Query (QueryClientProvider in App).
 
 ## Nuova architettura
-- newArchEnabled e attivo in app.config.js e gradle.properties.
+- newArchEnabled e disattivo in app.config.js e gradle.properties (stabilita).
 - Hermes attivo (hermesEnabled=true).
