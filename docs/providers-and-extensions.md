@@ -32,3 +32,12 @@ File: src/lib/providers/providerContext.ts
 ## Storage provider
 - ExtensionStorage gestisce cache locale e stato installato/abilitato.
 - UpdateProvidersService verifica versioni e aggiorna automaticamente.
+
+## Dove stanno i provider
+- I provider non sono hardcoded nel repository dell'app.
+- Sono moduli JS ospitati su GitHub (repo `Zenda-Cross/vega-providers`) e scaricati a runtime.
+- Non esiste un backend privato: l'app consuma solo risorse pubbliche via HTTP.
+
+## Come aggiungere provider personalizzati
+- Devi pubblicare un tuo set di provider (manifest + moduli JS) in un repo/host accessibile via URL.
+- L'app, di default, punta al repo ufficiale: per usare il tuo repo serve cambiare la base URL in `ExtensionManager` (o aggiungere una UI di configurazione).
