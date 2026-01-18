@@ -427,7 +427,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       return (
         <View
           key={item.link + index}
-          className={`w-full justify-center items-center gap-2 flex-row my-1
+          className={`w-full my-2 justify-center items-center gap-2 flex-row my-1
           ${
             isCompleted(item.link) || stickyMenu.link === item.link
               ? 'opacity-60'
@@ -499,7 +499,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       return (
         <View
           key={item.link + index}
-          className={`w-full justify-center items-center my-2 gap-2 flex-row
+          className={`w-full my-2 justify-center items-center my-2 gap-2 flex-row
           ${
             isCompleted(item.link) || stickyMenu.link === item.link
               ? 'opacity-60'
@@ -689,6 +689,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
             paddingHorizontal: 12,
             borderRadius: 8,
             backgroundColor: 'black',
+            paddingVertical: 8,
           }}
           containerStyle={{
             overflow: 'hidden',
@@ -735,7 +736,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       )}
 
       {/* Episode/Direct Links List */}
-      <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
+      <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2 mt-5">
         {/* Episodes List */}
         {filteredAndSortedEpisodes.length > 0 && (
           <FlatList
@@ -755,7 +756,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
         {/* Direct Links List */}
         {filteredAndSortedDirectLinks.length > 0 && (
-          <View className="w-full justify-center items-center gap-y-2 mt-3 p-2">
+          <View className="w-full justify-center items-center gap-y-2 mt-5 p-2">
             <FlatList
               data={filteredAndSortedDirectLinks}
               keyExtractor={(item, index) => `direct-${item.link}-${index}`}
