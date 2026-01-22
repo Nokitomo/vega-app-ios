@@ -44,6 +44,7 @@ export interface Stream {
 export interface Info {
   title: string;
   image: string;
+  poster?: string;
   synopsis: string;
   imdbId: string;
   type: string;
