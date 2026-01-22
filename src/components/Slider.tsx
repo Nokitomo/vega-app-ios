@@ -96,13 +96,26 @@ export default function Slider({
                     poster: item?.image,
                   });
                 }}>
-                <ProviderImage
-                  className="rounded-md"
-                  uri={item?.image}
-                  link={item.link}
-                  providerValue={item.provider || providerValue || provider?.value}
-                  style={{width: 100, height: 150}}
-                />
+                <View className="relative">
+                  <ProviderImage
+                    className="rounded-md"
+                    uri={item?.image}
+                    link={item.link}
+                    providerValue={
+                      item.provider || providerValue || provider?.value
+                    }
+                    style={{width: 100, height: 150}}
+                  />
+                  {item.episodeLabel ? (
+                    <View
+                      className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                      style={{backgroundColor: primary}}>
+                      <Text className="text-black text-[10px] font-semibold">
+                        {item.episodeLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
                 {/* {isSelected === item.link && (
                   <View className="absolute top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center z-50">
                     <AntDesign
