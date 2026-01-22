@@ -63,7 +63,7 @@ const ProviderImage = ({
         link,
         provider: providerValue,
       });
-      const image = info?.image;
+      const image = info?.poster || info?.image;
       if (image) {
         cacheStorageService.setString(cacheKey, image);
         if (isMounted.current) {
