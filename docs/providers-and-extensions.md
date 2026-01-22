@@ -5,7 +5,9 @@ I contenuti non sono hardcoded: il catalogo e la logica di scraping/streaming ve
 
 ## ExtensionManager
 File: src/lib/services/ExtensionManager.ts
-- Scarica il manifest provider da GitHub:
+- Scarica il manifest provider dal repo primario:
+  https://raw.githubusercontent.com/Nokitomo/vega-providers/refs/heads/main/manifest.json
+- Se il repo primario non e disponibile, usa il fallback ufficiale:
   https://raw.githubusercontent.com/Zenda-Cross/vega-providers/refs/heads/main/manifest.json
 - Gestisce installazione, aggiornamento e cache dei moduli.
 - Supporta modalita test con baseUrl alternativo.
@@ -35,7 +37,9 @@ File: src/lib/providers/providerContext.ts
 
 ## Dove stanno i provider
 - I provider non sono hardcoded nel repository dell'app.
-- Sono moduli JS ospitati su GitHub (repo `Zenda-Cross/vega-providers`) e scaricati a runtime.
+- Sono moduli JS ospitati su GitHub e scaricati a runtime.
+- Repo primario: `Nokitomo/vega-providers`
+- Fallback ufficiale: `Zenda-Cross/vega-providers`
 - Non esiste un backend privato: l'app consuma solo risorse pubbliche via HTTP.
 
 ## Come aggiungere provider personalizzati
