@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import Home from './screens/home/Home';
 import Info from './screens/home/Info';
 import Player from './screens/home/Player';
@@ -9,6 +9,7 @@ import ScrollList from './screens/ScrollList';
 import {
   NavigationContainer,
   createNavigationContainerRef,
+  useFocusEffect,
 } from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -46,7 +47,7 @@ import {queryClient} from './lib/client';
 import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 import notifee from '@notifee/react-native';
 import notificationService from './lib/services/Notification';
-import {OrientationLocker, PORTRAIT} from 'react-native-orientation-locker';
+import Orientation from 'react-native-orientation-locker';
 // Lazy-load Firebase modules so app runs without google-services files
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAnalytics = (): any | null => {
@@ -366,6 +367,14 @@ const App = () => {
     );
   }
   function TabStack() {
+    useFocusEffect(
+      useCallback(() => {
+        Orientation.lockToPortrait();
+        return () => {
+          Orientation.unlockAllOrientations();
+        };
+      }, []),
+    );
     return (
       <Tab.Navigator
         detachInactiveScreens={true}
@@ -518,7 +527,6 @@ const App = () => {
             }}
             className="flex-1"
             style={{backgroundColor: 'black'}}>
-            <OrientationLocker orientation={PORTRAIT} />
             <NavigationContainer
               ref={navigationRef}
               onReady={async () => {
