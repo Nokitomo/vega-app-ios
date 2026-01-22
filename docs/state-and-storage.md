@@ -5,6 +5,7 @@ Store principali:
 - src/lib/zustand/contentStore.ts: provider attivo, catalogo e contenuti.
 - src/lib/zustand/themeStore.ts: tema e colori principali.
 - src/lib/zustand/herostore.ts: contenuto in evidenza (hero).
+- src/lib/zustand/searchCacheStore.ts: cache in sessione dei risultati di ricerca.
 - src/lib/zustand/watchListStore.ts: watchlist in memoria.
 - src/lib/zustand/watchHistrory.ts: cronologia.
 - src/lib/zustand/downloadsStore.ts: download in corso e completati.
@@ -20,6 +21,7 @@ Manager specifici:
 - DownloadsStorage: stato download e cache file/thumbnails.
 - ProvidersStorage / ExtensionStorage: provider disponibili e installati.
 - CacheStorage: cache generica.
+- cacheStorage include cache home/hero con TTL settimanale.
 
 ## Principi
 - Stato volatile in Zustand, persistenza tramite MMKV.
