@@ -4,7 +4,7 @@ export async function gofileExtracter(
   id: string,
 ): Promise<{link: string; token: string}> {
   try {
-    const gofileRes = await axios.get('https://gofile.io/d/' + id);
+    await axios.get('https://gofile.io/d/' + id);
     const genAccountres = await axios.post('https://api.gofile.io/accounts');
     const token = genAccountres.data.data.token;
     console.log('gofile token', token);
