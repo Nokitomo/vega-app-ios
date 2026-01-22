@@ -10,6 +10,8 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 1) Home
 - Visualizza contenuti in base al provider attivo.
 - Slider per categorie e hero in evidenza.
+- Le card per episodi recenti e calendario mostrano il badge "Ep. X" quando disponibile.
+- La vista "more" del calendario usa una griglia con sezioni per giorno.
 - L'hero usa una cache settimanale per ridurre refresh involontari.
 
 2) Ricerca
@@ -27,6 +29,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 5) Watchlist e Cronologia
 - Salva e consulta elementi preferiti e gia visti.
+- La sezione Continue Watching mostra il badge episodio quando disponibile.
 
 6) Download
 - Download locale con stato e gestione file.
