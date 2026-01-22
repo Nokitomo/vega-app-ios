@@ -1,5 +1,5 @@
-import {View, Text, TouchableOpacity} from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import {ScrollView, View, Text, TouchableOpacity} from 'react-native';
+import React, {useEffect, useMemo, useState, useRef} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList, SearchStackParamList} from '../App';
 import {Post} from '../lib/providers/types';
@@ -30,10 +30,53 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const [viewType, setViewType] = useState<number>(
     settingsStorage.getListViewType(),
   );
+  const isCalendarView = filter === 'calendar' && !route.params.isSearch;
   // Add abort controller to cancel API requests when unmounting
   const abortController = useRef<AbortController | null>(null);
   const isMounted = useRef(true);
   const isLoadingMore = useRef(false);
+  const calendarDayOrder = useMemo(
+    () => [
+      'Lunedì',
+      'Martedì',
+      'Mercoledì',
+      'Giovedì',
+      'Venerdì',
+      'Sabato',
+      'Domenica',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ],
+    [],
+  );
+  const calendarSections = useMemo(() => {
+    if (!isCalendarView) {
+      return [];
+    }
+    const grouped = new Map<string, Post[]>();
+    posts.forEach(post => {
+      if (!post.day) {
+        return;
+      }
+      if (!calendarDayOrder.includes(post.day)) {
+        return;
+      }
+      const items = grouped.get(post.day) || [];
+      items.push(post);
+      grouped.set(post.day, items);
+    });
+    return calendarDayOrder
+      .filter(day => grouped.get(day)?.length)
+      .map(day => ({
+        title: day,
+        data: grouped.get(day) || [],
+      }));
+  }, [calendarDayOrder, isCalendarView, posts]);
 
   // Set up cleanup effect that runs on component unmount
   useEffect(() => {
@@ -149,81 +192,162 @@ const ScrollList = ({route}: Props): React.ReactElement => {
             {route.params.title}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            const newViewType = viewType === 1 ? 2 : 1;
-            setViewType(newViewType);
-            settingsStorage.setListViewType(newViewType);
-          }}>
-          <MaterialIcons
-            name={viewType === 1 ? 'view-module' : 'view-list'}
-            size={27}
-            color="white"
-          />
-        </TouchableOpacity>
+        {!isCalendarView && (
+          <TouchableOpacity
+            onPress={() => {
+              const newViewType = viewType === 1 ? 2 : 1;
+              setViewType(newViewType);
+              settingsStorage.setListViewType(newViewType);
+            }}>
+            <MaterialIcons
+              name={viewType === 1 ? 'view-module' : 'view-list'}
+              size={27}
+              color="white"
+            />
+          </TouchableOpacity>
+        )}
       </View>
       <View className="justify-center flex-row w-96 ">
-        <FlashList
-          estimatedItemSize={300}
-          ListFooterComponent={
-            <>
-              {isLoading && (
-                <View
-                  className={`flex ${
-                    viewType === 1 ? 'flex-row flex-wrap' : 'flex-col'
-                  } gap-1 justify-center items-center mb-16`}>
-                  {renderSkeletons()}
+        {isCalendarView ? (
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {isLoading ? (
+              <View className="flex flex-row flex-wrap gap-1 justify-center items-center mb-16">
+                {renderSkeletons()}
+              </View>
+            ) : (
+              calendarSections.map(section => (
+                <View key={section.title} className="mb-6">
+                  <Text
+                    className="text-xl font-bold mb-2"
+                    style={{color: primary}}>
+                    {section.title}
+                  </Text>
+                  <View className="flex flex-row flex-wrap">
+                    {section.data.map(item => (
+                      <TouchableOpacity
+                        key={item.link}
+                        className="flex flex-col m-3"
+                        onPress={() =>
+                          navigation.navigate('Info', {
+                            link: item.link,
+                            provider: route.params.providerValue || provider.value,
+                            poster: item?.image,
+                          })
+                        }>
+                        <View className="relative">
+                          <ProviderImage
+                            className="rounded-md"
+                            uri={item.image}
+                            link={item.link}
+                            providerValue={
+                              route.params.providerValue || provider.value
+                            }
+                            style={{width: 100, height: 150}}
+                          />
+                          {item.episodeLabel ? (
+                            <View
+                              className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                              style={{backgroundColor: primary}}>
+                              <Text className="text-black text-[10px] font-semibold">
+                                {item.episodeLabel}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        <Text className="text-white text-center truncate w-24 text-xs">
+                          {item?.title?.length > 24
+                            ? item.title.slice(0, 24) + '...'
+                            : item.title}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              )}
-              <View className="h-32" />
-            </>
-          }
-          data={posts}
-          numColumns={viewType === 1 ? 3 : 1}
-          key={`view-type-${viewType}`}
-          contentContainerStyle={{paddingBottom: 80}}
-          keyExtractor={(item, i) => `${item.title}-${i}`}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              className={
-                viewType === 1
-                  ? 'flex flex-col m-3'
-                  : 'flex-row m-3 items-center'
-              }
-              onPress={() =>
-                navigation.navigate('Info', {
-                  link: item.link,
-                  provider: route.params.providerValue || provider.value,
-                  poster: item?.image,
-                })
-              }>
-              <ProviderImage
-                className="rounded-md"
-                uri={item.image}
-                link={item.link}
-                providerValue={route.params.providerValue || provider.value}
-                style={
-                  viewType === 1
-                    ? {width: 100, height: 150}
-                    : {width: 70, height: 100}
-                }
-              />
-              <Text
+              ))
+            )}
+            <View className="h-32" />
+            {!isLoading && calendarSections.length === 0 ? (
+              <View className="w-full h-full flex items-center justify-center">
+                <Text className="text-white text-center font-semibold text-lg">
+                  No Content Found
+                </Text>
+              </View>
+            ) : null}
+          </ScrollView>
+        ) : (
+          <FlashList
+            estimatedItemSize={300}
+            ListFooterComponent={
+              <>
+                {isLoading && (
+                  <View
+                    className={`flex ${
+                      viewType === 1 ? 'flex-row flex-wrap' : 'flex-col'
+                    } gap-1 justify-center items-center mb-16`}>
+                    {renderSkeletons()}
+                  </View>
+                )}
+                <View className="h-32" />
+              </>
+            }
+            data={posts}
+            numColumns={viewType === 1 ? 3 : 1}
+            key={`view-type-${viewType}`}
+            contentContainerStyle={{paddingBottom: 80}}
+            keyExtractor={(item, i) => `${item.title}-${i}`}
+            renderItem={({item}) => (
+              <TouchableOpacity
                 className={
                   viewType === 1
-                    ? 'text-white text-center truncate w-24 text-xs'
-                    : 'text-white ml-3 truncate w-72 font-semibold text-base'
+                    ? 'flex flex-col m-3'
+                    : 'flex-row m-3 items-center'
+                }
+                onPress={() =>
+                  navigation.navigate('Info', {
+                    link: item.link,
+                    provider: route.params.providerValue || provider.value,
+                    poster: item?.image,
+                  })
                 }>
-                {item?.title?.length > 24 && viewType === 1
-                  ? item.title.slice(0, 24) + '...'
-                  : item.title}
-              </Text>
-            </TouchableOpacity>
-          )}
-          onEndReached={onEndReached}
-          onEndReachedThreshold={0.5}
-        />
-        {!isLoading && posts.length === 0 ? (
+                <View className="relative">
+                  <ProviderImage
+                    className="rounded-md"
+                    uri={item.image}
+                    link={item.link}
+                    providerValue={route.params.providerValue || provider.value}
+                    style={
+                      viewType === 1
+                        ? {width: 100, height: 150}
+                        : {width: 70, height: 100}
+                    }
+                  />
+                  {item.episodeLabel ? (
+                    <View
+                      className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                      style={{backgroundColor: primary}}>
+                      <Text className="text-black text-[10px] font-semibold">
+                        {item.episodeLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  className={
+                    viewType === 1
+                      ? 'text-white text-center truncate w-24 text-xs'
+                      : 'text-white ml-3 truncate w-72 font-semibold text-base'
+                  }>
+                  {item?.title?.length > 24 && viewType === 1
+                    ? item.title.slice(0, 24) + '...'
+                    : item.title}
+                </Text>
+              </TouchableOpacity>
+            )}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+          />
+        )}
+        {!isCalendarView && !isLoading && posts.length === 0 ? (
           <View className="w-full h-full flex items-center justify-center">
             <Text className="text-white text-center font-semibold text-lg">
               No Content Found
