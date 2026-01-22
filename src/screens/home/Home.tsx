@@ -8,7 +8,7 @@ import {
 import Slider from '../../components/Slider';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import HeroOptimized from '../../components/Hero';
-import {mainStorage} from '../../lib/storage';
+import {cacheStorage, mainStorage} from '../../lib/storage';
 import useContentStore from '../../lib/zustand/contentStore';
 import useHeroStore from '../../lib/zustand/herostore';
 import {
@@ -43,6 +43,7 @@ const Home = ({}: Props) => {
 
   const {provider, installedProviders} = useContentStore(state => state);
   const {setHero} = useHeroStore(state => state);
+  const heroCacheTtlMs = 7 * 24 * 60 * 60 * 1000;
 
   // React Query for home page data with better error handling
   const {
@@ -74,12 +75,39 @@ const Home = ({}: Props) => {
 
   // Update hero only when hero post actually changes
   React.useEffect(() => {
+    if (!provider?.value) {
+      setHero({link: '', image: '', title: ''});
+      return;
+    }
+
+    const cacheKey = `heroCache:${provider.value}`;
+    const cached = cacheStorage.getString(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const isFresh =
+          parsed?.timestamp &&
+          Date.now() - parsed.timestamp < heroCacheTtlMs;
+        if (isFresh && parsed?.hero?.link) {
+          setHero(parsed.hero);
+          return;
+        }
+      } catch {
+        // ignore cache parsing errors
+      }
+    }
+
     if (heroPost) {
       setHero(heroPost);
-    } else {
-      setHero({link: '', image: '', title: ''});
+      cacheStorage.setString(
+        cacheKey,
+        JSON.stringify({timestamp: Date.now(), hero: heroPost}),
+      );
+      return;
     }
-  }, [heroPost, setHero]);
+
+    setHero({link: '', image: '', title: ''});
+  }, [heroPost, setHero, provider?.value, heroCacheTtlMs]);
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
