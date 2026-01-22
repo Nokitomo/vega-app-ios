@@ -25,7 +25,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useContentStore from '../../lib/zustand/contentStore';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useThemeStore from '../../lib/zustand/themeStore';
-import {useNavigation} from '@react-navigation/native';
+import {CommonActions, useNavigation} from '@react-navigation/native';
 import useWatchListStore from '../../lib/zustand/watchListStore';
 import {useContentDetails} from '../../lib/hooks/useContentInfo';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
@@ -156,6 +156,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [info?.linkList]);
 
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
+  const stackState = navigation.getState();
+  const stackIndex = stackState.index ?? stackState.routes.length - 1;
+  const previousRoute = stackState.routes[stackIndex - 1];
+  const showInfoBack = previousRoute?.name === 'Info';
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
@@ -166,6 +170,37 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       // Could show a toast or alert here if needed
     }
   }, [refetch]);
+
+  const handleClose = useCallback(() => {
+    const state = navigation.getState();
+    const routes = state.routes;
+    const currentIndex = state.index ?? routes.length - 1;
+    let targetIndex = -1;
+
+    for (let i = currentIndex; i >= 0; i -= 1) {
+      if (routes[i].name !== 'Info') {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (targetIndex < 0) {
+      navigation.goBack();
+      return;
+    }
+
+    const targetRoutes = routes.slice(0, targetIndex + 1).map(route => ({
+      name: route.name as never,
+      params: route.params as never,
+    }));
+
+    navigation.dispatch(
+      CommonActions.reset({
+        index: targetIndex,
+        routes: targetRoutes,
+      }),
+    );
+  }, [navigation]);
 
   // Error handling - show error UI instead of throwing
   if (error) {
@@ -208,6 +243,22 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
           backgroundColor={backgroundColor}
         />
         <View>
+          <View className="absolute top-0 left-0 right-0 z-40 flex-row justify-between items-center px-3 pt-10">
+            {showInfoBack ? (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                className="p-2 rounded-full bg-black/50">
+                <Ionicons name="chevron-back" size={24} color="white" />
+              </TouchableOpacity>
+            ) : (
+              <View className="w-10 h-10" />
+            )}
+            <TouchableOpacity
+              onPress={handleClose}
+              className="p-2 rounded-full bg-black/50">
+              <Ionicons name="close" size={22} color="white" />
+            </TouchableOpacity>
+          </View>
           <View className="absolute w-full h-[256px]">
             <Skeleton
               show={infoLoading}
