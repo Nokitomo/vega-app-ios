@@ -9,13 +9,13 @@ import {
  */
 export class ExtensionManager {
   private static instance: ExtensionManager;
-  private baseUrl =
+  private primaryBaseUrl =
+    'https://raw.githubusercontent.com/Nokitomo/vega-providers/refs/heads/main';
+  private fallbackBaseUrl =
     'https://raw.githubusercontent.com/Zenda-Cross/vega-providers/refs/heads/main';
 
   private testMode = false;
   private baseUrlTestMode = '';
-
-  private manifestUrl = `${this.baseUrl}/manifest.json`;
 
   // Test mode configuration
   private testModuleCacheExpiry = 200000;
@@ -44,15 +44,25 @@ export class ExtensionManager {
         }
       }
 
-      const manifestUrl = this.testMode
-        ? `${this.baseUrlTestMode}/manifest.json`
-        : this.manifestUrl;
-      console.log('Fetching manifest from:', manifestUrl);
-      const response = await axios.get(manifestUrl, {
-        timeout: 10000,
-      });
+      const baseUrls = this.getBaseUrls();
+      let response: {data: any; source?: string} | null = null;
+      for (const baseUrl of baseUrls) {
+        const manifestUrl = `${baseUrl}/manifest.json`;
+        console.log('Fetching manifest from:', manifestUrl);
+        try {
+          const res = await axios.get(manifestUrl, {
+            timeout: 10000,
+          });
+          if (res.data && Array.isArray(res.data)) {
+            response = {data: res.data, source: manifestUrl};
+            break;
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch manifest from ${manifestUrl}:`, error);
+        }
+      }
 
-      if (!response.data || !Array.isArray(response.data)) {
+      if (!response) {
         throw new Error('Invalid manifest format');
       }
 
@@ -100,31 +110,35 @@ export class ExtensionManager {
       const allFiles = [...requiredFiles, ...optionalFiles];
 
       const modules: Record<string, string> = {};
+      const baseUrls = this.getBaseUrls();
       const downloadPromises = allFiles.map(async fileName => {
-        try {
-          const url = `${this.baseUrl}/dist/${providerValue}/${fileName}.js`;
+        let lastError: unknown = null;
+        for (const baseUrl of baseUrls) {
+          const url = `${baseUrl}/dist/${providerValue}/${fileName}.js`;
           console.log(`Downloading: ${url}`);
+          try {
+            const response = await axios.get(url, {
+              timeout: 15000,
+            });
 
-          const response = await axios.get(url, {
-            timeout: 15000,
-          });
-
-          if (response.data) {
-            modules[fileName] = response.data;
+            if (response.data) {
+              modules[fileName] = response.data;
+              return;
+            }
+          } catch (error) {
+            lastError = error;
           }
-        } catch (error) {
-          // Only log error for required files
-          if (requiredFiles.includes(fileName)) {
-            console.error(
-              `Failed to download ${fileName}.js for ${providerValue}:`,
-              error,
-            );
-            throw error;
-          } else {
-            console.warn(
-              `Optional file ${fileName}.js not found for ${providerValue}`,
-            );
-          }
+        }
+        if (requiredFiles.includes(fileName)) {
+          console.error(
+            `Failed to download ${fileName}.js for ${providerValue}:`,
+            lastError,
+          );
+          throw lastError;
+        } else {
+          console.warn(
+            `Optional file ${fileName}.js not found for ${providerValue}`,
+          );
         }
       });
 
@@ -346,6 +360,12 @@ export class ExtensionManager {
   setTestMode(enabled: boolean): void {
     this.testMode = enabled;
     console.log(`Test mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
+  private getBaseUrls(): string[] {
+    if (this.testMode) {
+      return this.baseUrlTestMode ? [this.baseUrlTestMode] : [];
+    }
+    return [this.primaryBaseUrl, this.fallbackBaseUrl];
   }
   /**
    * Check if test module cache is expired
