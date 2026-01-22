@@ -1,4 +1,3 @@
-import {AndroidImportance} from '@notifee/react-native';
 import {extensionStorage, ProviderExtension} from '../storage/extensionStorage';
 import {extensionManager} from './ExtensionManager';
 import {settingsStorage} from '../storage';
