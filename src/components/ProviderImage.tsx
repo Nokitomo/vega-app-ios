@@ -49,7 +49,7 @@ const ProviderImage = ({
       return;
     }
 
-    const cacheKey = `animeunity:image:${link}`;
+    const cacheKey = `animeunity:poster:${link}`;
     const cached = cacheStorageService.getString(cacheKey);
     if (cached) {
       if (isMounted.current) {
