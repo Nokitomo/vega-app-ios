@@ -26,6 +26,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
+- L'app resta in verticale fuori dal player; il player blocca l'orizzontale.
 
 5) Watchlist e Cronologia
 - Salva e consulta elementi preferiti e gia visti.
