@@ -15,6 +15,8 @@ export interface Post {
   link: string;
   image: string;
   provider?: string;
+  day?: string;
+  episodeLabel?: string;
 }
 
 export declare enum TextTrackType {
