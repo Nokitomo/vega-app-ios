@@ -1,4 +1,4 @@
-import {Image, Pressable, Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import type {Post} from '../lib/providers/types';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -7,6 +7,7 @@ import {HomeStackParamList} from '../App';
 import useContentStore from '../lib/zustand/contentStore';
 import {FlashList} from '@shopify/flash-list';
 import SkeletonLoader from './Skeleton';
+import ProviderImage from './ProviderImage';
 
 // import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
@@ -95,13 +96,11 @@ export default function Slider({
                     poster: item?.image,
                   });
                 }}>
-                <Image
+                <ProviderImage
                   className="rounded-md"
-                  source={{
-                    uri:
-                      item?.image ||
-                      'https://placehold.jp/24/363636/ffffff/100x150.png?text=vega',
-                  }}
+                  uri={item?.image}
+                  link={item.link}
+                  providerValue={item.provider || providerValue || provider?.value}
                   style={{width: 100, height: 150}}
                 />
                 {/* {isSelected === item.link && (
