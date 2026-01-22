@@ -25,7 +25,11 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useContentStore from '../../lib/zustand/contentStore';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useThemeStore from '../../lib/zustand/themeStore';
-import {CommonActions, useNavigation} from '@react-navigation/native';
+import {
+  CommonActions,
+  StackActions,
+  useNavigation,
+} from '@react-navigation/native';
 import useWatchListStore from '../../lib/zustand/watchListStore';
 import {useContentDetails} from '../../lib/hooks/useContentInfo';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
@@ -38,6 +42,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const {primary} = useThemeStore(state => state);
   const {addItem, removeItem} = useWatchListStore(state => state);
   const {provider} = useContentStore(state => state);
+  const providerValue = route.params.provider || provider.value;
 
   // React Query for optimized data fetching
   const {
@@ -48,7 +53,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     refetch,
   } = useContentDetails(
     route.params.link,
-    route.params.provider || provider.value,
+    providerValue,
   );
 
   // UI state
@@ -100,10 +105,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       title: meta?.name || info?.title,
       poster: meta?.poster || route.params.poster || info?.image,
       link: route.params.link,
-      provider: route.params.provider || provider.value,
+      provider: providerValue,
     });
     setInLibrary(true);
-  }, [meta, info, route.params, provider.value, addItem]);
+  }, [meta, info, route.params, providerValue, addItem]);
 
   const removeLibrary = useCallback(() => {
     if (settingsStorage.isHapticFeedbackEnabled()) {
@@ -141,6 +146,15 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
     );
   }, [meta?.background, info?.image]);
+
+  const currentInfoEntry = useMemo(
+    () => ({
+      link: route.params.link,
+      provider: providerValue,
+      poster: posterImage,
+    }),
+    [route.params.link, providerValue, posterImage],
+  );
   const filteredLinkList = useMemo(() => {
     if (!info?.linkList) {
       return [];
@@ -156,6 +170,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [info?.linkList]);
 
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
+  const infoStack = route.params?.infoStack ?? [];
+  const showInfoBack = infoStack.length > 0;
   const stackState = navigation.getState();
   const stackIndex = stackState.index ?? stackState.routes.length - 1;
   const previousRoute = stackState.routes[stackIndex - 1];
@@ -172,9 +188,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [refetch]);
 
   const handleClose = useCallback(() => {
-    const state = navigation.getState();
-    const routes = state.routes;
-    const currentIndex = state.index ?? routes.length - 1;
+    const navState = navigation.getState();
+    const routes = navState.routes;
+    const currentIndex = navState.index ?? routes.length - 1;
     let targetIndex = -1;
 
     for (let i = currentIndex; i >= 0; i -= 1) {
@@ -201,6 +217,20 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       }),
     );
   }, [navigation]);
+
+  const handleInfoBack = useCallback(() => {
+    if (infoStack.length === 0) {
+      return;
+    }
+    const previous = infoStack[infoStack.length - 1];
+    const nextStack = infoStack.slice(0, -1);
+    navigation.dispatch(
+      StackActions.replace('Info', {
+        ...previous,
+        infoStack: nextStack,
+      }),
+    );
+  }, [infoStack, navigation]);
 
   // Error handling - show error UI instead of throwing
   if (error) {
@@ -246,7 +276,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
           <View className="absolute top-0 left-0 right-0 z-40 flex-row justify-between items-center px-3 pt-10">
             {showInfoBack ? (
               <TouchableOpacity
-                onPress={() => navigation.goBack()}
+                onPress={handleInfoBack}
                 className="p-2 rounded-full bg-black/50">
                 <Ionicons name="chevron-back" size={24} color="white" />
               </TouchableOpacity>
@@ -420,7 +450,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                           Synopsis
                         </Text>
                         <Text className="text-white text-xs bg-tertiary p-1 px-2 rounded-md">
-                          {route.params.provider || provider.value}
+                          {providerValue}
                         </Text>
                       </View>
                     </Skeleton>
@@ -597,7 +627,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       {infoView === 'episodes' ? (
                         <SeasonList
                           refreshing={false}
-                          providerValue={route.params.provider || provider.value}
+                          providerValue={providerValue}
                           LinkList={filteredLinkList}
                           poster={{
                             logo: meta?.logo,
@@ -620,12 +650,17 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                                 key={`${item.link}-${index}`}
                                 className="flex-row items-center gap-3 bg-quaternary p-2 rounded-md"
                                 onPress={() =>
-                                  navigation.navigate('Info', {
-                                    link: item.link,
-                                    provider:
-                                      route.params.provider || provider.value,
-                                    poster: item.image,
-                                  })
+                                  navigation.dispatch(
+                                    StackActions.push('Info', {
+                                      link: item.link,
+                                      provider: providerValue,
+                                      poster: item.image,
+                                      infoStack: [
+                                        ...infoStack,
+                                        currentInfoEntry,
+                                      ],
+                                    }),
+                                  )
                                 }>
                                 <Image
                                   source={{
