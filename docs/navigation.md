@@ -13,7 +13,7 @@
 
 ## HomeStack
 - Home
-- Info (param: link, provider?, poster?)
+- Info (param: link, provider?, poster?, infoStack?)
 - ScrollList (param: filter, title?, providerValue?, isSearch)
 - Webview (param: link)
 
