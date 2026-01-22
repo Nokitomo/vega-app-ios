@@ -46,6 +46,7 @@ import {queryClient} from './lib/client';
 import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 import notifee from '@notifee/react-native';
 import notificationService from './lib/services/Notification';
+import {OrientationLocker, PORTRAIT} from 'react-native-orientation-locker';
 // Lazy-load Firebase modules so app runs without google-services files
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAnalytics = (): any | null => {
@@ -517,6 +518,7 @@ const App = () => {
             }}
             className="flex-1"
             style={{backgroundColor: 'black'}}>
+            <OrientationLocker orientation={PORTRAIT} />
             <NavigationContainer
               ref={navigationRef}
               onReady={async () => {
