@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import Home from './screens/home/Home';
 import Info from './screens/home/Info';
 import Player from './screens/home/Player';
@@ -9,7 +9,6 @@ import ScrollList from './screens/ScrollList';
 import {
   NavigationContainer,
   createNavigationContainerRef,
-  useFocusEffect,
 } from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -366,15 +365,15 @@ const App = () => {
       </SettingsStack.Navigator>
     );
   }
+  const applyOrientationForRoute = (routeName?: string) => {
+    if (routeName === 'Player') {
+      Orientation.lockToLandscape();
+    } else {
+      Orientation.lockToPortrait();
+    }
+  };
+
   function TabStack() {
-    useFocusEffect(
-      useCallback(() => {
-        Orientation.lockToPortrait();
-        return () => {
-          Orientation.unlockAllOrientations();
-        };
-      }, []),
-    );
     return (
       <Tab.Navigator
         detachInactiveScreens={true}
@@ -532,6 +531,9 @@ const App = () => {
               onReady={async () => {
                 // Hide bootsplash
                 await BootSplash.hide({fade: true});
+                applyOrientationForRoute(
+                  navigationRef.getCurrentRoute()?.name,
+                );
                 // Track initial screen
                 if (hasFirebase) {
                   try {
@@ -548,6 +550,9 @@ const App = () => {
                 }
               }}
               onStateChange={async () => {
+                applyOrientationForRoute(
+                  navigationRef.getCurrentRoute()?.name,
+                );
                 if (hasFirebase) {
                   try {
                     const route = navigationRef.getCurrentRoute();
