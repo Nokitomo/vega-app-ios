@@ -25,6 +25,16 @@ const ContinueWatching = () => {
   const [progressData, setProgressData] = useState<Record<string, number>>({});
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
+  const getEpisodeLabel = (episodeTitle?: string) => {
+    if (!episodeTitle) {
+      return undefined;
+    }
+    const match = episodeTitle.match(/\d+/);
+    if (!match) {
+      return undefined;
+    }
+    return `Ep. ${match[0]}`;
+  };
 
   // Filter out duplicates and get the most recent items
   const recentItems = React.useMemo(() => {
@@ -202,6 +212,7 @@ const ContinueWatching = () => {
         renderItem={({item}) => {
           const progress = progressData[item.link] || 0;
           const isSelected = selectedItems.has(item.link);
+          const episodeLabel = getEpisodeLabel(item.episodeTitle);
 
           return (
             <TouchableOpacity
@@ -222,6 +233,15 @@ const ContinueWatching = () => {
                   className="rounded-md"
                   style={{width: 100, height: 150}}
                 />
+                {episodeLabel ? (
+                  <View
+                    className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+                    style={{backgroundColor: primary}}>
+                    <Text className="text-black text-[10px] font-semibold">
+                      {episodeLabel}
+                    </Text>
+                  </View>
+                ) : null}
 
                 {/* Selection Indicator */}
                 {selectionMode && (
