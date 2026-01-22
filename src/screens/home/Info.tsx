@@ -57,6 +57,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const [menuPosition, setMenuPosition] = useState({top: -1000, right: 0});
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [logoError, setLogoError] = useState(false);
+  const [infoView, setInfoView] = useState<'episodes' | 'related'>('episodes');
 
   const threeDotsRef = useRef<any>();
 
@@ -153,6 +154,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
 
     return filtered.length > 0 ? filtered : info.linkList;
   }, [info?.linkList]);
+
+  const relatedItems = useMemo(() => info?.related || [], [info?.related]);
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
@@ -276,26 +279,31 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   <View className="flex-row gap-x-3 gap-y-1 flex-wrap items-center mb-4">
                     {/* badges */}
                     {meta?.year && (
-                      <Text className="text-white text-lg bg-tertiary px-2 rounded-md">
+                      <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {meta?.year}
                       </Text>
                     )}
                     {meta?.runtime && (
-                      <Text className="text-white text-lg bg-tertiary px-2 rounded-md">
+                      <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {meta?.runtime}
                       </Text>
                     )}
                     {meta?.genres?.slice(0, 2).map((genre: string) => (
                       <Text
                         key={genre}
-                        className="text-white text-lg bg-tertiary px-2 rounded-md">
+                        className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {genre}
                       </Text>
                     ))}
+                    {info?.episodesCount ? (
+                      <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
+                        Episodi: {info.episodesCount}
+                      </Text>
+                    ) : null}
                     {info?.tags?.slice(0, 3)?.map((tag: string) => (
                       <Text
                         key={tag}
-                        className="text-white text-lg bg-tertiary px-2 rounded-md">
+                        className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {tag}
                       </Text>
                     ))}
@@ -480,6 +488,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       )}
                     </Text>
                   </Skeleton>
+                  {info?.studio ? (
+                    <Text className="text-gray-400 text-xs mt-2">
+                      Studio: {info.studio}
+                    </Text>
+                  ) : null}
                   {/* cast */}
                 </View>
                 <View className="p-4 bg-black">
@@ -505,19 +518,88 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       ))}
                     </View>
                   ) : (
-                    <SeasonList
-                      refreshing={false}
-                      providerValue={route.params.provider || provider.value}
-                      LinkList={filteredLinkList}
-                      poster={{
-                        logo: meta?.logo,
-                        poster: posterImage,
-                        background: backgroundImage,
-                      }}
-                      type={info?.type || 'series'}
-                      metaTitle={displayTitle}
-                      routeParams={route.params}
-                    />
+                    <>
+                      <View className="flex-row gap-2 mb-4">
+                        <TouchableOpacity
+                          onPress={() => setInfoView('episodes')}
+                          className={`px-3 py-1 rounded-md ${
+                            infoView === 'episodes'
+                              ? 'bg-tertiary'
+                              : 'bg-quaternary'
+                          }`}>
+                          <Text className="text-white text-xs font-semibold">
+                            Episodi
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => setInfoView('related')}
+                          className={`px-3 py-1 rounded-md ${
+                            infoView === 'related'
+                              ? 'bg-tertiary'
+                              : 'bg-quaternary'
+                          }`}>
+                          <Text className="text-white text-xs font-semibold">
+                            Correlati
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      {infoView === 'episodes' ? (
+                        <SeasonList
+                          refreshing={false}
+                          providerValue={route.params.provider || provider.value}
+                          LinkList={filteredLinkList}
+                          poster={{
+                            logo: meta?.logo,
+                            poster: posterImage,
+                            background: backgroundImage,
+                          }}
+                          type={info?.type || 'series'}
+                          metaTitle={displayTitle}
+                          routeParams={route.params}
+                        />
+                      ) : (
+                        <View className="gap-3">
+                          {relatedItems.length === 0 ? (
+                            <Text className="text-gray-400 text-xs">
+                              Nessun correlato disponibile.
+                            </Text>
+                          ) : (
+                            relatedItems.map((item, index) => (
+                              <TouchableOpacity
+                                key={`${item.link}-${index}`}
+                                className="flex-row items-center gap-3 bg-quaternary p-2 rounded-md"
+                                onPress={() =>
+                                  navigation.navigate('Info', {
+                                    link: item.link,
+                                    provider:
+                                      route.params.provider || provider.value,
+                                    poster: item.image,
+                                  })
+                                }>
+                                <Image
+                                  source={{
+                                    uri:
+                                      item.image ||
+                                      'https://placehold.jp/24/363636/ffffff/100x150.png?text=Vega',
+                                  }}
+                                  style={{width: 60, height: 90}}
+                                />
+                                <View className="flex-1">
+                                  <Text className="text-white text-sm font-semibold">
+                                    {item.title}
+                                  </Text>
+                                  <Text className="text-gray-400 text-xs mt-1">
+                                    {[item.type, item.year]
+                                      .filter(Boolean)
+                                      .join(' · ')}
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            ))
+                          )}
+                        </View>
+                      )}
+                    </>
                   )}
                 </View>
               </>
