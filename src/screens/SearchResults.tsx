@@ -12,6 +12,7 @@ import {SearchStackParamList} from '../App';
 import useThemeStore from '../lib/zustand/themeStore';
 import {providerManager} from '../lib/services/ProviderManager';
 import useContentStore from '../lib/zustand/contentStore';
+import useSearchCacheStore from '../lib/zustand/searchCacheStore';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchResults'>;
 
@@ -27,6 +28,10 @@ interface SearchPageData {
 const SearchResults = ({route}: Props): React.ReactElement => {
   const {primary} = useThemeStore(state => state);
   const {installedProviders} = useContentStore(state => state);
+  const {getCache, setCache} = useSearchCacheStore(state => ({
+    getCache: state.getCache,
+    setCache: state.setCache,
+  }));
   const [searchData, setSearchData] = useState<SearchPageData[]>([]);
   const [emptyResults, setEmptyResults] = useState<SearchPageData[]>([]);
 
@@ -42,12 +47,21 @@ const SearchResults = ({route}: Props): React.ReactElement => {
 
   const [loading, setLoading] = useState(trueLoading);
   const abortController = useRef<AbortController | null>(null);
+  const searchDataRef = useRef<SearchPageData[]>([]);
+  const emptyResultsRef = useRef<SearchPageData[]>([]);
+
+  const normalizedFilter = useMemo(
+    () => route.params.filter.trim().toLowerCase(),
+    [route.params.filter],
+  );
 
   const updateSearchData = useCallback((newData: SearchPageData) => {
+    searchDataRef.current = [...searchDataRef.current, newData];
     setSearchData(prev => [...prev, newData]);
   }, []);
 
   const updateEmptyResults = useCallback((newData: SearchPageData) => {
+    emptyResultsRef.current = [...emptyResultsRef.current, newData];
     setEmptyResults(prev => [...prev, newData]);
   }, []);
 
@@ -66,6 +80,22 @@ const SearchResults = ({route}: Props): React.ReactElement => {
   );
 
   useEffect(() => {
+    const cached = getCache(normalizedFilter);
+    if (cached) {
+      searchDataRef.current = cached.searchData;
+      emptyResultsRef.current = cached.emptyResults;
+      setSearchData(cached.searchData);
+      setEmptyResults(cached.emptyResults);
+      setLoading(
+        installedProviders.map(item => ({
+          name: item.display_name,
+          value: item.value,
+          isLoading: false,
+        })),
+      );
+      return;
+    }
+
     // Clean up previous controller if exists
     if (abortController.current) {
       abortController.current.abort();
@@ -76,6 +106,8 @@ const SearchResults = ({route}: Props): React.ReactElement => {
     const signal = abortController.current.signal;
 
     // Reset states when component mounts or filter changes
+    searchDataRef.current = [];
+    emptyResultsRef.current = [];
     setSearchData([]);
     setEmptyResults([]);
     setLoading(trueLoading);
@@ -137,7 +169,13 @@ const SearchResults = ({route}: Props): React.ReactElement => {
       return Promise.allSettled(fetchPromises);
     };
 
-    getSearchResults();
+    getSearchResults().then(() => {
+      if (signal.aborted) return;
+      setCache(normalizedFilter, {
+        searchData: searchDataRef.current,
+        emptyResults: emptyResultsRef.current,
+      });
+    });
 
     return () => {
       // Cleanup function: abort any ongoing API requests
@@ -153,6 +191,9 @@ const SearchResults = ({route}: Props): React.ReactElement => {
     updateSearchData,
     updateEmptyResults,
     updateLoading,
+    getCache,
+    setCache,
+    normalizedFilter,
   ]);
 
   const renderSlider = useCallback(
