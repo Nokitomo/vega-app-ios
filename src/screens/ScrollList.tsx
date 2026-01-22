@@ -7,6 +7,7 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import useContentStore from '../lib/zustand/contentStore';
 import {MaterialIcons} from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {settingsStorage} from '../lib/storage';
 import {FlashList} from '@shopify/flash-list';
 import SkeletonLoader from '../components/Skeleton';
@@ -140,9 +141,14 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   return (
     <View className="h-full w-full bg-black items-center p-4">
       <View className="w-full px-4 font-semibold my-6 flex-row justify-between items-center">
-        <Text className="text-2xl font-bold" style={{color: primary}}>
-          {route.params.title}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={26} color="white" />
+          </TouchableOpacity>
+          <Text className="text-2xl font-bold" style={{color: primary}}>
+            {route.params.title}
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={() => {
             const newViewType = viewType === 1 ? 2 : 1;
