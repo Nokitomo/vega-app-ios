@@ -19,7 +19,10 @@ import Animated, {
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
 import {cacheStorage, settingsStorage} from '../../lib/storage';
-import {OrientationLocker, LANDSCAPE} from 'react-native-orientation-locker';
+import Orientation, {
+  OrientationLocker,
+  LANDSCAPE,
+} from 'react-native-orientation-locker';
 import VideoPlayer from '@8man/react-native-media-console';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -77,6 +80,15 @@ const Player = ({route}: Props): React.JSX.Element => {
   const navigation = useNavigation();
   const {addItem, updatePlaybackInfo, updateItemWithInfo} =
     useWatchHistoryStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      Orientation.lockToLandscape();
+      return () => {
+        Orientation.lockToPortrait();
+      };
+    }, []),
+  );
 
   // Player ref
   const playerRef: React.RefObject<VideoRef> = useRef(null);
