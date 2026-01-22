@@ -32,6 +32,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 ## Estensioni/Provider
 - I provider sono moduli JS remoti che forniscono catalogo, metadata e stream.
 - Il sistema supporta aggiornamenti automatici e installazione/rimozione.
+- Per AnimeUnity, se un'immagine fallisce il caricamento in lista, viene cercato un fallback dai metadata.
 
 ## Persistenza dati
 - Impostazioni utente, watchlist, cronologia e download vengono salvati in storage locale MMKV.
