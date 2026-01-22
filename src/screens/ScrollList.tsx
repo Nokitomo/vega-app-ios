@@ -3,7 +3,6 @@ import React, {useEffect, useState, useRef} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList, SearchStackParamList} from '../App';
 import {Post} from '../lib/providers/types';
-import {Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import useContentStore from '../lib/zustand/contentStore';
@@ -13,6 +12,7 @@ import {FlashList} from '@shopify/flash-list';
 import SkeletonLoader from '../components/Skeleton';
 import useThemeStore from '../lib/zustand/themeStore';
 import {providerManager} from '../lib/services/ProviderManager';
+import ProviderImage from '../components/ProviderImage';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ScrollList'>;
 
@@ -191,13 +191,11 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                   poster: item?.image,
                 })
               }>
-              <Image
+              <ProviderImage
                 className="rounded-md"
-                source={{
-                  uri:
-                    item.image ||
-                    'https://placehold.jp/24/363636/ffffff/100x150.png?text=Vega',
-                }}
+                uri={item.image}
+                link={item.link}
+                providerValue={route.params.providerValue || provider.value}
                 style={
                   viewType === 1
                     ? {width: 100, height: 150}
