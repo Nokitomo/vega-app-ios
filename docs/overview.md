@@ -10,10 +10,12 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 1) Home
 - Visualizza contenuti in base al provider attivo.
 - Slider per categorie e hero in evidenza.
+- L'hero usa una cache settimanale per ridurre refresh involontari.
 
 2) Ricerca
 - Ricerca per titolo o filtro.
 - Risultati raggruppati per provider.
+- I risultati della ricerca globale sono cache in sessione per evitare ricariche.
 
 3) Dettaglio contenuto (Info)
 - Metadati, poster, trama e accesso alle sorgenti/episodi.
