@@ -205,9 +205,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       return;
     }
 
-    const targetRoutes = routes.slice(0, targetIndex + 1).map(route => ({
-      name: route.name as never,
-      params: route.params as never,
+    const targetRoutes = routes.slice(0, targetIndex + 1).map(routeItem => ({
+      name: routeItem.name as never,
+      params: routeItem.params as never,
     }));
 
     navigation.dispatch(
