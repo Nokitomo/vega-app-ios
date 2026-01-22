@@ -73,7 +73,12 @@ const isLargeScreen = Dimensions.get('window').width > 768;
 
 export type HomeStackParamList = {
   Home: undefined;
-  Info: {link: string; provider?: string; poster?: string};
+  Info: {
+    link: string;
+    provider?: string;
+    poster?: string;
+    infoStack?: Array<{link: string; provider?: string; poster?: string}>;
+  };
   ScrollList: {
     filter: string;
     title?: string;
@@ -122,18 +127,33 @@ export type SearchStackParamList = {
     providerValue?: string;
     isSearch: boolean;
   };
-  Info: {link: string; provider?: string; poster?: string};
+  Info: {
+    link: string;
+    provider?: string;
+    poster?: string;
+    infoStack?: Array<{link: string; provider?: string; poster?: string}>;
+  };
   SearchResults: {filter: string; availableProviders?: string[]};
 };
 
 export type WatchListStackParamList = {
   WatchList: undefined;
-  Info: {link: string; provider?: string; poster?: string};
+  Info: {
+    link: string;
+    provider?: string;
+    poster?: string;
+    infoStack?: Array<{link: string; provider?: string; poster?: string}>;
+  };
 };
 
 export type WatchHistoryStackParamList = {
   WatchHistory: undefined;
-  Info: {link: string; provider?: string; poster?: string};
+  Info: {
+    link: string;
+    provider?: string;
+    poster?: string;
+    infoStack?: Array<{link: string; provider?: string; poster?: string}>;
+  };
   SeriesEpisodes: {
     series: string;
     episodes: Array<{uri: string; size: number}>;
