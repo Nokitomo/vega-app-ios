@@ -172,10 +172,6 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
   const infoStack = route.params?.infoStack ?? [];
   const showInfoBack = infoStack.length > 0;
-  const stackState = navigation.getState();
-  const stackIndex = stackState.index ?? stackState.routes.length - 1;
-  const previousRoute = stackState.routes[stackIndex - 1];
-  const showInfoBack = previousRoute?.name === 'Info';
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
