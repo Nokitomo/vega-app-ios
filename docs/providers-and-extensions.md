@@ -25,6 +25,7 @@ File: src/lib/services/ProviderManager.ts
 - Esegue i moduli in un contesto isolato (new Function).
 - Espone API per catalogo, ricerca, metadata, stream, episodi.
 - Usa providerContext con axios, cheerio, estrattori e utility.
+- I provider possono fornire piu stream per lo stesso episodio (es. AnimeUnity via VixCloud Server1/Server2).
 
 ## ProviderContext
 File: src/lib/providers/providerContext.ts
