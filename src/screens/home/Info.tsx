@@ -25,11 +25,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useContentStore from '../../lib/zustand/contentStore';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useThemeStore from '../../lib/zustand/themeStore';
-import {
-  CommonActions,
-  StackActions,
-  useNavigation,
-} from '@react-navigation/native';
+import {StackActions, useNavigation} from '@react-navigation/native';
 import useWatchListStore from '../../lib/zustand/watchListStore';
 import {useContentDetails} from '../../lib/hooks/useContentInfo';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
@@ -201,17 +197,13 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       return;
     }
 
-    const targetRoutes = routes.slice(0, targetIndex + 1).map(routeItem => ({
-      name: routeItem.name as never,
-      params: routeItem.params as never,
-    }));
+    const popCount = currentIndex - targetIndex;
+    if (popCount <= 0) {
+      navigation.goBack();
+      return;
+    }
 
-    navigation.dispatch(
-      CommonActions.reset({
-        index: targetIndex,
-        routes: targetRoutes,
-      }),
-    );
+    navigation.dispatch(StackActions.pop(popCount));
   }, [navigation]);
 
   const handleInfoBack = useCallback(() => {
