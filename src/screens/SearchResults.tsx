@@ -126,7 +126,9 @@ const SearchResults = ({route}: Props): React.ReactElement => {
             });
 
             // Skip updating state if request was aborted
-            if (signal.aborted) return;
+            if (signal.aborted) {
+              return;
+            }
 
             if (data && data.length > 0) {
               const newData = {
@@ -152,7 +154,9 @@ const SearchResults = ({route}: Props): React.ReactElement => {
 
             updateLoading(item.value, {isLoading: false});
           } catch (error) {
-            if (signal.aborted) return;
+            if (signal.aborted) {
+              return;
+            }
 
             console.error(
               `Error fetching data for ${item.display_name}:`,
@@ -170,7 +174,9 @@ const SearchResults = ({route}: Props): React.ReactElement => {
     };
 
     getSearchResults().then(() => {
-      if (signal.aborted) return;
+      if (signal.aborted) {
+        return;
+      }
       setCache(normalizedFilter, {
         searchData: searchDataRef.current,
         emptyResults: emptyResultsRef.current,
