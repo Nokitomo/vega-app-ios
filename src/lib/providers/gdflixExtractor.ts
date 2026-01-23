@@ -115,7 +115,7 @@ export async function gdFlixExtracter(link: string, signal: AbortSignal) {
         const resumeBotBody = new FormData();
         resumeBotBody.append('token', resumeBotToken);
         const resumeBotPath = resumeBotRes.data.match(
-          /fetch\('\/download\?id=([a-zA-Z0-9\/+]+)'/,
+          /fetch\('\/download\?id=([a-zA-Z0-9/+]+)'/,
         )[1];
         const resumeBotBaseUrl = resumeDrive.split('/download')[0];
         // console.log(
