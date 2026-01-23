@@ -49,7 +49,7 @@ configurations.all {
           // If no apply from lines found, add after React plugin
           gradleText = gradleText.replace(
             /apply plugin: "com\.facebook\.react"/,
-            `apply plugin: "com.facebook.react"\napply from: 'with-okhttp.gradle'`,
+            'apply plugin: "com.facebook.react"\\napply from: \'with-okhttp.gradle\'',
           );
         }
         fs.writeFileSync(buildGradle, gradleText, 'utf8');
