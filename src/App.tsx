@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import Home from './screens/home/Home';
 import Info from './screens/home/Info';
 import Player from './screens/home/Player';
@@ -47,6 +47,7 @@ import GlobalErrorBoundary from './components/GlobalErrorBoundary';
 import notifee from '@notifee/react-native';
 import notificationService from './lib/services/Notification';
 import Orientation from 'react-native-orientation-locker';
+import useSearchCacheStore from './lib/zustand/searchCacheStore';
 // Lazy-load Firebase modules so app runs without google-services files
 const getAnalytics = (): any | null => {
   try {
@@ -67,6 +68,7 @@ enableScreens(true);
 enableFreeze(true);
 
 const isLargeScreen = Dimensions.get('window').width > 768;
+const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -190,11 +192,77 @@ const App = () => {
   const WatchHistoryStack =
     createNativeStackNavigator<WatchHistoryStackParamList>();
   const {primary} = useThemeStore(state => state);
+  const {clearCache} = useSearchCacheStore(state => ({
+    clearCache: state.clearCache,
+  }));
   const hasFirebase = Boolean(Constants?.expoConfig?.extra?.hasFirebase);
 
   const showTabBarLables = settingsStorage.showTabBarLabels();
 
   SystemUI.setBackgroundColorAsync('black');
+
+  const searchCacheTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const searchTabRef = useRef<string | undefined>(undefined);
+  const searchLeftAtRef = useRef<number | null>(null);
+
+  const getActiveTabName = useCallback((state: any) => {
+    const tabRoute = state?.routes?.find(
+      (route: {name?: string}) => route.name === 'TabStack',
+    );
+    const tabState = tabRoute?.state;
+    if (!tabState || typeof tabState.index !== 'number') {
+      return undefined;
+    }
+    return tabState?.routes?.[tabState.index]?.name;
+  }, []);
+
+  const syncSearchCacheState = useCallback(
+    (state: any) => {
+      const activeTab = getActiveTabName(state);
+      if (!activeTab) {
+        return;
+      }
+
+      const previousTab = searchTabRef.current;
+      if (!previousTab) {
+        searchTabRef.current = activeTab;
+        return;
+      }
+
+      if (previousTab === activeTab) {
+        return;
+      }
+
+      searchTabRef.current = activeTab;
+
+      if (previousTab === 'SearchStack' && activeTab !== 'SearchStack') {
+        searchLeftAtRef.current = Date.now();
+        if (searchCacheTimeoutRef.current) {
+          clearTimeout(searchCacheTimeoutRef.current);
+        }
+        searchCacheTimeoutRef.current = setTimeout(() => {
+          clearCache();
+          searchCacheTimeoutRef.current = null;
+        }, SEARCH_CACHE_TTL_MS);
+        return;
+      }
+
+      if (activeTab === 'SearchStack') {
+        if (searchCacheTimeoutRef.current) {
+          clearTimeout(searchCacheTimeoutRef.current);
+          searchCacheTimeoutRef.current = null;
+        }
+        const leftAt = searchLeftAtRef.current;
+        if (leftAt && Date.now() - leftAt >= SEARCH_CACHE_TTL_MS) {
+          clearCache();
+        }
+        searchLeftAtRef.current = null;
+      }
+    },
+    [clearCache, getActiveTabName],
+  );
 
   useEffect(() => {
     // Apply telemetry preference before using analytics
@@ -246,6 +314,14 @@ const App = () => {
     });
     return () => {
       unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchCacheTimeoutRef.current) {
+        clearTimeout(searchCacheTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -530,6 +606,7 @@ const App = () => {
                 applyOrientationForRoute(
                   navigationRef.getCurrentRoute()?.name,
                 );
+                syncSearchCacheState(navigationRef.getRootState());
                 // Track initial screen
                 if (hasFirebase) {
                   try {
@@ -545,10 +622,11 @@ const App = () => {
                   } catch {}
                 }
               }}
-              onStateChange={async () => {
+              onStateChange={async state => {
                 applyOrientationForRoute(
                   navigationRef.getCurrentRoute()?.name,
                 );
+                syncSearchCacheState(state);
                 if (hasFirebase) {
                   try {
                     const route = navigationRef.getCurrentRoute();
