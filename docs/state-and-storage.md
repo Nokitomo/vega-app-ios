@@ -5,7 +5,7 @@ Store principali:
 - src/lib/zustand/contentStore.ts: provider attivo, catalogo e contenuti.
 - src/lib/zustand/themeStore.ts: tema e colori principali.
 - src/lib/zustand/herostore.ts: contenuto in evidenza (hero).
-- src/lib/zustand/searchCacheStore.ts: cache in sessione dei risultati di ricerca.
+- src/lib/zustand/searchCacheStore.ts: cache risultati ricerca (LRU max 10 query); resta valida finché la tab Search è attiva, poi scade dopo 10 minuti dall'uscita.
 - src/lib/zustand/watchListStore.ts: watchlist in memoria.
 - src/lib/zustand/watchHistrory.ts: cronologia.
 - src/lib/zustand/downloadsStore.ts: download in corso e completati.
