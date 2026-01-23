@@ -48,3 +48,4 @@
 ## Note UI
 - Tab bar personalizzata con haptic feedback opzionale.
 - Uso di SafeAreaView e tema scuro custom.
+- In Info, il pulsante X torna alla schermata precedente senza reset dello stack.
