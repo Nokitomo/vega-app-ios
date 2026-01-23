@@ -48,19 +48,15 @@ import notifee from '@notifee/react-native';
 import notificationService from './lib/services/Notification';
 import Orientation from 'react-native-orientation-locker';
 // Lazy-load Firebase modules so app runs without google-services files
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAnalytics = (): any | null => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-firebase/analytics').default;
   } catch {
     return null;
   }
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCrashlytics = (): any | null => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-firebase/crashlytics').default;
   } catch {
     return null;
@@ -605,11 +601,7 @@ const App = () => {
                   contentStyle: {backgroundColor: 'transparent'},
                 }}>
                 <Stack.Screen name="TabStack" component={TabStack} />
-                <Stack.Screen
-                  name="Player"
-                  component={Player}
-                  options={{orientation: 'landscape'}}
-                />
+                <Stack.Screen name="Player" component={Player} />
               </Stack.Navigator>
             </NavigationContainer>
           </SafeAreaView>
