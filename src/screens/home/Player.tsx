@@ -19,10 +19,6 @@ import Animated, {
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
 import {cacheStorage, settingsStorage} from '../../lib/storage';
-import Orientation, {
-  OrientationLocker,
-  LANDSCAPE,
-} from 'react-native-orientation-locker';
 import VideoPlayer from '@8man/react-native-media-console';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -80,15 +76,6 @@ const Player = ({route}: Props): React.JSX.Element => {
   const navigation = useNavigation();
   const {addItem, updatePlaybackInfo, updateItemWithInfo} =
     useWatchHistoryStore();
-
-  useFocusEffect(
-    useCallback(() => {
-      Orientation.lockToLandscape();
-      return () => {
-        Orientation.lockToPortrait();
-      };
-    }, []),
-  );
 
   // Player ref
   const playerRef: React.RefObject<VideoRef> = useRef(null);
@@ -652,7 +639,6 @@ const Player = ({route}: Props): React.JSX.Element => {
         edges={{right: 'off', top: 'off', left: 'off', bottom: 'off'}}
         className="bg-black flex-1 justify-center items-center">
         <StatusBar translucent={true} hidden={true} />
-        <OrientationLocker orientation={LANDSCAPE} />
         {/* create ripple effect */}
         <TouchableNativeFeedback
           background={TouchableNativeFeedback.Ripple(
@@ -679,7 +665,6 @@ const Player = ({route}: Props): React.JSX.Element => {
     return (
       <SafeAreaView className="bg-black flex-1 justify-center items-center">
         <StatusBar translucent={true} hidden={true} />
-        <OrientationLocker orientation={LANDSCAPE} />
         <Text className="text-red-500 text-lg text-center mb-4">
           Failed to load stream. Please try again.
         </Text>
@@ -702,7 +687,6 @@ const Player = ({route}: Props): React.JSX.Element => {
       }}
       className="bg-black flex-1 relative">
       <StatusBar translucent={true} hidden={true} />
-      <OrientationLocker orientation={LANDSCAPE} />
 
       {/* Video Player */}
       <VideoPlayer {...videoPlayerProps} />
