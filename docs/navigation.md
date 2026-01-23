@@ -5,6 +5,9 @@
   - TabStack
   - Player (landscape)
 
+## Orientamento
+- Gestione centralizzata in `src/App.tsx`: portrait per tutte le schermate, landscape solo per `Player`.
+
 ## TabStack (Bottom Tabs)
 - HomeStack
 - SearchStack
