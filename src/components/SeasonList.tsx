@@ -238,12 +238,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
   // Memoized external player handler
   const handleExternalPlayer = useCallback(
-    async (link: string, type: string) => {
+    async (link: string, streamType: string) => {
       setVlcLoading(true);
       setIsLoadingStreams(true);
 
       try {
-        const streams = await fetchStreams(link, type, providerValue);
+        const streams = await fetchStreams(link, streamType, providerValue);
 
         if (!streams || streams.length === 0) {
           ToastAndroid.show('No stream available', ToastAndroid.SHORT);
@@ -293,7 +293,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const playHandler = useCallback(
     async ({
       linkIndex,
-      type,
+      type: contentType,
       primaryTitle,
       secondaryTitle,
       seasonTitle,
@@ -337,14 +337,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
           );
           return;
         }
-        handleExternalPlayer(link, type);
+        handleExternalPlayer(link, contentType);
         return;
       }
 
       navigation.navigate('Player', {
         linkIndex,
         episodeList: episodeData,
-        type: type,
+        type: contentType,
         primaryTitle: primaryTitle,
         secondaryTitle: seasonTitle,
         poster: poster,
@@ -365,14 +365,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
   // Memoized long press handler
   const onLongPressHandler = useCallback(
-    (active: boolean, link: string, type?: string) => {
+    (active: boolean, link: string, streamType?: string) => {
       if (settingsStorage.isHapticFeedbackEnabled()) {
         RNReactNativeHapticFeedback.trigger('effectTick', {
           enableVibrateFallback: true,
           ignoreAndroidSystemSettings: false,
         });
       }
-      setStickyMenu({active: active, link: link, type: type});
+      setStickyMenu({active: active, link: link, type: streamType});
     },
     [],
   );
