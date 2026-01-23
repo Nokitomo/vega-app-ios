@@ -40,25 +40,33 @@ export async function hubcloudExtracter(link: string, signal: AbortSignal) {
     const linkClass = $('.btn-success.btn-lg.h6,.btn-danger,.btn-secondary');
     for (const element of linkClass) {
       const itm = $(element);
-      let link = itm.attr('href') || '';
+      let linkHref = itm.attr('href') || '';
 
       switch (true) {
-        case link?.includes('.dev') && !link?.includes('/?id='):
-          streamLinks.push({server: 'Cf Worker', link: link, type: 'mkv'});
+        case linkHref?.includes('.dev') && !linkHref?.includes('/?id='):
+          streamLinks.push({
+            server: 'Cf Worker',
+            link: linkHref,
+            type: 'mkv',
+          });
           break;
 
-        case link?.includes('pixeld'):
-          if (!link?.includes('api')) {
-            const token = link.split('/').pop();
-            const baseUrl = link.split('/').slice(0, -2).join('/');
-            link = `${baseUrl}/api/file/${token}?download`;
+        case linkHref?.includes('pixeld'):
+          if (!linkHref?.includes('api')) {
+            const token = linkHref.split('/').pop();
+            const pixelBaseUrl = linkHref.split('/').slice(0, -2).join('/');
+            linkHref = `${pixelBaseUrl}/api/file/${token}?download`;
           }
-          streamLinks.push({server: 'Pixeldrain', link: link, type: 'mkv'});
+          streamLinks.push({
+            server: 'Pixeldrain',
+            link: linkHref,
+            type: 'mkv',
+          });
           break;
 
-        case link?.includes('hubcloud') || link?.includes('/?id='):
+        case linkHref?.includes('hubcloud') || linkHref?.includes('/?id='):
           try {
-            const newLinkRes = await fetch(link, {
+            const newLinkRes = await fetch(linkHref, {
               method: 'HEAD',
               headers,
               signal,
@@ -66,14 +74,14 @@ export async function hubcloudExtracter(link: string, signal: AbortSignal) {
             });
 
             // Check if response is a redirect (301, 302, etc.)
-            let newLink = link;
+            let newLink = linkHref;
             if (newLinkRes.status >= 300 && newLinkRes.status < 400) {
-              newLink = newLinkRes.headers.get('location') || link;
-            } else if (newLinkRes.url && newLinkRes.url !== link) {
+              newLink = newLinkRes.headers.get('location') || linkHref;
+            } else if (newLinkRes.url && newLinkRes.url !== linkHref) {
               // Fallback: check if URL changed (redirect was followed)
               newLink = newLinkRes.url;
             } else {
-              newLink = newLinkRes.headers.get('location') || link;
+              newLink = newLinkRes.headers.get('location') || linkHref;
             }
             if (newLink.includes('googleusercontent')) {
               newLink = newLink.split('?link=')[1];
@@ -110,29 +118,37 @@ export async function hubcloudExtracter(link: string, signal: AbortSignal) {
           }
           break;
 
-        case link?.includes('cloudflarestorage'):
-          streamLinks.push({server: 'CfStorage', link: link, type: 'mkv'});
+        case linkHref?.includes('cloudflarestorage'):
+          streamLinks.push({
+            server: 'CfStorage',
+            link: linkHref,
+            type: 'mkv',
+          });
           break;
 
-        case link?.includes('fastdl') || link?.includes('fsl.'):
-          streamLinks.push({server: 'FastDl', link: link, type: 'mkv'});
+        case linkHref?.includes('fastdl') || linkHref?.includes('fsl.'):
+          streamLinks.push({server: 'FastDl', link: linkHref, type: 'mkv'});
           break;
 
-        case link.includes('hubcdn') && !link.includes('/?id='):
+        case linkHref.includes('hubcdn') && !linkHref.includes('/?id='):
           streamLinks.push({
             server: 'HubCdn',
-            link: link,
+            link: linkHref,
             type: 'mkv',
           });
           break;
 
         default:
-          if (link?.includes('.mkv')) {
+          if (linkHref?.includes('.mkv')) {
             const serverName =
-              link
-                .match(/^(?:https?:\/\/)?(?:www\.)?([^\/]+)/i)?.[1]
+              linkHref
+                .match(/^(?:https?:\/\/)?(?:www\.)?([^/]+)/i)?.[1]
                 ?.replace(/\./g, ' ') || 'Unknown';
-            streamLinks.push({server: serverName, link: link, type: 'mkv'});
+            streamLinks.push({
+              server: serverName,
+              link: linkHref,
+              type: 'mkv',
+            });
           }
           break;
       }
