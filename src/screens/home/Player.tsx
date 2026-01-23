@@ -80,6 +80,11 @@ const Player = ({route}: Props): React.JSX.Element => {
   // Player ref
   const playerRef: React.RefObject<VideoRef> = useRef(null);
   const hasSetInitialTracksRef = useRef(false);
+  const streamRetryRef = useRef({
+    episodeKey: '',
+    count: 0,
+    lastAttempt: 0,
+  });
 
   // Shared values for animations
   const loadingOpacity = useSharedValue(0);
@@ -142,6 +147,7 @@ const Player = ({route}: Props): React.JSX.Element => {
     setExternalSubs,
     isLoading: streamLoading,
     error: streamError,
+    refetch,
     switchToNextStream,
   } = useStream({
     activeEpisode,
@@ -281,10 +287,57 @@ const Player = ({route}: Props): React.JSX.Element => {
     }
   }, [activeEpisode, route.params?.episodeList]);
 
+  const extractHttpStatus = useCallback((errorEvent: any) => {
+    const stackTrace = errorEvent?.error?.errorStackTrace || '';
+    const match = /Response code:\s*(\d{3})/i.exec(stackTrace);
+    return match ? Number(match[1]) : null;
+  }, []);
+
+  const shouldRefetchStream = useCallback(
+    (errorEvent: any) => {
+      const status = extractHttpStatus(errorEvent);
+      if (status === 403 || status === 503) {
+        return true;
+      }
+      const errorString = errorEvent?.error?.errorString || '';
+      return /ERROR_CODE_IO_BAD_HTTP_STATUS/i.test(errorString);
+    },
+    [extractHttpStatus],
+  );
+
   // Memoized error handler
   const handleVideoError = useCallback(
-    (e: any) => {
+    async (e: any) => {
       console.log('PlayerError', e);
+      if (shouldRefetchStream(e) && activeEpisode?.link) {
+        const now = Date.now();
+        const retryState = streamRetryRef.current;
+        const sameEpisode = retryState.episodeKey === activeEpisode.link;
+        const retryCount = sameEpisode ? retryState.count : 0;
+        const lastAttempt = sameEpisode ? retryState.lastAttempt : 0;
+
+        if (retryCount < 1 && now - lastAttempt > 2000) {
+          streamRetryRef.current = {
+            episodeKey: activeEpisode.link,
+            count: retryCount + 1,
+            lastAttempt: now,
+          };
+          ToastAndroid.show(
+            'Stream error, retrying token',
+            ToastAndroid.SHORT,
+          );
+          const result = await refetch();
+          const refreshed = result.data || [];
+          if (refreshed.length > 0) {
+            const sameServer = refreshed.find(
+              stream => stream.server === selectedStream?.server,
+            );
+            setSelectedStream(sameServer || refreshed[0]);
+            setShowControls(true);
+            return;
+          }
+        }
+      }
       if (!switchToNextStream()) {
         ToastAndroid.show(
           'Video could not be played, try again later',
@@ -294,7 +347,16 @@ const Player = ({route}: Props): React.JSX.Element => {
       }
       setShowControls(true);
     },
-    [switchToNextStream, navigation, setShowControls],
+    [
+      activeEpisode?.link,
+      navigation,
+      refetch,
+      selectedStream?.server,
+      setSelectedStream,
+      setShowControls,
+      shouldRefetchStream,
+      switchToNextStream,
+    ],
   );
 
   // Memoized cast effect
