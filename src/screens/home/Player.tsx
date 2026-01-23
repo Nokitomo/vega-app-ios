@@ -70,6 +70,8 @@ const exitFullScreen = () => {
   }
 };
 
+const STREAM_RETRY_COOLDOWN_MS = 3000;
+
 const Player = ({route}: Props): React.JSX.Element => {
   const {primary} = useThemeStore(state => state);
   const {provider} = useContentStore();
@@ -81,7 +83,7 @@ const Player = ({route}: Props): React.JSX.Element => {
   const playerRef: React.RefObject<VideoRef> = useRef(null);
   const hasSetInitialTracksRef = useRef(false);
   const streamRetryRef = useRef({
-    episodeKey: '',
+    retryKey: '',
     count: 0,
     lastAttempt: 0,
   });
@@ -311,14 +313,18 @@ const Player = ({route}: Props): React.JSX.Element => {
       console.log('PlayerError', e);
       if (shouldRefetchStream(e) && activeEpisode?.link) {
         const now = Date.now();
+        const retryKey = `${activeEpisode.link}|${selectedStream?.server || ''}`;
         const retryState = streamRetryRef.current;
-        const sameEpisode = retryState.episodeKey === activeEpisode.link;
-        const retryCount = sameEpisode ? retryState.count : 0;
-        const lastAttempt = sameEpisode ? retryState.lastAttempt : 0;
+        const sameKey = retryState.retryKey === retryKey;
+        const retryCount = sameKey ? retryState.count : 0;
+        const lastAttempt = sameKey ? retryState.lastAttempt : 0;
 
-        if (retryCount < 1 && now - lastAttempt > 2000) {
+        if (
+          retryCount < 1 &&
+          now - lastAttempt > STREAM_RETRY_COOLDOWN_MS
+        ) {
           streamRetryRef.current = {
-            episodeKey: activeEpisode.link,
+            retryKey,
             count: retryCount + 1,
             lastAttempt: now,
           };
