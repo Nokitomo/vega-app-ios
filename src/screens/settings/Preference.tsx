@@ -17,19 +17,15 @@ import {themes} from '../../lib/constants';
 import {TextInput} from 'react-native';
 import Constants from 'expo-constants';
 // Lazy-load Firebase to allow running without google-services.json
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAnalytics = (): any | null => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-firebase/analytics').default;
   } catch {
     return null;
   }
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCrashlytics = (): any | null => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-firebase/crashlytics').default;
   } catch {
     return null;
