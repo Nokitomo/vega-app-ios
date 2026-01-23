@@ -25,7 +25,9 @@ const SubtitlePreference = () => {
   const {primary} = useThemeStore();
 
   const handleSubtitleSize = (action: 'increase' | 'decrease') => {
-    if (fontSize < 5 || fontSize > 30) return;
+    if (fontSize < 5 || fontSize > 30) {
+      return;
+    }
     if (action === 'increase') {
       const newSize = Math.min(fontSize + 1, 30);
       settingsStorage.setSubtitleFontSize(newSize);
@@ -52,7 +54,9 @@ const SubtitlePreference = () => {
   };
 
   const handleSubtitleBottomPadding = (action: 'increase' | 'decrease') => {
-    if (bottomElevation < 0 || bottomElevation > 99) return;
+    if (bottomElevation < 0 || bottomElevation > 99) {
+      return;
+    }
     if (action === 'increase') {
       const newPadding = Math.min(bottomElevation + 1, 99);
       settingsStorage.setSubtitleBottomPadding(newPadding);
