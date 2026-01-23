@@ -1,13 +1,13 @@
 const {withAndroidStyles} = require('@expo/config-plugins');
 
 const withAndroidNativeConfig = config => {
-  return withAndroidStyles(config, config => {
+  return withAndroidStyles(config, modConfig => {
     // Safely access the styles
-    const styles = config.modResults;
+    const styles = modConfig.modResults;
 
     // Ensure we have the basic structure
     if (!styles || !styles.resources) {
-      return config;
+      return modConfig;
     }
 
     // Ensure styles.resources.style exists and is an array
@@ -52,7 +52,7 @@ const withAndroidNativeConfig = config => {
     addTextColorToStyle('AppTheme');
     addTextColorToStyle('ResetEditText');
 
-    return config;
+    return modConfig;
   });
 };
 
