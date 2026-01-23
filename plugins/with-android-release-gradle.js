@@ -59,14 +59,14 @@ if (project.android) {
         // Apply near top of file after existing plugins
         gradleText = gradleText.replace(
           /(apply plugin:[\s\S]*?\n)(?=\n|def|android\s*\{)/,
-          `$1apply from: 'with-release-config.gradle'\n`,
+          '$1apply from: \'with-release-config.gradle\'\n',
         );
       }
 
       if (!gradleText.includes("apply from: 'with-abi-splits.gradle'")) {
         gradleText = gradleText.replace(
           /(apply plugin:[\s\S]*?\n)(?=\n|def|android\s*\{)/,
-          `$1apply from: 'with-abi-splits.gradle'\n`,
+          '$1apply from: \'with-abi-splits.gradle\'\n',
         );
       }
 
