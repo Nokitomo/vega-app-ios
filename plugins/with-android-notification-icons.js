@@ -34,7 +34,9 @@ module.exports = function withAndroidNotificationIcons(config) {
       const copyDir = subdir => {
         const fromDir = path.join(srcRoot, subdir);
         const toDir = path.join(destRes, subdir);
-        if (!fs.existsSync(fromDir)) return;
+        if (!fs.existsSync(fromDir)) {
+          return;
+        }
         fs.mkdirSync(toDir, {recursive: true});
         for (const f of fs.readdirSync(fromDir)) {
           const from = path.join(fromDir, f);
