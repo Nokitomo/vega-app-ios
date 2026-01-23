@@ -84,13 +84,13 @@ const DownloadComponent = ({
     }
     const getServer = async () => {
       setServerLoading(true);
-      const servers = await providerManager.getStream({
+      const streamServers = await providerManager.getStream({
         link,
         type,
         signal: controller.signal,
         providerValue: providerValue || provider.value,
       });
-      const filteredServers = servers;
+      const filteredServers = streamServers;
       // .filter(
       //   server =>
       //     !manifest[
@@ -108,11 +108,14 @@ const DownloadComponent = ({
   }, [downloadModal, longPressModal]);
 
   // on holdPress external downloader
-  const longPressDownload = async (link: string, type?: string) => {
+  const longPressDownload = async (
+    streamLink: string,
+    streamType?: string,
+  ) => {
     try {
       await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-        data: link,
-        type: type || 'video/*',
+        data: streamLink,
+        type: streamType || 'video/*',
       });
     } catch (error) {
       console.log(error);
