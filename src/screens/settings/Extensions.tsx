@@ -251,7 +251,9 @@ const Extensions = ({navigation}: Props) => {
     }
   };
   const renderProviderCard = ({item}: {item: ProviderExtension}) => {
-    if (!item || !item.value) return null;
+    if (!item || !item.value) {
+      return null;
+    }
     const isActive = activeExtensionProvider?.value === item.value;
     const isInstalled = extensionStorage.isProviderInstalled(item.value);
     const isInstalling = installingProvider === item.value;
