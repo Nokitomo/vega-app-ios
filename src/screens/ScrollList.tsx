@@ -100,11 +100,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
 
     const fetchPosts = async () => {
       // Don't fetch if we're already at the end
-      if (isEnd) return;
+        if (isEnd) {
+          return;
+        }
 
       try {
         // Prevent concurrent loading calls
-        if (isLoadingMore.current) return;
+        if (isLoadingMore.current) {
+          return;
+        }
         isLoadingMore.current = true;
 
         setIsLoading(true);
@@ -114,7 +118,9 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         await new Promise(resolve => setTimeout(resolve, 300));
 
         // Skip if component unmounted or request was aborted
-        if (!isMounted.current || signal.aborted) return;
+        if (!isMounted.current || signal.aborted) {
+          return;
+        }
 
         const getNewPosts = route.params.isSearch
           ? providerManager.getSearchPosts({
@@ -146,7 +152,9 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         setPosts(prev => [...prev, ...newPosts]);
       } catch (error) {
         // Skip handling if component unmounted or request was aborted
-        if (!isMounted.current || (error as any)?.name === 'AbortError') return;
+        if (!isMounted.current || (error as any)?.name === 'AbortError') {
+          return;
+        }
         console.error('Error fetching posts:', error);
       } finally {
         if (isMounted.current) {
