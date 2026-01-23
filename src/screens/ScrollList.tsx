@@ -139,7 +139,9 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         const newPosts = await getNewPosts;
 
         // Skip if component unmounted or request was aborted
-        if (!isMounted.current || signal.aborted) return;
+        if (!isMounted.current || signal.aborted) {
+          return;
+        }
 
         if (!newPosts || newPosts.length === 0) {
           console.log('end', page);
