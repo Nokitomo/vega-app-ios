@@ -101,8 +101,8 @@ export const hlsDownloader = async ({
         const currentTime = regex.exec(message as string);
         if (currentTime && currentTime[1]) {
           const currentTimeInSeconds =
-            parseInt(currentTime[1].split(':')[0]) * 3600 +
-            parseInt(currentTime[1].split(':')[1]) * 60 +
+            parseInt(currentTime[1].split(':')[0], 10) * 3600 +
+            parseInt(currentTime[1].split(':')[1], 10) * 60 +
             parseFloat(currentTime[1].split(':')[2]);
           const progress = (currentTimeInSeconds / duration) * 100;
           console.log('Progress: ', currentTimeInSeconds, duration, progress);
