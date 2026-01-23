@@ -14,10 +14,8 @@ import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 // Lazy-load Crashlytics to avoid requiring Firebase when not configured
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCrashlytics = (): any | null => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return require('@react-native-firebase/crashlytics').default;
   } catch {
     return null;
