@@ -1,5 +1,5 @@
 import {useCallback, useRef, useState} from 'react';
-import {cacheStorage, mainStorage} from '../storage';
+import {cacheStorage, mainStorage, watchHistoryStorage} from '../storage';
 
 interface UsePlayerProgressOptions {
   activeEpisode: any;
@@ -98,6 +98,7 @@ export const usePlayerProgress = ({
             historyProgressKey,
             JSON.stringify(progressData),
           );
+          watchHistoryStorage.addProgressKey(historyProgressKey);
 
           // Also store with episodeTitle-specific key for series episodes
           if (activeEpisode?.title) {
@@ -106,6 +107,7 @@ export const usePlayerProgress = ({
               '_',
             )}`;
             mainStorage.setString(episodeKey, JSON.stringify(progressData));
+            watchHistoryStorage.addProgressKey(episodeKey);
           }
         }
       } catch (error) {
