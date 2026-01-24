@@ -1,4 +1,4 @@
-import {mainStorage} from './StorageService';
+import {cacheStorage, mainStorage} from './StorageService';
 
 /**
  * Storage keys for watch history
@@ -142,6 +142,19 @@ export class WatchHistoryStorage {
       remaining.push(key);
     });
     mainStorage.setArray(WatchHistoryKeys.WATCH_HISTORY_PROGRESS_KEYS, remaining);
+  }
+
+  /**
+   * Clear progress data for a content link (base key + cache + tracked keys).
+   */
+  clearProgressForLink(link: string): void {
+    if (!link) {
+      return;
+    }
+    const baseKey = `watch_history_progress_${link}`;
+    mainStorage.delete(baseKey);
+    cacheStorage.delete(link);
+    this.removeProgressKeysForLink(link);
   }
 
   /**
