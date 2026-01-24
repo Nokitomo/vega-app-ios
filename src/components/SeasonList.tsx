@@ -1017,7 +1017,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 </Text>
               ) : (
                 <Text className="text-white/80 text-xs">- Ep. 1</Text>
-              ) : null}
+              )}
             </View>
             <Text className="text-white/80 text-xs">
               {formatResumeTime(resumeProgress?.currentTime ?? 0)}
