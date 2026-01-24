@@ -25,7 +25,7 @@ File: src/lib/services/ProviderManager.ts
 - Esegue i moduli in un contesto isolato (new Function).
 - Espone API per catalogo, ricerca, metadata, stream, episodi.
 - Usa providerContext con axios, cheerio, estrattori e utility.
-- I provider possono fornire piu stream per lo stesso episodio (es. AnimeUnity via VixCloud Server1/Server2).
+- I provider possono fornire piu stream per lo stesso episodio (es. AnimeUnity via VixCloud Server1/Server2 con fallback Download e varianti qualita da master playlist).
 - Nel player, su errori HTTP 403/503, viene fatto un refetch dei link stream per rigenerare i token prima di provare altri server, con cooldown per server e riuso della cache stream su mount.
 
 ## ProviderContext
