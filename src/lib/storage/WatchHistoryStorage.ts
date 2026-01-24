@@ -7,6 +7,7 @@ export enum WatchHistoryKeys {
   WATCH_HISTORY = 'watchHistory',
   SERIES_EPISODES = 'seriesEpisodes',
   WATCH_HISTORY_PROGRESS_KEYS = 'watchHistoryProgressKeys',
+  WATCH_HISTORY_EPISODE_KEYS = 'watchHistoryEpisodeKeys',
 }
 
 /**
@@ -125,6 +126,57 @@ export class WatchHistoryStorage {
   }
 
   /**
+   * Track episode cache keys per content link.
+   */
+  addEpisodeKey(link: string, episodeLink: string): void {
+    if (!link || !episodeLink) {
+      return;
+    }
+    const map =
+      mainStorage.getObject<Record<string, string[]>>(
+        WatchHistoryKeys.WATCH_HISTORY_EPISODE_KEYS,
+      ) || {};
+    const list = map[link] || [];
+    if (!list.includes(episodeLink)) {
+      list.push(episodeLink);
+      map[link] = list;
+      mainStorage.setObject(WatchHistoryKeys.WATCH_HISTORY_EPISODE_KEYS, map);
+    }
+  }
+
+  /**
+   * Return tracked episode cache keys for a content link.
+   */
+  getEpisodeKeys(link: string): string[] {
+    const map =
+      mainStorage.getObject<Record<string, string[]>>(
+        WatchHistoryKeys.WATCH_HISTORY_EPISODE_KEYS,
+      ) || {};
+    return map[link] || [];
+  }
+
+  /**
+   * Remove tracked episode cache keys for a content link.
+   */
+  clearEpisodeKeys(link: string): void {
+    if (!link) {
+      return;
+    }
+    const map =
+      mainStorage.getObject<Record<string, string[]>>(
+        WatchHistoryKeys.WATCH_HISTORY_EPISODE_KEYS,
+      ) || {};
+    const keys = map[link] || [];
+    keys.forEach(key => {
+      cacheStorage.delete(key);
+    });
+    if (link in map) {
+      delete map[link];
+      mainStorage.setObject(WatchHistoryKeys.WATCH_HISTORY_EPISODE_KEYS, map);
+    }
+  }
+
+  /**
    * Remove all progress keys related to a specific content link.
    */
   removeProgressKeysForLink(link: string): void {
@@ -154,6 +206,7 @@ export class WatchHistoryStorage {
     const baseKey = `watch_history_progress_${link}`;
     mainStorage.delete(baseKey);
     cacheStorage.delete(link);
+    this.clearEpisodeKeys(link);
     this.removeProgressKeysForLink(link);
   }
 
