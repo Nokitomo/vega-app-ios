@@ -51,6 +51,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
       'Friday',
       'Saturday',
       'Sunday',
+      'Undetermined',
     ],
     [],
   );
