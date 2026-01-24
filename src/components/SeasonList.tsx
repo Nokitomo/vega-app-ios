@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback} from 'react';
+import React, {useState, useMemo, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -62,6 +62,40 @@ interface StickyMenuState {
   link?: string;
   type?: string;
 }
+
+interface ResumeProgress {
+  currentTime: number;
+  duration?: number;
+  episodeTitle?: string;
+  episodeLink?: string;
+}
+
+const formatResumeTime = (seconds: number) => {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainingSeconds = safeSeconds % 60;
+  const pad = (value: number) => value.toString().padStart(2, '0');
+
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+  }
+
+  return `${pad(minutes)}:${pad(remainingSeconds)}`;
+};
+
+const getEpisodeLabel = (episodeTitle?: string) => {
+  if (!episodeTitle) {
+    return undefined;
+  }
+
+  const match = episodeTitle.match(/\d+/);
+  if (!match) {
+    return undefined;
+  }
+
+  return `Ep. ${match[0]}`;
+};
 
 const SeasonList: React.FC<SeasonListProps> = ({
   LinkList,
@@ -143,6 +177,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const [showServerModal, setShowServerModal] = useState<boolean>(false);
   const [externalPlayerStreams, setExternalPlayerStreams] = useState<any[]>([]);
   const [isLoadingStreams, setIsLoadingStreams] = useState<boolean>(false);
+  const [resumeProgress, setResumeProgress] = useState<ResumeProgress | null>(
+    null,
+  );
 
   // Memoized filtering and sorting logic for episodes
   const filteredAndSortedEpisodes = useMemo(() => {
@@ -235,6 +272,33 @@ const SeasonList: React.FC<SeasonListProps> = ({
     },
     [metaTitle, providerValue],
   );
+
+  useEffect(() => {
+    const progressKey = `watch_history_progress_${routeParams.link}`;
+    const storedProgress = mainStorage.getString(progressKey);
+
+    if (!storedProgress) {
+      setResumeProgress(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(storedProgress);
+      if (parsed?.currentTime > 0) {
+        setResumeProgress({
+          currentTime: parsed.currentTime,
+          duration: parsed.duration,
+          episodeTitle: parsed.episodeTitle,
+          episodeLink: parsed.episodeLink,
+        });
+      } else {
+        setResumeProgress(null);
+      }
+    } catch (error) {
+      console.error('Error parsing resume progress:', error);
+      setResumeProgress(null);
+    }
+  }, [routeParams.link]);
 
   // Memoized external player handler
   const handleExternalPlayer = useCallback(
@@ -412,6 +476,63 @@ const SeasonList: React.FC<SeasonListProps> = ({
       handleExternalPlayer(stickyMenu.link, stickyMenu.type);
     }
   }, [stickyMenu.link, stickyMenu.type, handleExternalPlayer]);
+
+  const handleResume = useCallback(() => {
+    if (!resumeProgress) {
+      return;
+    }
+
+    const resumeList =
+      filteredAndSortedEpisodes.length > 0
+        ? filteredAndSortedEpisodes
+        : filteredAndSortedDirectLinks;
+
+    if (!resumeList || resumeList.length === 0) {
+      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      return;
+    }
+
+    let resumeIndex = -1;
+
+    if (resumeProgress.episodeLink) {
+      resumeIndex = resumeList.findIndex(
+        item => item.link === resumeProgress.episodeLink,
+      );
+    }
+
+    if (resumeIndex < 0 && resumeProgress.episodeTitle) {
+      const normalizedTitle = resumeProgress.episodeTitle
+        .trim()
+        .toLowerCase();
+      resumeIndex = resumeList.findIndex(
+        item => item.title?.trim().toLowerCase() === normalizedTitle,
+      );
+    }
+
+    if (resumeIndex < 0) {
+      ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+      return;
+    }
+
+    const resumeItem = resumeList[resumeIndex];
+
+    playHandler({
+      linkIndex: resumeIndex,
+      type: type,
+      primaryTitle: metaTitle,
+      secondaryTitle: resumeItem.title,
+      seasonTitle: activeSeason?.title || '',
+      episodeData: resumeList,
+    });
+  }, [
+    resumeProgress,
+    filteredAndSortedEpisodes,
+    filteredAndSortedDirectLinks,
+    playHandler,
+    type,
+    metaTitle,
+    activeSeason?.title,
+  ]);
 
   // Memoized episode render item
   const renderEpisodeItem = useCallback(
@@ -740,6 +861,31 @@ const SeasonList: React.FC<SeasonListProps> = ({
           </TouchableOpacity>
         </View>
       )}
+
+      {resumeProgress?.currentTime ? (
+        <View className="mt-3 mb-2">
+          <TouchableOpacity
+            onPress={handleResume}
+            className="bg-tertiary/60 rounded-md px-3 py-2 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <MaterialCommunityIcons
+                name="play-circle"
+                size={20}
+                color={primary}
+              />
+              <Text className="text-white font-semibold">Riprendi</Text>
+              {getEpisodeLabel(resumeProgress.episodeTitle) ? (
+                <Text className="text-white/80 text-xs">
+                  {`- ${getEpisodeLabel(resumeProgress.episodeTitle)}`}
+                </Text>
+              ) : null}
+            </View>
+            <Text className="text-white/80 text-xs">
+              {formatResumeTime(resumeProgress.currentTime)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {/* Episode/Direct Links List */}
       <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
