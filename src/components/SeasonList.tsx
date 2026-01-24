@@ -1009,7 +1009,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 size={20}
                 color={primary}
               />
-              <Text className="text-white font-semibold">Riprendi</Text>
+              <Text className="text-white font-semibold">
+                {resumeProgress?.currentTime ? 'Riprendi' : 'Riproduci'}
+              </Text>
               {resumeProgress?.episodeTitle &&
               getEpisodeLabel(resumeProgress.episodeTitle) ? (
                 <Text className="text-white/80 text-xs">
