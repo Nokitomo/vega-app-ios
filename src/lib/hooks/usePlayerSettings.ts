@@ -109,6 +109,9 @@ export const usePlayerProgress = ({
             mainStorage.setString(episodeKey, JSON.stringify(progressData));
             watchHistoryStorage.addProgressKey(episodeKey);
           }
+          if (activeEpisode?.link) {
+            watchHistoryStorage.addEpisodeKey(historyKey, activeEpisode.link);
+          }
         }
       } catch (error) {
         console.error('Error storing watch progress for history:', error);
