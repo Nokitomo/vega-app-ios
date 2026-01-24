@@ -6,6 +6,7 @@ import {mainStorage} from './StorageService';
 export enum WatchHistoryKeys {
   WATCH_HISTORY = 'watchHistory',
   SERIES_EPISODES = 'seriesEpisodes',
+  WATCH_HISTORY_PROGRESS_KEYS = 'watchHistoryProgressKeys',
 }
 
 /**
@@ -95,6 +96,63 @@ export class WatchHistoryStorage {
    */
   clearWatchHistory(): void {
     mainStorage.setArray(WatchHistoryKeys.WATCH_HISTORY, []);
+  }
+
+  /**
+   * Track progress keys for cleanup.
+   */
+  addProgressKey(key: string): void {
+    if (!key) {
+      return;
+    }
+    const keys = this.getProgressKeys();
+    if (keys.includes(key)) {
+      return;
+    }
+    keys.push(key);
+    mainStorage.setArray(WatchHistoryKeys.WATCH_HISTORY_PROGRESS_KEYS, keys);
+  }
+
+  /**
+   * Return all tracked progress keys.
+   */
+  getProgressKeys(): string[] {
+    return (
+      mainStorage.getArray<string>(
+        WatchHistoryKeys.WATCH_HISTORY_PROGRESS_KEYS,
+      ) || []
+    );
+  }
+
+  /**
+   * Remove all progress keys related to a specific content link.
+   */
+  removeProgressKeysForLink(link: string): void {
+    if (!link) {
+      return;
+    }
+    const prefix = `watch_history_progress_${link}`;
+    const keys = this.getProgressKeys();
+    const remaining: string[] = [];
+    keys.forEach(key => {
+      if (key.startsWith(prefix)) {
+        mainStorage.delete(key);
+        return;
+      }
+      remaining.push(key);
+    });
+    mainStorage.setArray(WatchHistoryKeys.WATCH_HISTORY_PROGRESS_KEYS, remaining);
+  }
+
+  /**
+   * Clear all tracked progress keys.
+   */
+  clearProgressKeys(): void {
+    const keys = this.getProgressKeys();
+    keys.forEach(key => {
+      mainStorage.delete(key);
+    });
+    mainStorage.setArray(WatchHistoryKeys.WATCH_HISTORY_PROGRESS_KEYS, []);
   }
 
   /**
