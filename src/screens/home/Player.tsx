@@ -437,19 +437,19 @@ const Player = ({route}: Props): React.JSX.Element => {
   // Add to watch history
   useEffect(() => {
     if (route.params?.primaryTitle) {
-      addItem({
-        id: route.params.infoUrl || activeEpisode.link,
-        title: route.params.primaryTitle,
-        poster:
-          route.params.poster?.poster || route.params.poster?.background || '',
-        link: route.params.infoUrl || '',
-        provider: route.params?.providerValue || provider.value,
-        lastPlayed: Date.now(),
-        duration: 0,
-        currentTime: 0,
-        playbackRate: 1,
-        episodeTitle: route.params?.secondaryTitle,
-      });
+        addItem({
+          id: route.params.infoUrl || activeEpisode.link,
+          title: route.params.primaryTitle,
+          poster:
+            route.params.poster?.poster || route.params.poster?.background || '',
+          link: route.params.infoUrl || '',
+          provider: route.params?.providerValue || provider.value,
+          lastPlayed: Date.now(),
+          duration: 0,
+          currentTime: 0,
+          playbackRate: 1,
+          episodeTitle: activeEpisode?.title,
+        });
 
       updateItemWithInfo(
         route.params.episodeList[route.params.linkIndex].link,
