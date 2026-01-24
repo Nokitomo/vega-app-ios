@@ -34,6 +34,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Salva e consulta elementi preferiti e gia visti.
 - La sezione Continue Watching mostra il badge episodio quando disponibile.
 - La pulizia della cronologia rimuove anche i progressi salvati.
+- La rimozione di un titolo dalla cronologia azzera anche i progressi episodio.
 
 6) Download
 - Download locale con stato e gestione file.
