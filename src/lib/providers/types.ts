@@ -17,6 +17,7 @@ export interface Post {
   provider?: string;
   day?: string;
   episodeLabel?: string;
+  episodeId?: string | number;
 }
 
 export declare enum TextTrackType {
