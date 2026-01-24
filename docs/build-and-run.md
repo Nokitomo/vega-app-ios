@@ -17,8 +17,9 @@ npx expo start -c --dev-client --scheme com.vega --port 8081
 
 ## Avvio Android (dev client)
 ```
-npx expo run:android --device "Medium_Phone_API_35"
+npx expo run:android --device "Medium_phone_API_35"
 ```
+Nota: non usare l'emulatore Pixel_6_Pro_API_35.
 
 ## Prebuild (rigenera android/ios)
 ```

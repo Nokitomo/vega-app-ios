@@ -17,7 +17,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 2) Ricerca
 - Ricerca per titolo o filtro.
 - Risultati raggruppati per provider.
-- I risultati della ricerca globale sono cache in sessione per evitare ricariche.
+- La ricerca globale usa cache LRU (max 10 query): resta valida mentre la tab Search e attiva, poi scade dopo 10 minuti dall'uscita.
 
 3) Dettaglio contenuto (Info)
 - Metadati, poster, trama e accesso alle sorgenti/episodi.
