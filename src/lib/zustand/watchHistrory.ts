@@ -80,6 +80,7 @@ const useWatchHistoryStore = create<History>(set => ({
 
   removeItem: item => {
     watchHistoryStorage.removeFromWatchHistory(item.link);
+    watchHistoryStorage.removeProgressKeysForLink(item.link);
     set({
       history: convertStorageToZustand(watchHistoryStorage.getWatchHistory()),
     });
@@ -87,6 +88,7 @@ const useWatchHistoryStore = create<History>(set => ({
 
   clearHistory: () => {
     watchHistoryStorage.clearWatchHistory();
+    watchHistoryStorage.clearProgressKeys();
     set({history: []});
   },
 
