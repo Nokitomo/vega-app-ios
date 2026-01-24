@@ -24,7 +24,12 @@ import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {EpisodeLink, Link} from '../lib/providers/types';
 import {RootStackParamList} from '../App';
 import Downloader from './Downloader';
-import {cacheStorage, mainStorage, settingsStorage} from '../lib/storage';
+import {
+  cacheStorage,
+  mainStorage,
+  settingsStorage,
+  watchHistoryStorage,
+} from '../lib/storage';
 import {ifExists} from '../lib/file/ifExists';
 import {useEpisodes, useStreamData} from '../lib/hooks/useEpisodes';
 import useWatchHistoryStore from '../lib/zustand/watchHistrory';
@@ -334,6 +339,19 @@ const SeasonList: React.FC<SeasonListProps> = ({
     const progressKey = `watch_history_progress_${routeParams.link}`;
     const storedProgress = mainStorage.getString(progressKey);
     let nextResume: ResumeProgress | null = null;
+    const hasHistory = watchHistoryStorage
+      .getWatchHistory()
+      .some(item => item.link === routeParams.link);
+
+    if (!hasHistory) {
+      setResumeProgress(prev =>
+        areResumeProgressEqual(prev, null) ? prev : null,
+      );
+      setEpisodeProgressMap(prev =>
+        areProgressMapsEqual(prev, {}) ? prev : {},
+      );
+      return;
+    }
 
     if (!storedProgress) {
       nextResume = null;
