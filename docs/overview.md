@@ -23,6 +23,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Metadati, poster, trama e accesso alle sorgenti/episodi.
 - Supporta vista Episodi e vista Correlati.
 - Include controlli di chiusura e ritorno al contenuto precedente.
+- Se disponibile la riproduzione salvata, mostra il pulsante "Riprendi" con minutaggio e episodio.
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
