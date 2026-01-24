@@ -12,7 +12,7 @@ import {
   TextInput,
 } from 'react-native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
@@ -180,6 +180,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const [resumeProgress, setResumeProgress] = useState<ResumeProgress | null>(
     null,
   );
+  const [episodeProgressMap, setEpisodeProgressMap] = useState<
+    Record<string, number>
+  >({});
 
   // Memoized filtering and sorting logic for episodes
   const filteredAndSortedEpisodes = useMemo(() => {
@@ -273,32 +276,85 @@ const SeasonList: React.FC<SeasonListProps> = ({
     [metaTitle, providerValue],
   );
 
-  useEffect(() => {
+  const getProgressPercent = useCallback((link: string) => {
+    if (!link) {
+      return 0;
+    }
+
+    try {
+      const cachedProgress = cacheStorage.getString(link);
+      if (!cachedProgress) {
+        return 0;
+      }
+
+      const parsed = JSON.parse(cachedProgress);
+      if (!parsed?.position || !parsed?.duration) {
+        return 0;
+      }
+
+      const percentage = (parsed.position / parsed.duration) * 100;
+      return Math.min(Math.max(percentage, 0), 100);
+    } catch (error) {
+      console.error('Error reading episode progress:', error);
+      return 0;
+    }
+  }, []);
+
+  const refreshProgressData = useCallback(() => {
     const progressKey = `watch_history_progress_${routeParams.link}`;
     const storedProgress = mainStorage.getString(progressKey);
 
     if (!storedProgress) {
       setResumeProgress(null);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(storedProgress);
-      if (parsed?.currentTime > 0) {
-        setResumeProgress({
-          currentTime: parsed.currentTime,
-          duration: parsed.duration,
-          episodeTitle: parsed.episodeTitle,
-          episodeLink: parsed.episodeLink,
-        });
-      } else {
+    } else {
+      try {
+        const parsed = JSON.parse(storedProgress);
+        if (parsed?.currentTime > 0) {
+          setResumeProgress({
+            currentTime: parsed.currentTime,
+            duration: parsed.duration,
+            episodeTitle: parsed.episodeTitle,
+            episodeLink: parsed.episodeLink,
+          });
+        } else {
+          setResumeProgress(null);
+        }
+      } catch (error) {
+        console.error('Error parsing resume progress:', error);
         setResumeProgress(null);
       }
-    } catch (error) {
-      console.error('Error parsing resume progress:', error);
-      setResumeProgress(null);
     }
-  }, [routeParams.link]);
+
+    const progressMap: Record<string, number> = {};
+    const allEpisodes = Array.isArray(episodeList) ? episodeList : [];
+    const allDirectLinks = Array.isArray(activeSeason?.directLinks)
+      ? activeSeason?.directLinks
+      : [];
+
+    [...allEpisodes, ...allDirectLinks].forEach(item => {
+      if (!item?.link) {
+        return;
+      }
+
+      const percentage = getProgressPercent(item.link);
+      if (percentage > 0) {
+        progressMap[item.link] = percentage;
+      }
+    });
+
+    setEpisodeProgressMap(progressMap);
+  }, [routeParams.link, episodeList, activeSeason?.directLinks, getProgressPercent]);
+
+  useEffect(() => {
+    refreshProgressData();
+  }, [refreshProgressData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProgressData();
+      return () => {};
+    }, [refreshProgressData]),
+  );
 
   // Memoized external player handler
   const handleExternalPlayer = useCallback(
@@ -572,6 +628,22 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   ? item.title.slice(0, 30) + '...'
                   : item.title}
               </Text>
+              {episodeProgressMap[item.link] ? (
+                <View
+                  className="absolute bottom-0 left-0 right-0 h-1"
+                  style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      height: '100%',
+                      width: `${episodeProgressMap[item.link]}%`,
+                      backgroundColor: primary,
+                    }}
+                  />
+                </View>
+              ) : null}
             </TouchableOpacity>
             <Downloader
               providerValue={providerValue}
@@ -649,6 +721,22 @@ const SeasonList: React.FC<SeasonListProps> = ({
                     : item.title
                   : 'Play'}
               </Text>
+              {episodeProgressMap[item.link] ? (
+                <View
+                  className="absolute bottom-0 left-0 right-0 h-1"
+                  style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      height: '100%',
+                      width: `${episodeProgressMap[item.link]}%`,
+                      backgroundColor: primary,
+                    }}
+                  />
+                </View>
+              ) : null}
             </TouchableOpacity>
             <Downloader
               providerValue={providerValue}
