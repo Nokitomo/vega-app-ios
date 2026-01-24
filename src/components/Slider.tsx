@@ -147,7 +147,9 @@ export default function Slider({
               </View>
             ) : null
           }
-          keyExtractor={item => item.link}
+          keyExtractor={(item, index) =>
+            `${item.link}-${item.episodeId ?? item.episodeLabel ?? index}`
+          }
         />
       )}
     </Pressable>
