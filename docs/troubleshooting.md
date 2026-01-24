@@ -24,8 +24,9 @@ il problema e quasi sempre la New Architecture.
 ```
 adb uninstall com.vega
 npx expo prebuild -p android --clean
-npx expo run:android --device "Medium_Phone_API_35"
+npx expo run:android --device "Medium_phone_API_35"
 ```
+Nota: non usare l'emulatore Pixel_6_Pro_API_35.
 Questo riallinea binario nativo e bundle JS.
 
 ## Errore Crashlytics: Default FirebaseApp not initialized
@@ -33,11 +34,10 @@ Se mancano google-services.json o GoogleService-Info.plist, Crashlytics logga un
 - E' previsto: i plugin Firebase sono condizionati dalla presenza dei file.
 - Il log non dovrebbe bloccare l'app.
 
-## NativeWind / Tailwind
-Errore: "Use process(css).then(cb) to work with async plugins"
-- Fix applicato via patch-package: patches/nativewind+2.0.11.patch
+## React Native FS / Patch-package
+- Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.
 
 ## Expo Go in offline mode
 Se Expo segnala che Expo Go non e installato in offline mode:
-- Usa un dev client (`expo run:android`) oppure installa Expo Go.
+- Usa un dev client (`expo run:android`); Expo Go non e supportato per funzionalita native.
