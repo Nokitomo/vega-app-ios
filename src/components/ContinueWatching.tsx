@@ -23,6 +23,9 @@ const ContinueWatching = () => {
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
   const {history, removeItem} = useWatchHistoryStore(state => state);
   const [progressData, setProgressData] = useState<Record<string, number>>({});
+  const [episodeTitleData, setEpisodeTitleData] = useState<
+    Record<string, string>
+  >({});
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
   const getEpisodeLabel = (episodeTitle?: string) => {
@@ -56,6 +59,7 @@ const ContinueWatching = () => {
   useEffect(() => {
     const loadProgressData = () => {
       const progressMap: Record<string, number> = {};
+      const episodeTitleMap: Record<string, string> = {};
 
       recentItems.forEach(item => {
         try {
@@ -75,6 +79,10 @@ const ContinueWatching = () => {
               const percentage = (parsed.currentTime / parsed.duration) * 100;
               progressMap[item.link] = Math.min(Math.max(percentage, 0), 100);
             }
+
+            if (parsed.episodeTitle) {
+              episodeTitleMap[item.link] = parsed.episodeTitle;
+            }
           } else if (item.currentTime && item.duration) {
             const percentage = (item.currentTime / item.duration) * 100;
             progressMap[item.link] = Math.min(Math.max(percentage, 0), 100);
@@ -85,6 +93,7 @@ const ContinueWatching = () => {
       });
 
       setProgressData(progressMap);
+      setEpisodeTitleData(episodeTitleMap);
     };
 
     loadProgressData();
@@ -212,7 +221,9 @@ const ContinueWatching = () => {
         renderItem={({item}) => {
           const progress = progressData[item.link] || 0;
           const isSelected = selectedItems.has(item.link);
-          const episodeLabel = getEpisodeLabel(item.episodeTitle);
+          const episodeLabel = getEpisodeLabel(
+            episodeTitleData[item.link] || item.episodeTitle,
+          );
 
           return (
             <TouchableOpacity
