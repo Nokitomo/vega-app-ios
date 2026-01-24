@@ -84,6 +84,36 @@ const formatResumeTime = (seconds: number) => {
   return `${pad(minutes)}:${pad(remainingSeconds)}`;
 };
 
+const areResumeProgressEqual = (
+  left: ResumeProgress | null,
+  right: ResumeProgress | null,
+) => {
+  if (!left && !right) {
+    return true;
+  }
+  if (!left || !right) {
+    return false;
+  }
+  return (
+    left.currentTime === right.currentTime &&
+    left.duration === right.duration &&
+    left.episodeTitle === right.episodeTitle &&
+    left.episodeLink === right.episodeLink
+  );
+};
+
+const areProgressMapsEqual = (
+  left: Record<string, number>,
+  right: Record<string, number>,
+) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+  return leftKeys.every(key => left[key] === right[key]);
+};
+
 const getEpisodeLabel = (episodeTitle?: string) => {
   if (!episodeTitle) {
     return undefined;
@@ -303,27 +333,32 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const refreshProgressData = useCallback(() => {
     const progressKey = `watch_history_progress_${routeParams.link}`;
     const storedProgress = mainStorage.getString(progressKey);
+    let nextResume: ResumeProgress | null = null;
 
     if (!storedProgress) {
-      setResumeProgress(null);
+      nextResume = null;
     } else {
       try {
         const parsed = JSON.parse(storedProgress);
         if (parsed?.currentTime > 0) {
-          setResumeProgress({
+          nextResume = {
             currentTime: parsed.currentTime,
             duration: parsed.duration,
             episodeTitle: parsed.episodeTitle,
             episodeLink: parsed.episodeLink,
-          });
+          };
         } else {
-          setResumeProgress(null);
+          nextResume = null;
         }
       } catch (error) {
         console.error('Error parsing resume progress:', error);
-        setResumeProgress(null);
+        nextResume = null;
       }
     }
+
+    setResumeProgress(prev =>
+      areResumeProgressEqual(prev, nextResume) ? prev : nextResume,
+    );
 
     const progressMap: Record<string, number> = {};
     const allEpisodes = Array.isArray(episodeList) ? episodeList : [];
@@ -342,7 +377,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
       }
     });
 
-    setEpisodeProgressMap(progressMap);
+    setEpisodeProgressMap(prev =>
+      areProgressMapsEqual(prev, progressMap) ? prev : progressMap,
+    );
   }, [routeParams.link, episodeList, activeSeason?.directLinks, getProgressPercent]);
 
   useEffect(() => {
@@ -534,10 +571,6 @@ const SeasonList: React.FC<SeasonListProps> = ({
   }, [stickyMenu.link, stickyMenu.type, handleExternalPlayer]);
 
   const handleResume = useCallback(() => {
-    if (!resumeProgress) {
-      return;
-    }
-
     const resumeList =
       filteredAndSortedEpisodes.length > 0
         ? filteredAndSortedEpisodes
@@ -545,6 +578,19 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     if (!resumeList || resumeList.length === 0) {
       ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      return;
+    }
+
+    if (!resumeProgress) {
+      const resumeItem = resumeList[0];
+      playHandler({
+        linkIndex: 0,
+        type: type,
+        primaryTitle: metaTitle,
+        secondaryTitle: resumeItem.title,
+        seasonTitle: activeSeason?.title || '',
+        episodeData: resumeList,
+      });
       return;
     }
 
@@ -950,7 +996,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
         </View>
       )}
 
-      {resumeProgress?.currentTime ? (
+      {(resumeProgress?.currentTime != null ||
+        filteredAndSortedEpisodes.length > 0 ||
+        filteredAndSortedDirectLinks.length > 0) ? (
         <View className="mt-3 mb-2">
           <TouchableOpacity
             onPress={handleResume}
@@ -962,14 +1010,17 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 color={primary}
               />
               <Text className="text-white font-semibold">Riprendi</Text>
-              {getEpisodeLabel(resumeProgress.episodeTitle) ? (
+              {resumeProgress?.episodeTitle &&
+              getEpisodeLabel(resumeProgress.episodeTitle) ? (
                 <Text className="text-white/80 text-xs">
                   {`- ${getEpisodeLabel(resumeProgress.episodeTitle)}`}
                 </Text>
+              ) : (
+                <Text className="text-white/80 text-xs">- Ep. 1</Text>
               ) : null}
             </View>
             <Text className="text-white/80 text-xs">
-              {formatResumeTime(resumeProgress.currentTime)}
+              {formatResumeTime(resumeProgress?.currentTime ?? 0)}
             </Text>
           </TouchableOpacity>
         </View>
