@@ -14,6 +14,7 @@ npm install
 ```
 npx expo start -c --dev-client --scheme com.vega --port 8081
 ```
+Nota: serve il dev client; non usare Expo Go per funzioni native.
 
 ## Avvio Android (dev client)
 ```
