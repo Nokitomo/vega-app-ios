@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {
   View,
   Text,
@@ -36,6 +36,18 @@ import RenderProviderFlagIcon from '../../components/RenderProviderFLagIcon';
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Extensions'>;
 
 type TabType = 'installed' | 'available';
+
+const dedupeProviders = (providers: ProviderExtension[]) => {
+  const seen = new Set<string>();
+  return providers.filter(provider => {
+    const value = provider?.value;
+    if (!value || seen.has(value)) {
+      return false;
+    }
+    seen.add(value);
+    return true;
+  });
+};
 
 const Extensions = ({navigation}: Props) => {
   const {primary} = useThemeStore(state => state);
@@ -77,8 +89,12 @@ const Extensions = ({navigation}: Props) => {
     initializeExtensions();
   }, []);
   const loadProviders = () => {
-    const installed = extensionStorage.getInstalledProviders() || [];
-    const available = extensionStorage.getAvailableProviders() || [];
+    const installed = dedupeProviders(
+      extensionStorage.getInstalledProviders() || [],
+    );
+    const available = dedupeProviders(
+      extensionStorage.getAvailableProviders() || [],
+    );
     setInstalledProviders(installed);
     setAvailableProviders(available.filter(item => item && !item.disabled));
   };
@@ -233,10 +249,11 @@ const Extensions = ({navigation}: Props) => {
     setRefreshing(true);
     try {
       const providers = await extensionManager.fetchManifest(true);
+      const dedupedProviders = dedupeProviders(providers || []);
 
       // Update available providers in storage and state
-      extensionStorage.setAvailableProviders(providers);
-      setAvailableProviders(providers);
+      extensionStorage.setAvailableProviders(dedupedProviders);
+      setAvailableProviders(dedupedProviders);
 
       loadProviders();
       await checkForUpdates();
@@ -375,10 +392,11 @@ const Extensions = ({navigation}: Props) => {
       </View>
     );
   };
-  const currentData =
-    activeTab === 'installed'
-      ? (installedProviders || []).filter(item => item && item.value)
-      : (availableProviders || []).filter(item => item && item.value);
+  const currentData = useMemo(() => {
+    const source =
+      activeTab === 'installed' ? installedProviders : availableProviders;
+    return dedupeProviders((source || []).filter(item => item && item.value));
+  }, [activeTab, installedProviders, availableProviders]);
 
   return (
     <View className="flex-1 bg-black pt-10 pb-16">
@@ -428,7 +446,9 @@ const Extensions = ({navigation}: Props) => {
       {/* Provider list */}
       <FlatList
         data={currentData}
-        keyExtractor={(item, index) => item?.value || `provider-${index}`}
+        keyExtractor={(item, index) =>
+          item?.value ? `${activeTab}-${item.value}` : `provider-${index}`
+        }
         renderItem={renderProviderCard}
         className="flex-1 mt-4"
         refreshControl={
