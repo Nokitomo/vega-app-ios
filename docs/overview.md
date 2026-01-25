@@ -17,6 +17,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 2) Ricerca
 - Ricerca per titolo o filtro.
+- La schermata Search usa OMDb per suggerimenti rapidi e salva la cronologia locale.
 - Risultati raggruppati per provider.
 - La ricerca globale usa cache LRU (max 10 query): resta valida mentre la tab Search e attiva, poi scade dopo 10 minuti dall'uscita.
 
@@ -30,6 +31,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
+- Su Android e disponibile l'apertura in player esterno (es. VLC).
 - L'app resta in verticale fuori dal player; il player blocca l'orizzontale.
 
 5) Watchlist e Cronologia
