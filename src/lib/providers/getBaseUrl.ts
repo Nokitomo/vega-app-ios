@@ -52,10 +52,12 @@ export const getBaseUrl = async (providerValue: string) => {
       const pastebinUrl = await getPastebinBaseUrl(providerValue);
       if (pastebinUrl) {
         baseUrl = pastebinUrl;
+        console.log(`[baseUrl] pastebin ${providerValue}`);
         cacheStorageService.setString(cacheKey, baseUrl);
         cacheStorageService.setObject(timeKey, Date.now());
       } else {
         if (PASTEBIN_PROVIDERS[providerValue]) {
+          console.log(`[baseUrl] pastebin missing ${providerValue}`);
           return '';
         }
         const baseUrlRes = await fetch(
