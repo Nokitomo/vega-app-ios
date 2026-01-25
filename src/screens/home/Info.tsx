@@ -557,10 +557,19 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       )}
                     </Text>
                   </Skeleton>
-                  {info?.studio ? (
-                    <Text className="text-gray-400 text-xs mt-2">
-                      Studio: {info.studio}
-                    </Text>
+                  {info?.studio || (info?.genres && info.genres.length > 0) ? (
+                    <View className="mt-2">
+                      {info?.studio ? (
+                        <Text className="text-gray-400 text-xs">
+                          Studio: {info.studio}
+                        </Text>
+                      ) : null}
+                      {info?.genres && info.genres.length > 0 ? (
+                        <Text className="text-gray-400 text-xs mt-1">
+                          Generi: {info.genres.join(' · ')}
+                        </Text>
+                      ) : null}
+                    </View>
                   ) : null}
                   {/* cast */}
                 </View>
