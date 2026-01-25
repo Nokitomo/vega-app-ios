@@ -47,6 +47,7 @@ export const getBaseUrl = async (providerValue: string) => {
 
     if (cachedUrl && cachedTime && Date.now() - cachedTime < expireTime) {
       baseUrl = cachedUrl;
+      console.log(`[baseUrl] cache ${providerValue} -> ${baseUrl}`);
     } else {
       const pastebinUrl = await getPastebinBaseUrl(providerValue);
       if (pastebinUrl) {
