@@ -45,7 +45,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - I provider sono moduli JS remoti che forniscono catalogo, metadata e stream.
 - Il sistema supporta aggiornamenti automatici e installazione/rimozione.
 - Per AnimeUnity, se un'immagine fallisce il caricamento in lista, viene cercato il poster dai metadata.
-- Alcuni provider (es. AnimeUnity) usano una lista Pastebin per risolvere il base URL, con fallback hardcoded.
+- Alcuni provider (es. AnimeUnity) usano una lista Pastebin per risolvere il base URL; i fallback restano nel provider.
 
 ## Persistenza dati
 - Impostazioni utente, watchlist, cronologia e download vengono salvati in storage locale MMKV.
