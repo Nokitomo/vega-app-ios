@@ -4,9 +4,9 @@
 File: app.config.js
 - newArchEnabled: false (disabilitato per stabilita).
 - android.package: com.vega
-- plugins: bootsplash, edge-to-edge, react-native-video, build-properties.
-- firebase: i plugin @react-native-firebase/* vengono aggiunti solo se esistono google-services.json o GoogleService-Info.plist.
-- permissions Android e intentFilters.
+- plugins: custom Android (android-native-config, with-android-notification-icons, with-android-release-gradle, with-android-signing, with-android-okhttp), react-native-video, react-native-edge-to-edge, react-native-bootsplash, expo-build-properties.
+- firebase: @react-native-firebase/app e crashlytics sono opzionali e si attivano solo se esistono google-services.json o GoogleService-Info.plist. Analytics non e incluso.
+- android: minSdkVersion 24, edgeToEdgeEnabled true, supportsPictureInPicture true, launchMode singleTask, queries per http/https/vlc.
 
 ## Metro
 File: metro.config.js
