@@ -20,6 +20,8 @@ Per ogni provider vengono scaricati file JS:
 - catalog.js (obbligatorio)
 - episodes.js (opzionale)
 
+Nota: per AnimeUnity, il campo `filter` del catalogo puo includere query params per pilotare i filtri del sito (es. `top?status=In%20Corso&order=most_viewed` oppure `archive?type=TV&order=Valutazione`).
+
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
 - Esegue i moduli in un contesto isolato (new Function).
