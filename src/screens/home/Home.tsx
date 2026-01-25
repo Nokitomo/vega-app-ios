@@ -34,6 +34,7 @@ const Home = ({}: Props) => {
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const drawer = useRef<DrawerLayout>(null);
   const [isDrawerOpen] = useState(false);
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   // Memoize static values
   const disableDrawer = useMemo(
@@ -115,6 +116,8 @@ const Home = ({}: Props) => {
       await refetch();
     } catch (refreshError) {
       console.error('Error refreshing home data:', refreshError);
+    } finally {
+      setRefreshNonce(value => value + 1);
     }
   }, [refetch]);
 
@@ -139,16 +142,16 @@ const Home = ({}: Props) => {
 
   // Memoized content sliders
   const contentSliders = useMemo(() => {
-    return homeData.map((item, index) => (
+    return homeData.map(item => (
       <Slider
         isLoading={false}
-        key={`content-${item.filter}-${index}`}
+        key={`content-${item.filter}-${item.Posts.length}-${refreshNonce}`}
         title={item.title}
         posts={item.Posts}
         filter={item.filter}
       />
     ));
-  }, [homeData]);
+  }, [homeData, refreshNonce]);
 
   const scrollKey = useMemo(() => {
     return `${provider?.value ?? 'none'}:${homeData.length}:${isLoading}`;
