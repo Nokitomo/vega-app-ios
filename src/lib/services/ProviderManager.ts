@@ -54,7 +54,6 @@ export class ProviderManager {
       ...Array.from({length: args.length}, (_, i) => `arg${i}`),
       `
       const exports = context.exports;
-      const module = { exports };
       const __awaiter = context.__awaiter;
       const Object = context.Object;
       const console = context.console;
@@ -62,7 +61,7 @@ export class ProviderManager {
       
       ${moduleCode}
       
-      return module.exports;
+      return exports;
       `,
     );
     return executeModule(context, ...args);
