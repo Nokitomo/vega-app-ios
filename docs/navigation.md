@@ -25,7 +25,6 @@
 - ScrollList
 - Info
 - SearchResults (param: filter, availableProviders?)
-- Webview
 
 ## WatchListStack
 - WatchList
@@ -35,6 +34,7 @@
 - WatchHistory
 - Info
 - SeriesEpisodes (param: series, episodes, thumbnails)
+Nota: lo stack WatchHistory e raggiungibile da Settings.
 
 ## SettingsStack
 - Settings
