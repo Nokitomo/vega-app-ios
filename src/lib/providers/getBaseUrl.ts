@@ -11,27 +11,53 @@ const getPastebinBaseUrl = async (
 ): Promise<string | null> => {
   const config = PASTEBIN_PROVIDERS[providerValue];
   if (!config) {
+    console.log(`[baseUrl] pastebin skip (no config) ${providerValue}`);
     return null;
   }
+  console.log(`[baseUrl] pastebin fetch start ${providerValue}`);
   try {
     const res = await fetch(PASTEBIN_URL);
+    console.log(
+      `[baseUrl] pastebin response ${providerValue} status=${res.status}`,
+    );
     const text = await res.text();
+    const preview = text.slice(0, 200).replace(/\s+/g, ' ').trim();
+    console.log(
+      `[baseUrl] pastebin body preview ${providerValue}: ${preview}`,
+    );
     const lines = text
       .split(/\r?\n/)
       .map(line => line.trim())
       .filter(Boolean);
+    console.log(
+      `[baseUrl] pastebin lines ${providerValue}: ${lines.length}`,
+    );
     for (const line of lines) {
       try {
+        console.log(`[baseUrl] pastebin line ${providerValue}: ${line}`);
         const host = new URL(line).hostname;
+        console.log(
+          `[baseUrl] pastebin host ${providerValue}: ${host}`,
+        );
         if (config.match.test(host)) {
+          console.log(
+            `[baseUrl] pastebin match ${providerValue}: ${line}`,
+          );
           return normalizeBaseUrl(line);
         }
       } catch {
+        console.log(
+          `[baseUrl] pastebin parse error ${providerValue}: invalid url`,
+        );
         continue;
       }
     }
+    console.log(`[baseUrl] pastebin no match ${providerValue}`);
     return null;
-  } catch {
+  } catch (error) {
+    console.log(
+      `[baseUrl] pastebin fetch error ${providerValue}: ${String(error)}`,
+    );
     return null;
   }
 };
