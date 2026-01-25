@@ -1,7 +1,40 @@
 import {cacheStorageService} from '../storage';
+import {PASTEBIN_PROVIDERS, PASTEBIN_URL} from './baseUrlRegistry';
 
 // 1 hour
 const expireTime = 60 * 60 * 1000;
+
+const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, '');
+
+const getPastebinBaseUrl = async (
+  providerValue: string,
+): Promise<string | null> => {
+  const config = PASTEBIN_PROVIDERS[providerValue];
+  if (!config) {
+    return null;
+  }
+  try {
+    const res = await fetch(PASTEBIN_URL);
+    const text = await res.text();
+    const lines = text
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+    for (const line of lines) {
+      try {
+        const host = new URL(line).hostname;
+        if (config.match.test(host)) {
+          return normalizeBaseUrl(line);
+        }
+      } catch {
+        continue;
+      }
+    }
+    return normalizeBaseUrl(config.fallback);
+  } catch {
+    return normalizeBaseUrl(config.fallback);
+  }
+};
 
 export const getBaseUrl = async (providerValue: string) => {
   try {
@@ -15,13 +48,20 @@ export const getBaseUrl = async (providerValue: string) => {
     if (cachedUrl && cachedTime && Date.now() - cachedTime < expireTime) {
       baseUrl = cachedUrl;
     } else {
-      const baseUrlRes = await fetch(
-        'https://himanshu8443.github.io/providers/modflix.json',
-      );
-      const baseUrlData = await baseUrlRes.json();
-      baseUrl = baseUrlData[providerValue].url;
-      cacheStorageService.setString(cacheKey, baseUrl);
-      cacheStorageService.setObject(timeKey, Date.now());
+      const pastebinUrl = await getPastebinBaseUrl(providerValue);
+      if (pastebinUrl) {
+        baseUrl = pastebinUrl;
+        cacheStorageService.setString(cacheKey, baseUrl);
+        cacheStorageService.setObject(timeKey, Date.now());
+      } else {
+        const baseUrlRes = await fetch(
+          'https://himanshu8443.github.io/providers/modflix.json',
+        );
+        const baseUrlData = await baseUrlRes.json();
+        baseUrl = baseUrlData[providerValue].url;
+        cacheStorageService.setString(cacheKey, baseUrl);
+        cacheStorageService.setObject(timeKey, Date.now());
+      }
     }
     return baseUrl;
   } catch (error) {
