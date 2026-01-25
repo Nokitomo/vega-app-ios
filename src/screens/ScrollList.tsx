@@ -188,7 +188,21 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const onEndReached = async () => {
     // Don't trigger more loading if we're already loading or at the end
     if (isLoading || isEnd || isLoadingMore.current) {
+      if (isAnimeunityTop) {
+        console.log('[animeunity][top] onEndReached ignored', {
+          isLoading,
+          isEnd,
+          isLoadingMore: isLoadingMore.current,
+          page,
+        });
+      }
       return;
+    }
+    if (isAnimeunityTop) {
+      console.log('[animeunity][top] onEndReached accepted', {
+        page,
+        nextPage: page + 1,
+      });
     }
     setIsLoading(true);
     setPage(prevPage => prevPage + 1);
