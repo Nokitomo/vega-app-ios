@@ -33,23 +33,23 @@ const getPastebinBaseUrl = async (
       `[baseUrl] pastebin lines ${providerValue}: ${lines.length}`,
     );
     for (const line of lines) {
-      try {
-        console.log(`[baseUrl] pastebin line ${providerValue}: ${line}`);
-        const host = new URL(line).hostname;
-        console.log(
-          `[baseUrl] pastebin host ${providerValue}: ${host}`,
-        );
-        if (config.match.test(host)) {
-          console.log(
-            `[baseUrl] pastebin match ${providerValue}: ${line}`,
-          );
-          return normalizeBaseUrl(line);
-        }
-      } catch {
+      console.log(`[baseUrl] pastebin line ${providerValue}: ${line}`);
+      const withoutProtocol = line.replace(/^https?:\/\//i, '');
+      const host = withoutProtocol.split('/')[0].split(':')[0];
+      if (!host) {
         console.log(
           `[baseUrl] pastebin parse error ${providerValue}: invalid url`,
         );
         continue;
+      }
+      console.log(
+        `[baseUrl] pastebin host ${providerValue}: ${host}`,
+      );
+      if (config.match.test(host)) {
+        console.log(
+          `[baseUrl] pastebin match ${providerValue}: ${line}`,
+        );
+        return normalizeBaseUrl(line);
       }
     }
     console.log(`[baseUrl] pastebin no match ${providerValue}`);
