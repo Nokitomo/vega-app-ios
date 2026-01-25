@@ -30,9 +30,9 @@ const getPastebinBaseUrl = async (
         continue;
       }
     }
-    return normalizeBaseUrl(config.fallback);
+    return null;
   } catch {
-    return normalizeBaseUrl(config.fallback);
+    return null;
   }
 };
 
@@ -51,14 +51,23 @@ export const getBaseUrl = async (providerValue: string) => {
       const pastebinUrl = await getPastebinBaseUrl(providerValue);
       if (pastebinUrl) {
         baseUrl = pastebinUrl;
+        console.log(
+          `[baseUrl] pastebin ${providerValue} -> ${baseUrl}`,
+        );
         cacheStorageService.setString(cacheKey, baseUrl);
         cacheStorageService.setObject(timeKey, Date.now());
       } else {
+        if (PASTEBIN_PROVIDERS[providerValue]) {
+          console.log(
+            `[baseUrl] pastebin missing for ${providerValue}, falling back to provider defaults`,
+          );
+        }
         const baseUrlRes = await fetch(
           'https://himanshu8443.github.io/providers/modflix.json',
         );
         const baseUrlData = await baseUrlRes.json();
         baseUrl = baseUrlData[providerValue].url;
+        console.log(`[baseUrl] modflix ${providerValue} -> ${baseUrl}`);
         cacheStorageService.setString(cacheKey, baseUrl);
         cacheStorageService.setObject(timeKey, Date.now());
       }
