@@ -21,11 +21,20 @@ const extractors = {
   gdFlixExtracter,
 };
 
+const debugLog = (message: string, data?: unknown) => {
+  if (data === undefined) {
+    console.log(message);
+    return;
+  }
+  console.log(message, data);
+};
+
 export const providerContext: ProviderContext = {
   axios,
   getBaseUrl,
   commonHeaders: headers,
   Crypto,
+  debugLog,
   cheerio,
   extractors,
 };
