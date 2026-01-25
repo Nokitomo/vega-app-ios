@@ -123,6 +123,9 @@ export class ProviderManager {
       providerValue === 'animeunity' && filter === 'top';
     if (debugAnimeunityTop) {
       console.log(`[animeunity][top] getPosts page=${page}`);
+      console.log(
+        `[animeunity][top] signal aborted before call=${signal?.aborted ?? false}`,
+      );
     }
     try {
       const moduleExports = this.executeModule(
