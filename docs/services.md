@@ -15,6 +15,7 @@ File: src/lib/services/Notification.ts
 File: src/lib/services/UpdateProviders.ts
 - Confronta versioni provider e avvia update automatici.
 - Mostra notifiche di progresso tramite NotificationService.
+- Controllo automatico ogni 6 ore; auto-update solo se le notifiche sono abilitate.
 
 ## Estensioni
 ExtensionManager (src/lib/services/ExtensionManager.ts)
