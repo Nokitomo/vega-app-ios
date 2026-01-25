@@ -20,7 +20,12 @@ Per ogni provider vengono scaricati file JS:
 - catalog.js (obbligatorio)
 - episodes.js (opzionale)
 
-Nota: per AnimeUnity, il campo `filter` del catalogo puo includere query params per pilotare i filtri del sito (es. `top?status=In%20Corso&order=most_viewed` oppure `archive?type=TV&order=Valutazione`).
+Nota: per AnimeUnity, il campo `filter` del catalogo puo includere query params per i filtri archivio. I valori possono essere passati in inglese e vengono normalizzati dal provider.
+Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fantasy`.
+
+## Contratto filtri (UI)
+- `catalog.js` puo esportare `archiveFilters` con metadati (order, status, type, season, years, dubbed, genres).
+- `genres` espone scorciatoie per filtri di archive (usabili come sezioni o menu).
 
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
