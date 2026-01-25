@@ -30,10 +30,6 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const [viewType, setViewType] = useState<number>(
     settingsStorage.getListViewType(),
   );
-  const isAnimeunityTop =
-    (route.params.providerValue || provider.value) === 'animeunity' &&
-    filter === 'top' &&
-    !route.params.isSearch;
   const isCalendarView = filter === 'calendar' && !route.params.isSearch;
   // Add abort controller to cancel API requests when unmounting
   const abortController = useRef<AbortController | null>(null);
@@ -88,9 +84,6 @@ const ScrollList = ({route}: Props): React.ReactElement => {
     return () => {
       isMounted.current = false;
       if (abortController.current) {
-        if (isAnimeunityTop) {
-          console.log(`[animeunity][top] abort on unmount page=${page}`);
-        }
         abortController.current.abort();
       }
     };
@@ -99,20 +92,12 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   useEffect(() => {
     // Clean up the previous controller if it exists
     if (abortController.current) {
-      if (isAnimeunityTop) {
-        console.log(
-          `[animeunity][top] abort previous before page=${page}`,
-        );
-      }
       abortController.current.abort();
     }
 
     // Create a new controller for this effect
     abortController.current = new AbortController();
     const signal = abortController.current.signal;
-    if (isAnimeunityTop) {
-      console.log(`[animeunity][top] new controller page=${page}`);
-    }
 
     const fetchPosts = async () => {
       // Don't fetch if we're already at the end
@@ -188,21 +173,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const onEndReached = async () => {
     // Don't trigger more loading if we're already loading or at the end
     if (isLoading || isEnd || isLoadingMore.current) {
-      if (isAnimeunityTop) {
-        console.log('[animeunity][top] onEndReached ignored', {
-          isLoading,
-          isEnd,
-          isLoadingMore: isLoadingMore.current,
-          page,
-        });
-      }
       return;
-    }
-    if (isAnimeunityTop) {
-      console.log('[animeunity][top] onEndReached accepted', {
-        page,
-        nextPage: page + 1,
-      });
     }
     setIsLoading(true);
     setPage(prevPage => prevPage + 1);
