@@ -127,6 +127,29 @@ export class ProviderManager {
         `[animeunity][top] signal aborted before call=${signal?.aborted ?? false}`,
       );
     }
+    const onAbort = () => {
+      console.log(
+        `[animeunity][top] signal aborted during call page=${page}`,
+      );
+    };
+    if (debugAnimeunityTop && signal?.addEventListener) {
+      signal.addEventListener('abort', onAbort);
+    }
+    const originalGet = providerContext.axios.get.bind(providerContext.axios);
+    let didRequest = false;
+    if (debugAnimeunityTop) {
+      providerContext.axios.get = async (...args) => {
+        const url =
+          typeof args[0] === 'string'
+            ? args[0]
+            : args[0]?.url || '<unknown>';
+        if (typeof url === 'string' && url.includes('animeunity.so/top-anime')) {
+          didRequest = true;
+          console.log(`[animeunity][top] axios.get called url=${url}`);
+        }
+        return originalGet(...(args as [any, any]));
+      };
+    }
     try {
       const moduleExports = this.executeModule(
         getPostsModule,
@@ -149,6 +172,12 @@ export class ProviderManager {
         console.log(
           `[animeunity][top] result page=${page} count=${posts?.length ?? 0}`,
         );
+        console.log(
+          `[animeunity][top] didRequest page=${page} value=${didRequest}`,
+        );
+        console.log(
+          `[animeunity][top] signal aborted after call=${signal?.aborted ?? false}`,
+        );
       }
       return posts;
     } catch (error) {
@@ -161,6 +190,13 @@ export class ProviderManager {
       console.error('Error creating posts function:', error);
       console.error('Module content:', getPostsModule);
       throw new Error(`Invalid posts module for provider: ${providerValue}`);
+    } finally {
+      if (debugAnimeunityTop) {
+        providerContext.axios.get = originalGet;
+      }
+      if (debugAnimeunityTop && signal?.removeEventListener) {
+        signal.removeEventListener('abort', onAbort);
+      }
     }
   };
   getSearchPosts = async ({
