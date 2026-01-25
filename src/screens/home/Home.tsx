@@ -150,6 +150,10 @@ const Home = ({}: Props) => {
     ));
   }, [homeData]);
 
+  const scrollKey = useMemo(() => {
+    return `${provider?.value ?? 'none'}:${homeData.length}:${isLoading}`;
+  }, [provider?.value, homeData.length, isLoading]);
+
   // Memoized error message
   const errorComponent = useMemo(() => {
     if (!error && (isLoading || homeData.length > 0)) {
@@ -201,6 +205,7 @@ const Home = ({}: Props) => {
             />
 
             <ScrollView
+              key={scrollKey}
               onScroll={handleScroll}
               scrollEventThrottle={16} // Optimize scroll performance
               showsVerticalScrollIndicator={false}
