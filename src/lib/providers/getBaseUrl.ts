@@ -62,6 +62,7 @@ export const getBaseUrl = async (providerValue: string) => {
           console.log(
             `[baseUrl] pastebin missing for ${providerValue}, falling back to provider defaults`,
           );
+          return '';
         }
         const baseUrlRes = await fetch(
           'https://himanshu8443.github.io/providers/modflix.json',
