@@ -1,13 +1,14 @@
 ![vega-high-resolution-logo-transparent](https://github.com/Zenda-Cross/vega-app/assets/143804558/b2eb446f-8e7f-4800-81e1-3320c82f33de)
 
 # Vega-App
-Android app for streaming media.
+Android and iOS app for streaming media.
 ### Features
-- Steam and Download Ad-Free.
-- Multiple sources.
-- Multi Audio and Subs (Hindi, English, etc.).
+- Stream and download ad-free.
+- Multiple providers/sources.
+- Subtitles and multiple stream options when available.
 - WatchList.
-- External player and Downloader support.
+- External player and downloader support.
+- Dynamic providers with automatic updates.
 <br>
 
 [![Discord](https://custom-icon-badges.demolab.com/badge/-Join_Discord-6567a5?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cr42m6maWy)
@@ -42,28 +43,39 @@ ___
 </p>
 
 ## Build and Dev
-0. Set-up React Native environment if you haven't already. [Guide](https://reactnative.dev/docs/set-up-your-environment)
+0. Set up the React Native environment if you haven't already. [Guide](https://reactnative.dev/docs/set-up-your-environment)
 
-1. clone
+1. Clone
      ```bash
      git clone https://github.com/Zenda-Cross/vega-app.git
      ```
-     ```
+     ```bash
      cd vega-app
      ```
 2. Install
-     ```
+     ```bash
      npm install
      ```
-3. Prebuild
-   ```
-    npx expo prebuild -p android --clean
-   ```
-5. Open metro dev server
-Dev
+3. Start Metro (dev client)
+     ```bash
+     npx expo start -c --dev-client --scheme com.vega --port 8081
      ```
-     npm run android
+4. Run Android (dev client)
+     ```bash
+     npx expo run:android --device "Medium_phone_API_35"
      ```
+5. Run iOS (dev client)
+     ```bash
+     npx expo run:ios
+     ```
+6. Clean prebuild (if needed)
+     ```bash
+     npx expo prebuild -p android --clean
+     npx expo prebuild -p ios --clean
+     ```
+
+Note: Expo Go is not supported for native features.
+
 Build apk/aab
 https://reactnative.dev/docs/signed-apk-android
 
