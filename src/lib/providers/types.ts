@@ -155,6 +155,7 @@ export type ProviderContext = {
   Crypto: typeof Crypto;
   getBaseUrl: (providerValue: string) => Promise<string>;
   commonHeaders: Record<string, string>;
+  debugLog?: (message: string, data?: unknown) => void;
   cheerio: typeof cheerio;
   extractors: {
     hubcloudExtracter: (link: string, signal: AbortSignal) => Promise<Stream[]>;
