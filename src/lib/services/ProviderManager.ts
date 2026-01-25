@@ -119,6 +119,11 @@ export class ProviderManager {
     if (!getPostsModule) {
       throw new Error(`No posts module found for provider: ${providerValue}`);
     }
+    const debugAnimeunityTop =
+      providerValue === 'animeunity' && filter === 'top';
+    if (debugAnimeunityTop) {
+      console.log(`[animeunity][top] getPosts page=${page}`);
+    }
     try {
       const moduleExports = this.executeModule(
         getPostsModule,
@@ -130,14 +135,26 @@ export class ProviderManager {
       );
 
       // Call the getPosts function
-      return await moduleExports.getPosts({
+      const posts = await moduleExports.getPosts({
         filter,
         page,
         providerValue,
         signal,
         providerContext,
       });
+      if (debugAnimeunityTop) {
+        console.log(
+          `[animeunity][top] result page=${page} count=${posts?.length ?? 0}`,
+        );
+      }
+      return posts;
     } catch (error) {
+      if (debugAnimeunityTop) {
+        console.error(
+          `[animeunity][top] error page=${page}`,
+          (error as Error)?.message || error,
+        );
+      }
       console.error('Error creating posts function:', error);
       console.error('Module content:', getPostsModule);
       throw new Error(`Invalid posts module for provider: ${providerValue}`);
