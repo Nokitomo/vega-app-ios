@@ -6,12 +6,12 @@ export type PastebinProviderConfig = {
 
 export const PASTEBIN_PROVIDERS: Record<string, PastebinProviderConfig> = {
   animeunity: {
-    match: /(?:^|\\.)animeunity\\./i,
+    match: /(?:^|\.)animeunity\./i,
   },
   streamingunity: {
-    match: /(?:^|\\.)streamingunity\\./i,
+    match: /(?:^|\.)streamingunity\./i,
   },
   guardaserietv: {
-    match: /(?:^|\\.)guardaserietv\\./i,
+    match: /(?:^|\.)guardaserietv\./i,
   },
 };
