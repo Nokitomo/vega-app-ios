@@ -6,6 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 import {HomeStackParamList} from '../App';
 import useContentStore from '../lib/zustand/contentStore';
 import {FlashList} from '@shopify/flash-list';
+import type {FlashListProps} from '@shopify/flash-list';
 import SkeletonLoader from './Skeleton';
 import ProviderImage from './ProviderImage';
 
@@ -33,6 +34,12 @@ export default function Slider({
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [isSelected, setSelected] = React.useState('');
   // const {removeItem} = useWatchHistoryStore(state => state);
+
+  const SafeFlashList = <T,>({style, ...rest}: FlashListProps<T>) => (
+    <View style={style}>
+      <FlashList {...rest} />
+    </View>
+  );
 
   return (
     <Pressable onPress={() => setSelected('')} className="gap-3 mt-3 px-2">
@@ -66,7 +73,7 @@ export default function Slider({
           ))}
         </View>
       ) : (
-        <FlashList
+        <SafeFlashList
           estimatedItemSize={30}
           showsHorizontalScrollIndicator={false}
           data={posts}
