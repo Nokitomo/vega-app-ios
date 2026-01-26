@@ -404,7 +404,7 @@ const Extensions = ({navigation}: Props) => {
       {/* Header */}
       <View className="flex-row items-center justify-between p-4 border-b border-gray-800">
         <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-          <AntDesign name="arrowleft" size={24} color="white" />
+          <AntDesign name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
         <Text className="text-white text-xl font-semibold">Providers</Text>
         <TouchableOpacity onPress={handleRefresh}>
