@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef} from 'react';
+import './global.css';
 import Home from './screens/home/Home';
 import Info from './screens/home/Info';
 import Player from './screens/home/Player';
@@ -115,6 +116,7 @@ export type RootStackParamList = {
     file?: string;
     providerValue?: string;
     infoUrl?: string;
+    doNotTrack?: boolean;
   };
 };
 

@@ -1,7 +1,3 @@
-// Dynamic Expo config to make Firebase optional for public clones
-// If google-services.json / GoogleService-Info.plist are absent, we skip RNFirebase plugins
-// and android/ios google services config so the app still builds and runs without Firebase.
-
 const fs = require('fs');
 
 const hasAndroidGoogleServices = fs.existsSync('./google-services.json');
@@ -14,11 +10,9 @@ module.exports = () => {
     './plugins/with-android-release-gradle.js',
     './plugins/with-android-signing.js',
     './plugins/with-android-okhttp.js',
-    // Only include RNFirebase plugins when a services file is present
     ...(hasAndroidGoogleServices || hasIosGooglePlist
       ? ['@react-native-firebase/app']
       : []),
-    // Keep Crashlytics plugin optional; do not include analytics plugin to avoid ESM import issue
     ...(hasAndroidGoogleServices || hasIosGooglePlist
       ? ['@react-native-firebase/crashlytics']
       : []),
@@ -82,19 +76,30 @@ module.exports = () => {
         ios: {},
       },
     ],
+
+    [
+      'expo-dev-client',
+      {
+        launchMode: 'most-recent',
+      },
+    ],
   ];
 
   return {
     expo: {
       name: 'Vega',
+      scheme: 'com.vega',
       displayName: 'Vega',
-      newArchEnabled: false,
+      jsEngine: 'hermes',
+      newArchEnabled: true,
       autolinking: {exclude: ['expo-splash-screen']},
       plugins,
       slug: 'vega',
-      version: '3.2.6',
-      sdkVersion: '52.0.0',
+      version: '3.3.1',
       userInterfaceStyle: 'dark',
+      experiments: {
+        reactCompiler: true,
+      },
       android: {
         ...(hasAndroidGoogleServices
           ? {googleServicesFile: './google-services.json'}
@@ -102,7 +107,7 @@ module.exports = () => {
         minSdkVersion: 24,
         edgeToEdgeEnabled: true,
         package: 'com.vega',
-        versionCode: 155,
+        versionCode: 158,
         permissions: [
           'FOREGROUND_SERVICE',
           'FOREGROUND_SERVICE_MEDIA_PLAYBACK',
@@ -116,9 +121,6 @@ module.exports = () => {
         manifestPermissions: [
           {name: 'READ_EXTERNAL_STORAGE', maxSdkVersion: 32},
           {name: 'WRITE_EXTERNAL_STORAGE', maxSdkVersion: 32},
-        ],
-        intentFilters: [
-          {action: 'VIEW', category: 'BROWSABLE', data: {scheme: 'com.vega'}},
         ],
         queries: [
           {action: 'VIEW', data: {scheme: 'http'}},

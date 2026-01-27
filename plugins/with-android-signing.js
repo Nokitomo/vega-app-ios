@@ -95,6 +95,15 @@ afterEvaluate {
         fs.writeFileSync(buildGradle, gradleText, 'utf8');
       }
 
+      // Fix release buildType to use signingConfigs.release instead of debug
+      gradleText = fs.readFileSync(buildGradle, 'utf8');
+      gradleText = gradleText.replace(
+        /release\s*\{[^}]*signingConfig\s+signingConfigs\.debug/,
+        match =>
+          match.replace('signingConfigs.debug', 'signingConfigs.release'),
+      );
+      fs.writeFileSync(buildGradle, gradleText, 'utf8');
+
       return cfg;
     },
   ]);

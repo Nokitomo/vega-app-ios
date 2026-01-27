@@ -1,16 +1,10 @@
-module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [
-    [
-      'module-resolver',
-      {
-        root: ['./'],
-        alias: {
-          'moti/skeleton': 'moti/skeleton/react-native-linear-gradient',
-        },
-      },
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: [
+      ['babel-preset-expo', {jsxImportSource: 'nativewind'}],
+      'nativewind/babel',
     ],
-    'nativewind/babel',
-    'react-native-reanimated/plugin',
-  ],
+    plugins: ['react-native-reanimated/plugin'],
+  };
 };

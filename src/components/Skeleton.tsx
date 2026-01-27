@@ -51,11 +51,13 @@ const stopSharedShimmer = () => {
 };
 
 type SkeletonLoaderProps = {
-  width: number;
-  height: number;
+  width: number | string;
+  height: number | string;
   style?: any;
   darkMode?: boolean;
   marginVertical?: number;
+  children?: React.ReactNode;
+  show?: boolean;
 };
 const SkeletonLoader = ({
   width,
@@ -63,6 +65,8 @@ const SkeletonLoader = ({
   style,
   darkMode = true,
   marginVertical = 8,
+  children,
+  show = true,
 }: SkeletonLoaderProps) => {
   const animatedValue = useRef(getSharedAnimatedValue()).current;
 
@@ -84,10 +88,15 @@ const SkeletonLoader = ({
   const darkColors = ['#333333', '#444', '#333333'];
   const colors = darkMode ? darkColors : lightColors;
 
+  const animationWidth = typeof width === 'string' ? 200 : width;
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [-width, width],
+    outputRange: [-animationWidth, animationWidth],
   });
+
+  if (children && !show) {
+    return <>{children}</>;
+  }
 
   return (
     <View style={[styles.skeleton, {width, height, marginVertical}, style]}>

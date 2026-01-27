@@ -5,7 +5,7 @@
 import {AppRegistry} from 'react-native';
 import App from './src/App';
 import notifee from '@notifee/react-native';
-import notificationService from './src/lib/services/Notification';
+// import notificationService from './src/lib/services/Notification';
 
 // Enable react-native-firebase debug mode for Analytics DebugView in dev
 if (__DEV__) {
@@ -14,7 +14,13 @@ if (__DEV__) {
 }
 
 notifee.onBackgroundEvent(async ({type, detail}) => {
+  const notificationService = require('./src/lib/services/Notification').default;
   notificationService.actionHandler({type, detail});
+});
+
+notifee.registerForegroundService(async () => {
+  // Keep the service alive while in foreground
+  return new Promise(() => {});
 });
 
 AppRegistry.registerComponent('main', () => App);
