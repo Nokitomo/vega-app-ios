@@ -43,3 +43,14 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 }
+
+subprojects {
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+            maven { url "https://plugins.gradle.org/m2/" }
+        }
+    }
+}
