@@ -3,6 +3,53 @@ import {Animated, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {Easing} from 'react-native-reanimated';
 
+const SHIMMER_DURATION_MS = 1500;
+let sharedAnimatedValue: Animated.Value | null = null;
+let sharedAnimation: Animated.CompositeAnimation | null = null;
+let sharedUsers = 0;
+let sharedActive = false;
+
+const getSharedAnimatedValue = () => {
+  if (!sharedAnimatedValue) {
+    sharedAnimatedValue = new Animated.Value(0);
+  }
+  return sharedAnimatedValue;
+};
+
+const startSharedShimmer = () => {
+  if (sharedActive) {
+    return;
+  }
+  sharedActive = true;
+
+  const run = () => {
+    if (!sharedActive) {
+      return;
+    }
+    const animatedValue = getSharedAnimatedValue();
+    animatedValue.setValue(0);
+    sharedAnimation = Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: SHIMMER_DURATION_MS,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    });
+    sharedAnimation.start(({finished}) => {
+      if (finished && sharedActive) {
+        run();
+      }
+    });
+  };
+
+  run();
+};
+
+const stopSharedShimmer = () => {
+  sharedActive = false;
+  sharedAnimation?.stop();
+  sharedAnimation = null;
+};
+
 type SkeletonLoaderProps = {
   width: number;
   height: number;
@@ -17,36 +64,21 @@ const SkeletonLoader = ({
   darkMode = true,
   marginVertical = 8,
 }: SkeletonLoaderProps) => {
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
-  const isActiveRef = useRef(true);
+  const animatedValue = useRef(getSharedAnimatedValue()).current;
 
   useEffect(() => {
-    isActiveRef.current = true;
-
-    const startShimmer = () => {
-      animatedValue.setValue(0);
-      animationRef.current = Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      });
-      animationRef.current.start(({finished}) => {
-        if (finished && isActiveRef.current) {
-          startShimmer();
-        }
-      });
-    };
-
-    startShimmer();
+    sharedUsers += 1;
+    if (sharedUsers === 1) {
+      startSharedShimmer();
+    }
 
     return () => {
-      isActiveRef.current = false;
-      animationRef.current?.stop();
-      animationRef.current = null;
+      sharedUsers = Math.max(sharedUsers - 1, 0);
+      if (sharedUsers === 0) {
+        stopSharedShimmer();
+      }
     };
-  }, [animatedValue]);
+  }, []);
 
   const lightColors = ['#E0E0E0', '#F5F5F5', '#E0E0E0'];
   const darkColors = ['#333333', '#444', '#333333'];
