@@ -18,20 +18,24 @@ const SkeletonLoader = ({
   marginVertical = 8,
 }: SkeletonLoaderProps) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    const startShimmer = () => {
-      Animated.loop(
-        Animated.timing(animatedValue, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ).start();
-    };
+    animationRef.current?.stop();
+    animationRef.current = Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    animationRef.current.start();
 
-    startShimmer();
+    return () => {
+      animationRef.current?.stop();
+      animationRef.current = null;
+    };
   }, [animatedValue]);
 
   const lightColors = ['#E0E0E0', '#F5F5F5', '#E0E0E0'];
