@@ -1,7 +1,7 @@
 # Build e Avvio
 
 ## Prerequisiti
-- Node >= 18 (vedi package.json -> engines e volta).
+- Node >= 20.19.4 (vedi package.json -> volta).
 - Android SDK configurato.
 - Per iOS: Xcode + CocoaPods.
 
@@ -21,6 +21,7 @@ Nota: serve il dev client; non usare Expo Go per funzioni native.
 npx expo run:android --device "Medium_phone_API_35"
 ```
 Nota: non usare l'emulatore Pixel_6_Pro_API_35.
+Nota: il wrapper Gradle usa 8.13; se vedi errori di versione minima, verifica `android/gradle/wrapper/gradle-wrapper.properties`.
 
 ## Prebuild (rigenera android/ios)
 ```
