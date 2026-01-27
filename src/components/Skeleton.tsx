@@ -19,20 +19,30 @@ const SkeletonLoader = ({
 }: SkeletonLoaderProps) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const isActiveRef = useRef(true);
 
   useEffect(() => {
-    animationRef.current?.stop();
-    animationRef.current = Animated.loop(
-      Animated.timing(animatedValue, {
+    isActiveRef.current = true;
+
+    const startShimmer = () => {
+      animatedValue.setValue(0);
+      animationRef.current = Animated.timing(animatedValue, {
         toValue: 1,
         duration: 1500,
         easing: Easing.linear,
         useNativeDriver: true,
-      }),
-    );
-    animationRef.current.start();
+      });
+      animationRef.current.start(({finished}) => {
+        if (finished && isActiveRef.current) {
+          startShimmer();
+        }
+      });
+    };
+
+    startShimmer();
 
     return () => {
+      isActiveRef.current = false;
       animationRef.current?.stop();
       animationRef.current = null;
     };
