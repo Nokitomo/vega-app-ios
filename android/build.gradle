@@ -13,6 +13,7 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
         // Firebase (disabled by default). Uncomment to enable.
