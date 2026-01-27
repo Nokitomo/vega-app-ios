@@ -30,8 +30,8 @@ Nota: non usare l'emulatore Pixel_6_Pro_API_35.
 Questo riallinea binario nativo e bundle JS.
 
 ## Errore Crashlytics: Default FirebaseApp not initialized
-Se mancano google-services.json o GoogleService-Info.plist, Crashlytics logga un errore.
-- E' previsto: i plugin Firebase sono condizionati dalla presenza dei file.
+Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleService-Info.plist, Crashlytics logga un errore.
+- E' previsto se Firebase e attivo.
 - Il log non dovrebbe bloccare l'app.
 
 ## React Native FS / Patch-package
