@@ -14,6 +14,7 @@ buildscript {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
     }
     dependencies {
         // Firebase (disabled by default). Uncomment to enable.
@@ -51,6 +52,7 @@ subprojects {
             mavenCentral()
             gradlePluginPortal()
             maven { url "https://plugins.gradle.org/m2/" }
+            maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
         }
     }
 }
