@@ -1,3 +1,16 @@
+diff --git a/node_modules/react-native/ReactCommon/cmake-utils/react-native-flags.cmake b/node_modules/react-native/ReactCommon/cmake-utils/react-native-flags.cmake
+index d005a4e..febe98f 100644
+--- a/node_modules/react-native/ReactCommon/cmake-utils/react-native-flags.cmake
++++ b/node_modules/react-native/ReactCommon/cmake-utils/react-native-flags.cmake
+@@ -29,7 +29,5 @@ SET(reactnative_FLAGS
+ function(target_compile_reactnative_options target_name scope)
+   target_compile_options(${target_name} ${scope} ${reactnative_FLAGS})
+   # TODO T228344694 improve this so that it works for all platforms
+-  if(ANDROID)
+-    target_compile_definitions(${target_name} ${scope} RN_SERIALIZABLE_STATE)
+-  endif()
++  # Disable RN_SERIALIZABLE_STATE on Android to avoid std::format usage in prefab headers.
+ endfunction()
 diff --git a/node_modules/react-native/ReactCommon/react/renderer/core/graphicsConversions.h b/node_modules/react-native/ReactCommon/react/renderer/core/graphicsConversions.h
 index bb59351..8f82aa5 100644
 --- a/node_modules/react-native/ReactCommon/react/renderer/core/graphicsConversions.h
