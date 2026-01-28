@@ -16,6 +16,7 @@ buildscript {
         gradlePluginPortal()
         maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
         maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/releases" }
     }
     dependencies {
         // Firebase (disabled by default). Uncomment to enable.
@@ -55,6 +56,7 @@ subprojects {
             maven { url "https://plugins.gradle.org/m2/" }
             maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
             maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+            maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/releases" }
         }
     }
 }
