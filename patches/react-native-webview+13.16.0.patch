@@ -34,9 +34,20 @@ diff --git a/node_modules/react-native-webview/android/build/.transforms/242af1e
 new file mode 100644
 index 0000000..33cdbdf
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/.transforms/242af1ea444c52feebeddde16586d373/transformed/classes/classes_dex/classes.dex differ
+diff --git a/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/results.bin b/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/results.bin
+new file mode 100644
+index 0000000..0d259dd
+--- /dev/null
++++ b/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/results.bin
+@@ -0,0 +1 @@
++o/classes
+diff --git a/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/transformed/classes/classes_dex/classes.dex b/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/transformed/classes/classes_dex/classes.dex
+new file mode 100644
+index 0000000..016784d
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/.transforms/36478f89df4762bc41809831c838e5cf/transformed/classes/classes_dex/classes.dex differ
 diff --git a/node_modules/react-native-webview/android/build/generated/source/buildConfig/debug/com/reactnativecommunity/webview/BuildConfig.java b/node_modules/react-native-webview/android/build/generated/source/buildConfig/debug/com/reactnativecommunity/webview/BuildConfig.java
 new file mode 100644
-index 0000000..1466b56
+index 0000000..bdae87e
 --- /dev/null
 +++ b/node_modules/react-native-webview/android/build/generated/source/buildConfig/debug/com/reactnativecommunity/webview/BuildConfig.java
 @@ -0,0 +1,12 @@
@@ -50,7 +61,7 @@ index 0000000..1466b56
 +  public static final String LIBRARY_PACKAGE_NAME = "com.reactnativecommunity.webview";
 +  public static final String BUILD_TYPE = "debug";
 +  // Field from default config.
-+  public static final boolean IS_NEW_ARCHITECTURE_ENABLED = true;
++  public static final boolean IS_NEW_ARCHITECTURE_ENABLED = false;
 +}
 diff --git a/node_modules/react-native-webview/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNCWebViewManagerDelegate.java b/node_modules/react-native-webview/android/build/generated/source/codegen/java/com/facebook/react/viewmanagers/RNCWebViewManagerDelegate.java
 new file mode 100644
@@ -2655,7 +2666,7 @@ index 0000000..9e26dfe
 \ No newline at end of file
 diff --git a/node_modules/react-native-webview/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/react-native-webview/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
 new file mode 100644
-index 0000000..75e550b
+index 0000000..e635573
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/react-native-webview/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
 new file mode 100644
@@ -2720,22 +2731,10 @@ diff --git a/node_modules/react-native-webview/android/build/intermediates/java_
 new file mode 100644
 index 0000000..92b0cb6
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/java_res/debug/processDebugJavaRes/out/META-INF/react-native-webview_debug.kotlin_module differ
-diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerDelegate.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerDelegate.class
-new file mode 100644
-index 0000000..4e34dcf
-Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerDelegate.class differ
-diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerInterface.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerInterface.class
-new file mode 100644
-index 0000000..949ab56
-Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/facebook/react/viewmanagers/RNCWebViewManagerInterface.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/BuildConfig.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/BuildConfig.class
 new file mode 100644
-index 0000000..2d3806c
+index 0000000..e9fc723
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/BuildConfig.class differ
-diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/NativeRNCWebViewModuleSpec.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/NativeRNCWebViewModuleSpec.class
-new file mode 100644
-index 0000000..3fcf65b
-Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/NativeRNCWebViewModuleSpec.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCBasicAuthCredential.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCBasicAuthCredential.class
 new file mode 100644
 index 0000000..2655d30
@@ -2790,11 +2789,11 @@ index 0000000..e5fa073
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewFileProvider.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewManager.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewManager.class
 new file mode 100644
-index 0000000..cb4bd72
+index 0000000..257dafe
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewManager.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModule.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModule.class
 new file mode 100644
-index 0000000..982d331
+index 0000000..ef6b709
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModule.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModuleImpl$1.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModuleImpl$1.class
 new file mode 100644
@@ -2822,7 +2821,7 @@ index 0000000..f87d4ed
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewModuleImpl.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewPackage.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewPackage.class
 new file mode 100644
-index 0000000..5c4d82c
+index 0000000..75fc2db
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/RNCWebViewPackage.class differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/URLUtil.class b/node_modules/react-native-webview/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/reactnativecommunity/webview/URLUtil.class
 new file mode 100644
@@ -2961,7 +2960,7 @@ index 0000000..aba5f56
 +</paths>
 diff --git a/node_modules/react-native-webview/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar b/node_modules/react-native-webview/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar
 new file mode 100644
-index 0000000..a89be81
+index 0000000..4c64af1
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar differ
 diff --git a/node_modules/react-native-webview/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/react-native-webview/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
 new file mode 100644
@@ -3346,7 +3345,7 @@ index 0000000..131e265
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/lookups/lookups.tab_i.len differ
 diff --git a/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin
 new file mode 100644
-index 0000000..04e21d3
+index 0000000..44e68cd
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/cacheable/last-build.bin differ
 diff --git a/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin
 new file mode 100644
@@ -3354,7 +3353,7 @@ index 0000000..268d77b
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/classpath-snapshot/shrunk-classpath-snapshot.bin differ
 diff --git a/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/local-state/build-history.bin b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/local-state/build-history.bin
 new file mode 100644
-index 0000000..4e61183
+index 0000000..872aa3a
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/kotlin/compileDebugKotlin/local-state/build-history.bin differ
 diff --git a/node_modules/react-native-webview/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/react-native-webview/android/build/outputs/logs/manifest-merger-debug-report.txt
 new file mode 100644
@@ -3416,9 +3415,45 @@ index 0000000..f392226
 +		INJECTED from C:\dev\vega-org\vega-app\node_modules\react-native-webview\android\src\main\AndroidManifestNew.xml
 +	android:minSdkVersion
 +		INJECTED from C:\dev\vega-org\vega-app\node_modules\react-native-webview\android\src\main\AndroidManifestNew.xml
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/BuildConfig.class.uniqueId4 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/BuildConfig.class.uniqueId4
+new file mode 100644
+index 0000000..2d3806c
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/BuildConfig.class.uniqueId4 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/NativeRNCWebViewModuleSpec.class.uniqueId3 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/NativeRNCWebViewModuleSpec.class.uniqueId3
+new file mode 100644
+index 0000000..3fcf65b
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/NativeRNCWebViewModuleSpec.class.uniqueId3 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient$1.class.uniqueId6 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient$1.class.uniqueId6
+new file mode 100644
+index 0000000..f1650d9
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient$1.class.uniqueId6 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient.class.uniqueId5 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient.class.uniqueId5
+new file mode 100644
+index 0000000..0b8222b
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebChromeClient.class.uniqueId5 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManager.class.uniqueId0 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManager.class.uniqueId0
+new file mode 100644
+index 0000000..cb4bd72
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManager.class.uniqueId0 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerDelegate.class.uniqueId2 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerDelegate.class.uniqueId2
+new file mode 100644
+index 0000000..4e34dcf
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerDelegate.class.uniqueId2 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerInterface.class.uniqueId8 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerInterface.class.uniqueId8
+new file mode 100644
+index 0000000..949ab56
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewManagerInterface.class.uniqueId8 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewModule.class.uniqueId7 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewModule.class.uniqueId7
+new file mode 100644
+index 0000000..982d331
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewModule.class.uniqueId7 differ
+diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewPackage.class.uniqueId1 b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewPackage.class.uniqueId1
+new file mode 100644
+index 0000000..5c4d82c
+Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/RNCWebViewPackage.class.uniqueId1 differ
 diff --git a/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
 new file mode 100644
-index 0000000..e56b6a7
+index 0000000..3c5dff9
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
 diff --git a/node_modules/react-native-webview/android/build/tmp/kotlin-classes/debug/META-INF/react-native-webview_debug.kotlin_module b/node_modules/react-native-webview/android/build/tmp/kotlin-classes/debug/META-INF/react-native-webview_debug.kotlin_module
 new file mode 100644
