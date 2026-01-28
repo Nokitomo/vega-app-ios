@@ -3579,3 +3579,25 @@ diff --git a/node_modules/react-native-webview/android/build/tmp/kotlin-classes/
 new file mode 100644
 index 0000000..a72474a
 Binary files /dev/null and b/node_modules/react-native-webview/android/build/tmp/kotlin-classes/debug/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.class differ
+diff --git a/node_modules/react-native-webview/src/RNCWebViewNativeComponent.ts b/node_modules/react-native-webview/src/RNCWebViewNativeComponent.ts
+index 7f4e6c4..d2dfd04 100644
+--- a/node_modules/react-native-webview/src/RNCWebViewNativeComponent.ts
++++ b/node_modules/react-native-webview/src/RNCWebViewNativeComponent.ts
+@@ -1,5 +1,5 @@
+ import type { HostComponent, ViewProps } from 'react-native';
+-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
++import requireNativeComponent from 'react-native/Libraries/ReactNative/requireNativeComponent';
+ import {
+   DirectEventHandler,
+   Double,
+@@ -343,6 +343,7 @@ export const Commands = codegenNativeCommands<NativeCommands>({
+   ],
+ });
+ 
+-export default codegenNativeComponent<NativeProps>(
+-  'RNCWebView'
+-) as HostComponent<NativeProps>;
++const COMPONENT_NAME = 'RNCWebView';
++export default (requireNativeComponent<NativeProps>(
++  COMPONENT_NAME
++) as HostComponent<NativeProps>);
