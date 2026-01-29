@@ -357,6 +357,21 @@ const Downloads = () => {
     return group.episodes.map(ep => ep.uri);
   };
 
+  const getGroupKey = (group: MediaGroup): string =>
+    group.episodes[0]?.uri ?? normalizeString(group.title);
+
+  const toggleGroupSelection = (group: MediaGroup) => {
+    const groupUris = getGroupUris(group);
+    setGroupSelected(prev => {
+      const isSelected = groupUris.some(uri => prev.includes(uri));
+      const next = isSelected
+        ? prev.filter(uri => !groupUris.includes(uri))
+        : [...prev, ...groupUris];
+      setIsSelecting(next.length > 0);
+      return next;
+    });
+  };
+
   return (
     <View className="mt-14 px-2 w-full h-full">
       <View className="flex-row justify-between items-center mb-4">
@@ -388,6 +403,7 @@ const Downloads = () => {
         data={groupMediaFiles}
         extraData={{isSelecting, groupSelected}}
         estimatedItemSize={100}
+        keyExtractor={item => getGroupKey(item)}
         ListEmptyComponent={() =>
           !loading && (
             <View className="flex-1 justify-center items-center mt-10">
@@ -402,11 +418,11 @@ const Downloads = () => {
                 ? 'bg-quaternary'
                 : 'bg-transparent'
             }`}
-            style={
-              isSelecting && isGroupSelected(item)
-                ? {borderColor: primary, borderWidth: 1}
-                : undefined
-            }
+            style={{
+              borderColor:
+                isSelecting && isGroupSelected(item) ? primary : 'transparent',
+              borderWidth: isSelecting && isGroupSelected(item) ? 1 : 0,
+            }}
             onLongPress={() => {
               if (settingsStorage.isHapticFeedbackEnabled()) {
                 RNReactNativeHapticFeedback.trigger('effectTick', {
@@ -425,24 +441,7 @@ const Downloads = () => {
                     ignoreAndroidSystemSettings: false,
                   });
                 }
-                const groupUris = getGroupUris(item);
-                if (isGroupSelected(item)) {
-                  // Deselect all episodes in this group
-                  setGroupSelected(
-                    groupSelected.filter(uri => !groupUris.includes(uri)),
-                  );
-                } else {
-                  // Select all episodes in this group
-                  setGroupSelected([...groupSelected, ...groupUris]);
-                }
-                // Exit selection mode if nothing is selected
-                const remainingSelected = groupSelected.filter(
-                  uri => !groupUris.includes(uri),
-                );
-                if (isGroupSelected(item) && remainingSelected.length === 0) {
-                  setIsSelecting(false);
-                  setGroupSelected([]);
-                }
+                toggleGroupSelection(item);
               } else {
                 // Direct play for movies, navigate to episodes for series
                 if (item.isMovie) {
