@@ -1,5 +1,12 @@
-import React, {useEffect, useLayoutEffect, useState} from 'react';
-import {View, Text, TouchableOpacity, Modal, Pressable} from 'react-native';
+import React, {useEffect, useLayoutEffect, useMemo, useState} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  ToastAndroid,
+} from 'react-native';
 import {ifExists} from '../lib/file/ifExists';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
@@ -37,6 +44,7 @@ const DownloadComponent = ({
 }) => {
   const {primary} = useThemeStore(state => state);
   const {provider} = useContentStore(state => state);
+  const effectiveProviderValue = providerValue || provider.value;
   const [alreadyDownloaded, setAlreadyDownloaded] = useState<string | boolean>(
     false,
   );
@@ -92,7 +100,7 @@ const DownloadComponent = ({
         link,
         type,
         signal: controller.signal,
-        providerValue: providerValue || provider.value,
+        providerValue: effectiveProviderValue,
       });
       const filteredServers = streamServers;
       // .filter(
@@ -109,7 +117,28 @@ const DownloadComponent = ({
     return () => {
       controller.abort();
     };
-  }, [downloadModal, longPressModal]);
+  }, [downloadModal, longPressModal, effectiveProviderValue, link, type]);
+
+  const downloadServers = useMemo(() => {
+    if (!servers || servers.length === 0) {
+      return [];
+    }
+
+    if (effectiveProviderValue !== 'animeunity') {
+      return servers;
+    }
+
+    return servers.filter(server => {
+      if (!server) {
+        return false;
+      }
+      const serverName = (server.server || '').toLowerCase();
+      if (server.type !== 'm3u8') {
+        return true;
+      }
+      return serverName.includes('download');
+    });
+  }, [servers, effectiveProviderValue]);
 
   // on holdPress external downloader
   const longPressDownload = async (
@@ -217,6 +246,18 @@ const DownloadComponent = ({
           loading={serverLoading}
           title="Select Server To Download"
           onPressVideo={(server: Stream) => {
+            const serverName = (server.server || '').toLowerCase();
+            if (
+              effectiveProviderValue === 'animeunity' &&
+              server.type === 'm3u8' &&
+              !serverName.includes('download')
+            ) {
+              ToastAndroid.show(
+                'This server is not supported for downloads. Please use AnimeUnity Download or an external downloader.',
+                ToastAndroid.LONG,
+              );
+              return;
+            }
             downloadManager({
               title: title,
               url: server.link,
@@ -246,7 +287,7 @@ const DownloadComponent = ({
         <DownloadBottomSheet
           setModal={setLongPressModal}
           showModal={longPressModal}
-          data={servers}
+          data={downloadServers}
           loading={serverLoading}
           title="Select Server To Open"
           onPressVideo={(server: Stream) => {
