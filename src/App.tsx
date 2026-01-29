@@ -208,9 +208,9 @@ const AppContent = () => {
   const showTabBarLables = useUiSettingsStore(
     state => state.showTabBarLabels,
   );
-  const tabBarBottomInset = showTabBarLables
-    ? Math.max(insets.bottom - 6, 0)
-    : insets.bottom;
+  const tabBarLabelLift = showTabBarLables
+    ? Math.min(10, Math.round(insets.bottom * 0.25))
+    : 0;
 
   SystemUI.setBackgroundColorAsync('black');
 
@@ -476,8 +476,8 @@ const AppContent = () => {
           tabBarStyle: !isLargeScreen
             ? {
                 position: 'absolute',
-                bottom: showTabBarLables ? 0 : -insets.bottom,
-                height: 55 + tabBarBottomInset,
+                bottom: -insets.bottom + tabBarLabelLift,
+                height: 55 + insets.bottom,
                 borderRadius: 0,
                 // backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 overflow: 'hidden',
@@ -485,7 +485,7 @@ const AppContent = () => {
                 borderTopWidth: 0,
                 paddingHorizontal: 0,
                 paddingTop: 5,
-                paddingBottom: tabBarBottomInset,
+                paddingBottom: insets.bottom,
               }
             : {},
           tabBarBackground: () => <TabBarBackgound />,
