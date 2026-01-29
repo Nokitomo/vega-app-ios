@@ -91,7 +91,7 @@ module.exports = () => {
       scheme: 'com.vega',
       displayName: 'Vega',
       jsEngine: 'hermes',
-      newArchEnabled: true,
+      newArchEnabled: false,
       autolinking: {exclude: ['expo-splash-screen']},
       plugins,
       slug: 'vega',

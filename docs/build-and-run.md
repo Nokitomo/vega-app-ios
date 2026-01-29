@@ -22,8 +22,7 @@ npx expo run:android --device "Medium_phone_API_35"
 ```
 Nota: non usare l'emulatore Pixel_6_Pro_API_35.
 Nota: il wrapper Gradle usa 8.13; se vedi errori di versione minima, verifica `android/gradle/wrapper/gradle-wrapper.properties`.
-Nota: la New Architecture e' attiva; `react-native-webview` usa l'interoperability layer (legacy component) e una patch-package che evita il codegen del componente (usa `requireNativeComponent`) mantenendo solo i moduli, per evitare crash Fabric.
-Nota: `react-native-svg` e' forzato a codegen "modules" tramite patch-package per evitare crash Fabric (mantiene i componenti legacy per le view).
+Nota: la New Architecture e' disattivata.
 
 ## Prebuild (rigenera android/ios)
 ```
