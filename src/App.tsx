@@ -26,7 +26,7 @@ import BootSplash from 'react-native-bootsplash';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 import Preferences from './screens/settings/Preference';
 import useThemeStore from './lib/zustand/themeStore';
-import {Dimensions, LogBox, ViewStyle} from 'react-native';
+import {Dimensions, LogBox, PixelRatio, ViewStyle} from 'react-native';
 import {EpisodeLink} from './lib/providers/types';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import TabBarBackgound from './components/TabBarBackgound';
@@ -208,9 +208,14 @@ const AppContent = () => {
   const showTabBarLables = useUiSettingsStore(
     state => state.showTabBarLabels,
   );
-  const tabBarLabelLift = showTabBarLables
-    ? Math.min(10, Math.round(insets.bottom * 0.1))
-    : 0;
+  const tabBarLabelLift = (() => {
+    if (!showTabBarLables) {
+      return 0;
+    }
+    const fontScale = PixelRatio.getFontScale();
+    const labelHeight = Math.ceil(10 * fontScale + 6);
+    return Math.min(insets.bottom, labelHeight);
+  })();
 
   SystemUI.setBackgroundColorAsync('black');
 
