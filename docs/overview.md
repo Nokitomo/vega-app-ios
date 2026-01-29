@@ -44,6 +44,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 6) Download
 - Download locale con stato e gestione file.
 - Per AnimeUnity il download in-app usa solo il server "AnimeUnity Download"; i server HLS non supportati vengono esclusi.
+- Nella lista episodi di una serie (da Downloads) e possibile selezionare ed eliminare singoli episodi.
 
 ## Estensioni/Provider
 - I provider sono moduli JS remoti che forniscono catalogo, metadata e stream.
