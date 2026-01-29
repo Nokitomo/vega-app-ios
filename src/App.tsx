@@ -186,7 +186,7 @@ export type TabStackParamList = {
 };
 const Tab = createBottomTabNavigator<TabStackParamList>();
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
-const App = () => {
+const AppContent = () => {
   LogBox.ignoreLogs([
     'You have passed a style to FlashList',
     'new NativeEventEmitter()',
@@ -598,106 +598,110 @@ const App = () => {
 
   return (
     <GlobalErrorBoundary>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <SafeAreaView
-            edges={{
-              right: 'off',
-              top: 'off',
-              left: 'off',
-              bottom: 'additive',
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaView
+          edges={{
+            right: 'off',
+            top: 'off',
+            left: 'off',
+            bottom: 'additive',
+          }}
+          className="flex-1"
+          style={{backgroundColor: 'black'}}>
+          <NavigationContainer
+            ref={navigationRef}
+            onReady={async () => {
+              // Hide bootsplash
+              await BootSplash.hide({fade: true});
+              applyOrientationForRoute(
+                navigationRef.getCurrentRoute()?.name,
+              );
+              syncSearchCacheState(navigationRef.getRootState());
+              // Track initial screen
+              if (hasFirebase) {
+                try {
+                  const route = navigationRef.getCurrentRoute();
+                  if (route?.name) {
+                    const analytics = getAnalytics();
+                    analytics &&
+                      (await analytics().logScreenView({
+                        screen_name: route.name,
+                        screen_class: 'Navigation',
+                      }));
+                  }
+                } catch {}
+              }
             }}
-            className="flex-1"
-            style={{backgroundColor: 'black'}}>
-            <NavigationContainer
-              ref={navigationRef}
-              onReady={async () => {
-                // Hide bootsplash
-                await BootSplash.hide({fade: true});
-                applyOrientationForRoute(
-                  navigationRef.getCurrentRoute()?.name,
-                );
-                syncSearchCacheState(navigationRef.getRootState());
-                // Track initial screen
-                if (hasFirebase) {
-                  try {
-                    const route = navigationRef.getCurrentRoute();
-                    if (route?.name) {
-                      const analytics = getAnalytics();
-                      analytics &&
-                        (await analytics().logScreenView({
-                          screen_name: route.name,
-                          screen_class: 'Navigation',
-                        }));
-                    }
-                  } catch {}
-                }
-              }}
-              onStateChange={async state => {
-                applyOrientationForRoute(
-                  navigationRef.getCurrentRoute()?.name,
-                );
-                syncSearchCacheState(state);
-                if (hasFirebase) {
-                  try {
-                    const route = navigationRef.getCurrentRoute();
-                    if (route?.name) {
-                      const analytics = getAnalytics();
-                      analytics &&
-                        (await analytics().logScreenView({
-                          screen_name: route.name,
-                          screen_class: 'Navigation',
-                        }));
-                    }
-                  } catch {}
-                }
-              }}
-              theme={{
-                fonts: {
-                  regular: {
-                    fontFamily: 'Inter_400Regular',
-                    fontWeight: '400',
-                  },
-                  medium: {
-                    fontFamily: 'Inter_500Medium',
-                    fontWeight: '500',
-                  },
-                  bold: {
-                    fontFamily: 'Inter_700Bold',
-                    fontWeight: '700',
-                  },
-                  heavy: {
-                    fontFamily: 'Inter_800ExtraBold',
-                    fontWeight: '800',
-                  },
+            onStateChange={async state => {
+              applyOrientationForRoute(
+                navigationRef.getCurrentRoute()?.name,
+              );
+              syncSearchCacheState(state);
+              if (hasFirebase) {
+                try {
+                  const route = navigationRef.getCurrentRoute();
+                  if (route?.name) {
+                    const analytics = getAnalytics();
+                    analytics &&
+                      (await analytics().logScreenView({
+                        screen_name: route.name,
+                        screen_class: 'Navigation',
+                      }));
+                  }
+                } catch {}
+              }
+            }}
+            theme={{
+              fonts: {
+                regular: {
+                  fontFamily: 'Inter_400Regular',
+                  fontWeight: '400',
                 },
-                dark: true,
-                colors: {
-                  background: 'transparent',
-                  card: 'black',
-                  primary: primary,
-                  text: 'white',
-                  border: 'black',
-                  notification: primary,
+                medium: {
+                  fontFamily: 'Inter_500Medium',
+                  fontWeight: '500',
                 },
+                bold: {
+                  fontFamily: 'Inter_700Bold',
+                  fontWeight: '700',
+                },
+                heavy: {
+                  fontFamily: 'Inter_800ExtraBold',
+                  fontWeight: '800',
+                },
+              },
+              dark: true,
+              colors: {
+                background: 'transparent',
+                card: 'black',
+                primary: primary,
+                text: 'white',
+                border: 'black',
+                notification: primary,
+              },
+            }}>
+            <Stack.Navigator
+              screenOptions={{
+                headerShown: false,
+                animation: 'ios_from_right',
+                animationDuration: 200,
+                freezeOnBlur: true,
+                contentStyle: {backgroundColor: 'transparent'},
               }}>
-              <Stack.Navigator
-                screenOptions={{
-                  headerShown: false,
-                  animation: 'ios_from_right',
-                  animationDuration: 200,
-                  freezeOnBlur: true,
-                  contentStyle: {backgroundColor: 'transparent'},
-                }}>
-                <Stack.Screen name="TabStack" component={TabStack} />
-                <Stack.Screen name="Player" component={Player} />
-              </Stack.Navigator>
-            </NavigationContainer>
-          </SafeAreaView>
-        </QueryClientProvider>
-      </SafeAreaProvider>
+              <Stack.Screen name="TabStack" component={TabStack} />
+              <Stack.Screen name="Player" component={Player} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaView>
+      </QueryClientProvider>
     </GlobalErrorBoundary>
   );
 };
+
+const App = () => (
+  <SafeAreaProvider>
+    <AppContent />
+  </SafeAreaProvider>
+);
 
 export default App;
