@@ -166,6 +166,11 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                 className={`flex-row rounded-lg overflow-hidden mb-2 h-24 ${
                   isSelecting && selected ? 'bg-quaternary' : 'bg-tertiary'
                 }`}
+                style={
+                  isSelecting && selected
+                    ? {borderColor: primary, borderWidth: 1}
+                    : undefined
+                }
                 onPress={() => {
                   if (isSelecting) {
                     if (settingsStorage.isHapticFeedbackEnabled()) {
