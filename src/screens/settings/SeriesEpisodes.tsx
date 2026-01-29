@@ -207,6 +207,15 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   ) : (
                     <View className="w-full h-full bg-quaternary rounded-t-lg" />
                   )}
+                  {isSelecting && (
+                    <View className="absolute top-2 right-2">
+                      <MaterialCommunityIcons
+                        name={selected ? 'check-circle' : 'checkbox-blank-circle-outline'}
+                        size={20}
+                        color={selected ? primary : 'white'}
+                      />
+                    </View>
+                  )}
                   <View className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded">
                     <Text className="text-white text-xs">
                       EP {episodeNumber}

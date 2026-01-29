@@ -470,7 +470,7 @@ const Downloads = () => {
                 }
               }
             }}>
-            <View className="w-40 aspect-video rounded-md overflow-hidden bg-quaternary mr-3">
+            <View className="w-40 aspect-video rounded-md overflow-hidden bg-quaternary mr-3 relative">
               {item.thumbnail ? (
                 <Image
                   source={{uri: item.thumbnail}}
@@ -483,6 +483,19 @@ const Downloads = () => {
                     name="movie-open-outline"
                     size={32}
                     color={primary}
+                  />
+                </View>
+              )}
+              {isSelecting && (
+                <View className="absolute top-2 right-2">
+                  <MaterialCommunityIcons
+                    name={
+                      isGroupSelected(item)
+                        ? 'check-circle'
+                        : 'checkbox-blank-circle-outline'
+                    }
+                    size={22}
+                    color={isGroupSelected(item) ? primary : 'white'}
                   />
                 </View>
               )}
