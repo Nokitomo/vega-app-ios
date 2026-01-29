@@ -242,10 +242,17 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                   </Text>
                   {chunkPosts(section.data, 3).map((row, rowIndex) => (
                     <View key={`${section.title}-${rowIndex}`} className="flex flex-row">
-                      {row.map(item => (
+                      {row.map((item, itemIndex) => {
+                        const itemClassName =
+                          itemIndex === 0
+                            ? 'flex flex-col my-3 mr-3'
+                            : itemIndex === row.length - 1
+                            ? 'flex flex-col my-3 ml-3'
+                            : 'flex flex-col m-3';
+                        return (
                         <TouchableOpacity
                           key={item.link}
-                          className="flex flex-col m-3"
+                          className={itemClassName}
                           onPress={() =>
                             navigation.navigate('Info', {
                               link: item.link,
@@ -280,7 +287,8 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                               : item.title}
                           </Text>
                         </TouchableOpacity>
-                      ))}
+                        );
+                      })}
                     </View>
                   ))}
                 </View>
