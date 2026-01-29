@@ -46,7 +46,7 @@ Nota: lo stack WatchHistory e raggiungibile da Settings.
 - SubTitlesPreferences
 
 ## Note UI
-- Tab bar personalizzata con haptic feedback opzionale.
+- Tab bar personalizzata con haptic feedback opzionale e padding bottom dinamico (safe area) per evitare sovrapposizione con la barra di sistema su Android.
 - Uso di SafeAreaView e tema scuro custom.
 - In Info, il pulsante X torna alla schermata precedente senza reset dello stack.
 - Preferenze: "Show Tab Bar Labels" controlla la visibilita delle etichette nella tab bar; "Show Recently Watched" abilita/disabilita la sezione Continue Watching in Home.

@@ -31,7 +31,11 @@ import {EpisodeLink} from './lib/providers/types';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import TabBarBackgound from './components/TabBarBackgound';
 import {TouchableOpacity} from 'react-native';
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import {StyleProp} from 'react-native';
 import Animated from 'react-native-reanimated';
 import Downloads from './screens/settings/Downloads';
@@ -195,6 +199,7 @@ const App = () => {
   const WatchHistoryStack =
     createNativeStackNavigator<WatchHistoryStackParamList>();
   const {primary} = useThemeStore(state => state);
+  const insets = useSafeAreaInsets();
   const {clearCache} = useSearchCacheStore(state => ({
     clearCache: state.clearCache,
   }));
@@ -469,7 +474,7 @@ const App = () => {
             ? {
                 position: 'absolute',
                 bottom: 0,
-                height: 55,
+                height: 55 + insets.bottom,
                 borderRadius: 0,
                 // backgroundColor: 'rgba(0, 0, 0, 0.8)',
                 overflow: 'hidden',
@@ -477,6 +482,7 @@ const App = () => {
                 borderTopWidth: 0,
                 paddingHorizontal: 0,
                 paddingTop: 5,
+                paddingBottom: insets.bottom,
               }
             : {},
           tabBarBackground: () => <TabBarBackgound />,
