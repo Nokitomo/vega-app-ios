@@ -101,6 +101,7 @@ const Settings = ({navigation}: Props) => {
   );
 
   const clearCacheHandler = useCallback(() => {
+    console.log('[Settings] Clear Cache pressed');
     if (settingsStorage.isHapticFeedbackEnabled()) {
       ReactNativeHapticFeedback.trigger('virtualKey', {
         enableVibrateFallback: true,
@@ -108,9 +109,11 @@ const Settings = ({navigation}: Props) => {
       });
     }
     cacheStorageService.clearAll();
+    console.log('[Settings] Cache cleared');
   }, []);
 
   const clearHistoryHandler = useCallback(() => {
+    console.log('[Settings] Clear Watch History pressed');
     if (settingsStorage.isHapticFeedbackEnabled()) {
       ReactNativeHapticFeedback.trigger('virtualKey', {
         enableVibrateFallback: true,
@@ -118,6 +121,7 @@ const Settings = ({navigation}: Props) => {
       });
     }
     clearHistory();
+    console.log('[Settings] Watch history cleared');
   }, [clearHistory]);
 
   const AnimatedSection = ({
