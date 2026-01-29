@@ -35,6 +35,8 @@ import {
 } from '../lib/storage';
 import {ifExists} from '../lib/file/ifExists';
 import {useEpisodes, useStreamData} from '../lib/hooks/useEpisodes';
+import {extensionManager} from '../lib/services/ExtensionManager';
+import {providerManager} from '../lib/services/ProviderManager';
 import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
 import SkeletonLoader from './Skeleton';
@@ -78,6 +80,19 @@ interface ResumeProgress {
   episodeTitle?: string;
   episodeLink?: string;
 }
+
+interface PendingPlay {
+  isResume: boolean;
+  episodeNumber?: number;
+  episodeTitle?: string;
+  episodeLink?: string;
+  seasonEpisodesLink?: string;
+}
+
+type PlayableItem = {
+  title?: string;
+  link?: string;
+};
 
 const formatResumeTime = (seconds: number) => {
   const safeSeconds = Math.max(0, Math.floor(seconds));
@@ -135,6 +150,56 @@ const getEpisodeLabel = (episodeTitle?: string) => {
 
   return `Ep. ${match[0]}`;
 };
+
+const normalizeTitle = (title?: string) => (title || '').trim().toLowerCase();
+
+const getEpisodeNumber = (title?: string) => {
+  if (!title) {
+    return undefined;
+  }
+
+  const match = title.match(/\d+/);
+  if (!match) {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(match[0], 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parseEpisodeRange = (episodesLink?: string) => {
+  if (!episodesLink) {
+    return null;
+  }
+
+  const parts = episodesLink.split('|');
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const start = Number.parseInt(parts[1], 10);
+  const end = Number.parseInt(parts[2], 10);
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start <= 0 ||
+    end < start
+  ) {
+    return null;
+  }
+
+  return {start, end};
+};
+
+const findSeasonForEpisodeNumber = (linkList: Link[], episodeNumber: number) =>
+  linkList.find(item => {
+    const range = parseEpisodeRange(item.episodesLink);
+    if (!range) {
+      return false;
+    }
+    return episodeNumber >= range.start && episodeNumber <= range.end;
+  });
 
 const SeasonList: React.FC<SeasonListProps> = ({
   LinkList,
@@ -222,16 +287,34 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const [episodeProgressMap, setEpisodeProgressMap] = useState<
     Record<string, number>
   >({});
+  const [pendingPlay, setPendingPlay] = useState<PendingPlay | null>(null);
 
-  // Memoized filtering and sorting logic for episodes
-  const filteredAndSortedEpisodes = useMemo(() => {
+  const normalizedEpisodes = useMemo(() => {
     if (!episodeList || !Array.isArray(episodeList)) {
       return [];
     }
 
-    let episodes = episodeList.filter(
+    return episodeList.filter(
       episode => episode && episode.title && episode.link,
     );
+  }, [episodeList]);
+
+  const normalizedDirectLinks = useMemo(() => {
+    if (
+      !activeSeason?.directLinks ||
+      !Array.isArray(activeSeason.directLinks)
+    ) {
+      return [];
+    }
+
+    return activeSeason.directLinks.filter(
+      link => link && link.title && link.link,
+    );
+  }, [activeSeason?.directLinks]);
+
+  // Memoized filtering and sorting logic for episodes
+  const filteredAndSortedEpisodes = useMemo(() => {
+    let episodes = normalizedEpisodes;
 
     // Apply search filter
     if (searchText.trim()) {
@@ -246,20 +329,11 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
 
     return episodes;
-  }, [episodeList, searchText, sortOrder]);
+  }, [normalizedEpisodes, searchText, sortOrder]);
 
   // Memoized direct links processing
   const filteredAndSortedDirectLinks = useMemo(() => {
-    if (
-      !activeSeason?.directLinks ||
-      !Array.isArray(activeSeason.directLinks)
-    ) {
-      return [];
-    }
-
-    let links = activeSeason.directLinks.filter(
-      link => link && link.title && link.link,
-    );
+    let links = normalizedDirectLinks;
 
     // Apply search filter
     if (searchText.trim()) {
@@ -274,7 +348,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
 
     return links;
-  }, [activeSeason?.directLinks, searchText, sortOrder]);
+  }, [normalizedDirectLinks, searchText, sortOrder]);
 
   // Memoized title alignment
   const titleAlignment = useMemo(() => {
@@ -286,6 +360,20 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     return hasLongTitles ? 'justify-start' : 'justify-center';
   }, [filteredAndSortedEpisodes, filteredAndSortedDirectLinks]);
+
+  const sortedEpisodes = useMemo(() => {
+    if (sortOrder === 'desc') {
+      return [...normalizedEpisodes].reverse();
+    }
+    return normalizedEpisodes;
+  }, [normalizedEpisodes, sortOrder]);
+
+  const sortedDirectLinks = useMemo(() => {
+    if (sortOrder === 'desc') {
+      return [...normalizedDirectLinks].reverse();
+    }
+    return normalizedDirectLinks;
+  }, [normalizedDirectLinks, sortOrder]);
 
   // Memoized completion checker
   const isCompleted = useCallback((link: string) => {
@@ -591,49 +679,196 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
   }, [stickyMenu.link, stickyMenu.type, handleExternalPlayer]);
 
-  const handleResume = useCallback(() => {
-    const resumeList =
-      filteredAndSortedEpisodes.length > 0
-        ? filteredAndSortedEpisodes
-        : filteredAndSortedDirectLinks;
+  const getPlayableList = useCallback(() => {
+    if (sortedEpisodes.length > 0) {
+      return sortedEpisodes;
+    }
+    if (sortedDirectLinks.length > 0) {
+      return sortedDirectLinks;
+    }
+    return [];
+  }, [sortedEpisodes, sortedDirectLinks]);
 
+  const resolveEpisodeIndex = useCallback(
+    (list: PlayableItem[], target: PendingPlay) => {
+      if (target.episodeLink) {
+        const byLink = list.findIndex(item => item.link === target.episodeLink);
+        if (byLink >= 0) {
+          return byLink;
+        }
+      }
+
+      if (target.episodeTitle) {
+        const normalizedTitle = normalizeTitle(target.episodeTitle);
+        if (normalizedTitle) {
+          const byTitle = list.findIndex(
+            item => normalizeTitle(item.title) === normalizedTitle,
+          );
+          if (byTitle >= 0) {
+            return byTitle;
+          }
+        }
+      }
+
+      if (target.episodeNumber != null) {
+        const byNumber = list.findIndex(
+          item => getEpisodeNumber(item.title) === target.episodeNumber,
+        );
+        if (byNumber >= 0) {
+          return byNumber;
+        }
+      }
+
+      return -1;
+    },
+    [],
+  );
+
+  const prefetchEpisodesForLink = useCallback(
+    async (episodesLink?: string) => {
+      if (!episodesLink || cacheStorage.getString(episodesLink)) {
+        return;
+      }
+
+      const hasEpisodesModule =
+        extensionManager.getProviderModules(providerValue)?.modules.episodes;
+      if (!hasEpisodesModule) {
+        return;
+      }
+
+      try {
+        const episodes = await providerManager.getEpisodes({
+          url: episodesLink,
+          providerValue,
+        });
+
+        if (episodes && episodes.length > 0) {
+          cacheStorage.setString(episodesLink, JSON.stringify(episodes));
+        }
+      } catch (error) {
+        console.error('Error prefetching episodes:', error);
+      }
+    },
+    [providerValue],
+  );
+
+  useEffect(() => {
+    const targetNumber = resumeProgress?.episodeTitle
+      ? getEpisodeNumber(resumeProgress.episodeTitle)
+      : 1;
+    if (!targetNumber || LinkList.length === 0) {
+      return;
+    }
+
+    const targetSeason = findSeasonForEpisodeNumber(LinkList, targetNumber);
+    if (!targetSeason?.episodesLink) {
+      return;
+    }
+
+    if (targetSeason.episodesLink === activeSeason?.episodesLink) {
+      return;
+    }
+
+    prefetchEpisodesForLink(targetSeason.episodesLink);
+  }, [
+    LinkList,
+    resumeProgress?.episodeTitle,
+    activeSeason?.episodesLink,
+    prefetchEpisodesForLink,
+  ]);
+
+  useEffect(() => {
+    if (!pendingPlay || episodeLoading) {
+      return;
+    }
+
+    if (
+      pendingPlay.seasonEpisodesLink &&
+      pendingPlay.seasonEpisodesLink !== activeSeason?.episodesLink
+    ) {
+      return;
+    }
+
+    const resumeList = getPlayableList();
+    if (!resumeList || resumeList.length === 0) {
+      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      setPendingPlay(null);
+      return;
+    }
+
+    const resumeIndex = resolveEpisodeIndex(resumeList, pendingPlay);
+    if (resumeIndex < 0) {
+      ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+      setPendingPlay(null);
+      return;
+    }
+
+    const resumeItem = resumeList[resumeIndex];
+    playHandler({
+      linkIndex: resumeIndex,
+      type: type,
+      primaryTitle: metaTitle,
+      secondaryTitle: resumeItem.title,
+      seasonTitle: activeSeason?.title || '',
+      episodeData: resumeList,
+    });
+    setPendingPlay(null);
+  }, [
+    pendingPlay,
+    episodeLoading,
+    activeSeason?.episodesLink,
+    activeSeason?.title,
+    getPlayableList,
+    resolveEpisodeIndex,
+    playHandler,
+    type,
+    metaTitle,
+  ]);
+
+  const handleResume = useCallback(() => {
+    const isResume = !!resumeProgress;
+    const targetEpisodeNumber = isResume
+      ? getEpisodeNumber(resumeProgress?.episodeTitle)
+      : 1;
+
+    const target: PendingPlay = {
+      isResume,
+      episodeNumber: targetEpisodeNumber,
+      episodeTitle: resumeProgress?.episodeTitle,
+      episodeLink: resumeProgress?.episodeLink,
+    };
+
+    if (targetEpisodeNumber != null) {
+      const targetSeason = findSeasonForEpisodeNumber(
+        LinkList,
+        targetEpisodeNumber,
+      );
+      if (
+        targetSeason?.episodesLink &&
+        targetSeason.episodesLink !== activeSeason?.episodesLink
+      ) {
+        setPendingPlay({
+          ...target,
+          seasonEpisodesLink: targetSeason.episodesLink,
+        });
+        handleSeasonChange(targetSeason);
+        return;
+      }
+    }
+
+    const resumeList = getPlayableList();
     if (!resumeList || resumeList.length === 0) {
       ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
       return;
     }
 
-    if (!resumeProgress) {
-      const resumeItem = resumeList[0];
-      playHandler({
-        linkIndex: 0,
-        type: type,
-        primaryTitle: metaTitle,
-        secondaryTitle: resumeItem.title,
-        seasonTitle: activeSeason?.title || '',
-        episodeData: resumeList,
-      });
-      return;
-    }
-
-    let resumeIndex = -1;
-
-    if (resumeProgress.episodeLink) {
-      resumeIndex = resumeList.findIndex(
-        item => item.link === resumeProgress.episodeLink,
-      );
-    }
-
-    if (resumeIndex < 0 && resumeProgress.episodeTitle) {
-      const normalizedTitle = resumeProgress.episodeTitle
-        .trim()
-        .toLowerCase();
-      resumeIndex = resumeList.findIndex(
-        item => item.title?.trim().toLowerCase() === normalizedTitle,
-      );
-    }
-
+    const resumeIndex = resolveEpisodeIndex(resumeList, target);
     if (resumeIndex < 0) {
-      ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+      if (isResume) {
+        ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+        return;
+      }
+      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
       return;
     }
 
@@ -649,12 +884,15 @@ const SeasonList: React.FC<SeasonListProps> = ({
     });
   }, [
     resumeProgress,
-    filteredAndSortedEpisodes,
-    filteredAndSortedDirectLinks,
+    LinkList,
+    getPlayableList,
+    resolveEpisodeIndex,
     playHandler,
     type,
     metaTitle,
     activeSeason?.title,
+    activeSeason?.episodesLink,
+    handleSeasonChange,
   ]);
 
   // Memoized episode render item
