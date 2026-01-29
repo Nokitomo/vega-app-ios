@@ -362,7 +362,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     ))}
                     {info?.episodesCount ? (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        Episodi: {info.episodesCount}
+                        Episodes: {info.episodesCount}
                       </Text>
                     ) : null}
                     {info?.tags?.slice(0, 3)?.map((tag: string) => (
@@ -563,7 +563,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       ) : null}
                       {info?.genres && info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
-                          Generi: {info.genres.join(' · ')}
+                          Genres: {info.genres.join(' · ')}
                         </Text>
                       ) : null}
                     </View>
@@ -597,7 +597,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                               : 'bg-quaternary'
                           }`}>
                           <Text className="text-white text-xs font-semibold">
-                            Episodi
+                            Episodes
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -608,7 +608,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                               : 'bg-quaternary'
                           }`}>
                           <Text className="text-white text-xs font-semibold">
-                            Correlati
+                            Related
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -630,7 +630,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         <View className="gap-3">
                           {relatedItems.length === 0 ? (
                             <Text className="text-gray-400 text-xs">
-                              Nessun correlato disponibile.
+                              No related items available.
                             </Text>
                           ) : (
                             relatedItems.map((item, index) => (
