@@ -50,14 +50,12 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
 
   const toggleSelection = (uri: string) => {
     setEpisodeSelected(prev => {
-      if (prev.includes(uri)) {
-        const next = prev.filter(item => item !== uri);
-        if (next.length === 0) {
-          setIsSelecting(false);
-        }
-        return next;
-      }
-      return [...prev, uri];
+      const isSelected = prev.includes(uri);
+      const next = isSelected
+        ? prev.filter(item => item !== uri)
+        : [...prev, uri];
+      setIsSelecting(next.length > 0);
+      return next;
     });
   };
 
@@ -156,6 +154,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
           data={sortedEpisodes}
           extraData={{isSelecting, episodeSelected}}
           estimatedItemSize={100}
+          keyExtractor={item => item.uri}
           renderItem={({item}) => {
             const fileName = item.uri.split('/').pop() || '';
             const episodeNumber = getEpisodeNumber(fileName);
@@ -166,11 +165,11 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                 className={`flex-row rounded-lg overflow-hidden mb-2 h-24 ${
                   isSelecting && selected ? 'bg-quaternary' : 'bg-tertiary'
                 }`}
-                style={
-                  isSelecting && selected
-                    ? {borderColor: primary, borderWidth: 1}
-                    : undefined
-                }
+                style={{
+                  borderColor:
+                    isSelecting && selected ? primary : 'transparent',
+                  borderWidth: isSelecting && selected ? 1 : 0,
+                }}
                 onPress={() => {
                   if (isSelecting) {
                     if (settingsStorage.isHapticFeedbackEnabled()) {
