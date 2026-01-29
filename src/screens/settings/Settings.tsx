@@ -177,15 +177,18 @@ const Settings = ({navigation}: Props) => {
                 onPress={() => navigation.navigate('Extensions')}
                 background={TouchableNativeFeedback.Ripple('#333333', false)}>
                 <View className="flex-row items-center justify-between p-4">
-                  <View className="flex-row items-center">
+                  <View
+                    className="flex-row items-center flex-1"
+                    style={{minWidth: 0}}>
                     <MaterialCommunityIcons
                       name="puzzle"
                       size={22}
                       color={primary}
                     />
                     <Text
-                      className="text-white ml-3 text-base flex-1"
-                      numberOfLines={1}>
+                      className="text-white ml-3 text-base"
+                      numberOfLines={1}
+                      style={{flexShrink: 1}}>
                       Provider Manager
                     </Text>
                   </View>
@@ -259,15 +262,18 @@ const Settings = ({navigation}: Props) => {
                 onPress={() => navigation.navigate('WatchHistoryStack')}
                 background={TouchableNativeFeedback.Ripple('#333333', false)}>
                 <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-                  <View className="flex-row items-center">
+                  <View
+                    className="flex-row items-center flex-1"
+                    style={{minWidth: 0}}>
                     <MaterialCommunityIcons
                       name="history"
                       size={22}
                       color={primary}
                     />
                     <Text
-                      className="text-white ml-3 text-base flex-1"
-                      numberOfLines={1}>
+                      className="text-white ml-3 text-base"
+                      numberOfLines={1}
+                      style={{flexShrink: 1}}>
                       Watch History
                     </Text>
                   </View>
