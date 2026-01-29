@@ -34,6 +34,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const [isEnd, setIsEnd] = useState<boolean>(false);
   const {provider} = useContentStore(state => state);
   const {width: windowWidth} = useWindowDimensions();
+  const [gridContainerWidth, setGridContainerWidth] = useState<number>(0);
   const [viewType, setViewType] = useState<number>(
     settingsStorage.getListViewType(),
   );
@@ -86,24 +87,24 @@ const ScrollList = ({route}: Props): React.ReactElement => {
       }));
   }, [calendarDayOrder, isCalendarView, posts]);
   const gridColumns = 3;
-  const gridHorizontalPadding = 32;
+  const gridFallbackHorizontalPadding = 32;
   const gridMaxItemWidth = 100;
-  const gridAvailableWidth = Math.max(0, windowWidth - gridHorizontalPadding);
-  const calculatedGridItemWidth = Math.floor(
-    gridAvailableWidth / gridColumns,
-  );
-  const gridItemWidth =
-    calculatedGridItemWidth > 0
-      ? Math.min(gridMaxItemWidth, calculatedGridItemWidth)
+  const gridBaseWidth =
+    gridContainerWidth > 0
+      ? gridContainerWidth
+      : Math.max(0, windowWidth - gridFallbackHorizontalPadding);
+  const gridAvailableWidth = Math.max(0, gridBaseWidth);
+  const gridColumnWidth =
+    gridAvailableWidth > 0
+      ? Math.floor(gridAvailableWidth / gridColumns)
       : gridMaxItemWidth;
+  const gridItemWidth = Math.min(gridMaxItemWidth, gridColumnWidth);
   const gridItemHeight = Math.round(gridItemWidth * 1.5);
-  const gridItemMarginH = Math.max(
-    0,
-    Math.floor(
-      (gridAvailableWidth - gridColumns * gridItemWidth) / (gridColumns * 2),
-    ),
-  );
-  const gridTitleWidth = Math.max(80, gridItemWidth - 4);
+  const gridTitleWidth = Math.max(80, Math.min(gridItemWidth, gridColumnWidth) - 4);
+  const gridItemWrapperStyle =
+    gridColumnWidth > 0
+      ? {width: gridColumnWidth, alignItems: 'center', marginVertical: 12}
+      : {width: gridMaxItemWidth, alignItems: 'center', marginVertical: 12};
   const chunkPosts = (items: Post[], size: number) => {
     const rows: Post[][] = [];
     for (let i = 0; i < items.length; i += size) {
@@ -217,7 +218,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
     const skeletonCount = viewType === 1 ? 6 : 3;
     const itemWrapperStyle =
       viewType === 1
-        ? {marginHorizontal: gridItemMarginH, marginVertical: 12}
+        ? gridItemWrapperStyle
         : {marginHorizontal: 12, marginVertical: 12};
     const imageSize =
       viewType === 1
@@ -261,9 +262,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
           </TouchableOpacity>
         )}
       </View>
-      <View className="justify-center flex-row w-full">
+      <View
+        className="justify-center flex-row w-full"
+        onLayout={event =>
+          setGridContainerWidth(event.nativeEvent.layout.width)
+        }>
         {isCalendarView ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: 80}}>
             {isLoading ? (
               <View className="flex flex-row flex-wrap gap-1 justify-center items-center mb-16">
                 {renderSkeletons()}
@@ -277,15 +284,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                     {section.title}
                   </Text>
                   {chunkPosts(section.data, 3).map((row, rowIndex) => (
-                    <View key={`${section.title}-${rowIndex}`} className="flex flex-row">
+                    <View
+                      key={`${section.title}-${rowIndex}`}
+                      className="flex flex-row"
+                      style={{width: gridAvailableWidth}}>
                       {row.map(item => (
                         <TouchableOpacity
                           key={item.link}
                           className="flex flex-col"
-                          style={{
-                            marginHorizontal: gridItemMarginH,
-                            marginVertical: 12,
-                          }}
+                          style={gridItemWrapperStyle}
                           onPress={() =>
                             navigation.navigate('Info', {
                               link: item.link,
@@ -331,7 +338,6 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                 </View>
               ))
             )}
-            <View className="h-32" />
             {!isLoading && calendarSections.length === 0 ? (
               <View className="w-full h-full flex items-center justify-center">
                 <Text className="text-white text-center font-semibold text-lg">
@@ -365,15 +371,12 @@ const ScrollList = ({route}: Props): React.ReactElement => {
               <TouchableOpacity
                 className={
                   viewType === 1
-                    ? 'flex flex-col m-3'
+                    ? 'flex flex-col'
                     : 'flex-row m-3 items-center'
                 }
                 style={
                   viewType === 1
-                    ? {
-                        marginHorizontal: gridItemMarginH,
-                        marginVertical: 12,
-                      }
+                    ? gridItemWrapperStyle
                     : undefined
                 }
                 onPress={() =>
