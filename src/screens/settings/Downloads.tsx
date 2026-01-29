@@ -3,7 +3,7 @@ import requestStoragePermission from '../../lib/file/getStoragePermission';
 import * as FileSystem from 'expo-file-system/legacy';
 import {downloadFolder} from '../../lib/constants';
 import * as VideoThumbnails from 'expo-video-thumbnails';
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {settingsStorage, downloadsStorage} from '../../lib/storage';
 import useThemeStore from '../../lib/zustand/themeStore';
 import * as RNFS from '@dr.pogodin/react-native-fs';
@@ -112,6 +112,7 @@ const Downloads = () => {
 
   const [groupSelected, setGroupSelected] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const longPressRef = useRef(false);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -408,10 +409,15 @@ const Downloads = () => {
                   ignoreAndroidSystemSettings: false,
                 });
               }
+              longPressRef.current = true;
               setGroupSelected(getGroupUris(item));
               setIsSelecting(true);
             }}
             onPress={() => {
+              if (longPressRef.current) {
+                longPressRef.current = false;
+                return;
+              }
               if (isSelecting) {
                 if (settingsStorage.isHapticFeedbackEnabled()) {
                   RNReactNativeHapticFeedback.trigger('effectTick', {
