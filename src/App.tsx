@@ -209,7 +209,7 @@ const AppContent = () => {
     state => state.showTabBarLabels,
   );
   const tabBarLabelLift = showTabBarLables
-    ? Math.min(10, Math.round(insets.bottom * 0.25))
+    ? Math.min(10, Math.round(insets.bottom * 0.1))
     : 0;
 
   SystemUI.setBackgroundColorAsync('black');
