@@ -27,3 +27,4 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 5) Dopo ogni modifica al codice, eseguire il comando di analisi/lint appropriato (es. `flutter analyze` o equivalente). Gli info possono essere ignorati. Correggere solo errori bloccanti (rossi) e warning (gialli) senza cambiare comportamento o rompere l'app. Se non e certo che il fix non alteri il comportamento, fermarsi e fornire un report dettagliato con possibili soluzioni.
 6) Quando si eseguono git e commit, verificare con attenzione cosa si sta salvando nella storia del progetto. Se ci sono file che non andrebbero committati, non farlo e informare l'utente indicando quali file e perche.
 7) Sono presenti customizzazioni manuali in `android/`: non eseguire `npx expo prebuild` (neanche con `--clean`).
+8) Standard EOL del progetto: LF. Il repository forza LF via `.gitattributes`, evitare CRLF nei file tracciati.
