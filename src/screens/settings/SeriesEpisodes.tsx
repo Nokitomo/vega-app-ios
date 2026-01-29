@@ -1,4 +1,4 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {View, Text, Image, TouchableOpacity, Platform} from 'react-native';
 import {FlashList} from '@shopify/flash-list';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -21,7 +21,6 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
   const [episodes, setEpisodes] = useState(initialEpisodes);
   const [episodeSelected, setEpisodeSelected] = useState<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const longPressRef = useRef(false);
 
   // Function to extract episode number from filename
   const getEpisodeNumber = (filename: string): number => {
@@ -155,6 +154,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
 
         <FlashList
           data={sortedEpisodes}
+          extraData={{isSelecting, episodeSelected}}
           estimatedItemSize={100}
           renderItem={({item}) => {
             const fileName = item.uri.split('/').pop() || '';
@@ -167,10 +167,6 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   isSelecting && selected ? 'bg-quaternary' : 'bg-tertiary'
                 }`}
                 onPress={() => {
-                  if (longPressRef.current) {
-                    longPressRef.current = false;
-                    return;
-                  }
                   if (isSelecting) {
                     if (settingsStorage.isHapticFeedbackEnabled()) {
                       RNReactNativeHapticFeedback.trigger('effectTick', {
@@ -199,7 +195,6 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                       ignoreAndroidSystemSettings: false,
                     });
                   }
-                  longPressRef.current = true;
                   setIsSelecting(true);
                   setEpisodeSelected([item.uri]);
                 }}>
