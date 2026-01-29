@@ -791,14 +791,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     const resumeList = getPlayableList();
     if (!resumeList || resumeList.length === 0) {
-      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
       setPendingPlay(null);
       return;
     }
 
     const resumeIndex = resolveEpisodeIndex(resumeList, pendingPlay);
     if (resumeIndex < 0) {
-      ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+      ToastAndroid.show('Episode not available', ToastAndroid.SHORT);
       setPendingPlay(null);
       return;
     }
@@ -858,17 +858,17 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     const resumeList = getPlayableList();
     if (!resumeList || resumeList.length === 0) {
-      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
       return;
     }
 
     const resumeIndex = resolveEpisodeIndex(resumeList, target);
     if (resumeIndex < 0) {
       if (isResume) {
-        ToastAndroid.show('Episodio non disponibile', ToastAndroid.SHORT);
+        ToastAndroid.show('Episode not available', ToastAndroid.SHORT);
         return;
       }
-      ToastAndroid.show('Nessun episodio disponibile', ToastAndroid.SHORT);
+      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
       return;
     }
 
@@ -1261,7 +1261,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 color={primary}
               />
               <Text className="text-white font-semibold">
-                {resumeProgress?.currentTime ? 'Riprendi' : 'Riproduci'}
+                {resumeProgress?.currentTime ? 'Resume' : 'Play'}
               </Text>
               {resumeProgress?.episodeTitle &&
               getEpisodeLabel(resumeProgress.episodeTitle) ? (
