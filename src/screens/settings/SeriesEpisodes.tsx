@@ -1,10 +1,14 @@
-import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {View, Text, Image, TouchableOpacity, Platform} from 'react-native';
 import {FlashList} from '@shopify/flash-list';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-// import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import {RootStackParamList} from '../../App';
+import {downloadsStorage, settingsStorage} from '../../lib/storage';
+import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import useThemeStore from '../../lib/zustand/themeStore';
 
 type SeriesEpisodesRouteProp = NativeStackScreenProps<
   RootStackParamList,
@@ -12,8 +16,11 @@ type SeriesEpisodesRouteProp = NativeStackScreenProps<
 >;
 
 const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
-  // const {primary} = useThemeStore(state => state);
-  const {series, episodes, thumbnails} = route.params;
+  const {primary} = useThemeStore(state => state);
+  const {series, episodes: initialEpisodes, thumbnails} = route.params;
+  const [episodes, setEpisodes] = useState(initialEpisodes);
+  const [episodeSelected, setEpisodeSelected] = useState<string[]>([]);
+  const [isSelecting, setIsSelecting] = useState(false);
 
   // Function to extract episode number from filename
   const getEpisodeNumber = (filename: string): number => {
@@ -31,17 +38,78 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
   };
 
   // Sort episodes by episode number
-  const sortedEpisodes = [...episodes].sort((a, b) => {
-    const aFilename = a.uri.split('/').pop() || '';
-    const bFilename = b.uri.split('/').pop() || '';
-    return getEpisodeNumber(aFilename) - getEpisodeNumber(bFilename);
-  });
+  const sortedEpisodes = useMemo(() => {
+    return [...episodes].sort((a, b) => {
+      const aFilename = a.uri.split('/').pop() || '';
+      const bFilename = b.uri.split('/').pop() || '';
+      return getEpisodeNumber(aFilename) - getEpisodeNumber(bFilename);
+    });
+  }, [episodes]);
+
+  const isEpisodeSelected = (uri: string) => episodeSelected.includes(uri);
+
+  const toggleSelection = (uri: string) => {
+    setEpisodeSelected(prev => {
+      if (prev.includes(uri)) {
+        const next = prev.filter(item => item !== uri);
+        if (next.length === 0) {
+          setIsSelecting(false);
+        }
+        return next;
+      }
+      return [...prev, uri];
+    });
+  };
+
+  const deleteEpisodes = async () => {
+    try {
+      await Promise.all(
+        episodeSelected.map(async fileUri => {
+          const fileInfo = await FileSystem.getInfoAsync(fileUri);
+          if (!fileInfo.exists) {
+            return;
+          }
+          const path =
+            Platform.OS === 'android'
+              ? fileUri.replace('file://', '')
+              : fileUri;
+          await RNFS.unlink(path);
+        }),
+      );
+
+      const remainingEpisodes = episodes.filter(
+        item => !episodeSelected.includes(item.uri),
+      );
+      setEpisodes(remainingEpisodes);
+      setEpisodeSelected([]);
+      setIsSelecting(false);
+
+      const cachedFiles = downloadsStorage.getFilesInfo() || [];
+      const filteredCached = cachedFiles.filter(
+        file => file?.uri && !episodeSelected.includes(file.uri),
+      );
+      downloadsStorage.saveFilesInfo(filteredCached as any);
+
+      const cachedThumbnails = downloadsStorage.getThumbnails() || {};
+      const updatedThumbnails: Record<string, string> = {...cachedThumbnails};
+      episodeSelected.forEach(uri => {
+        delete updatedThumbnails[uri];
+      });
+      downloadsStorage.saveThumbnails(updatedThumbnails);
+
+      if (remainingEpisodes.length === 0) {
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Error deleting episodes:', error);
+    }
+  };
 
   return (
     <View className="w-full h-full bg-black">
       {/* Simple Header */}
       <View className="bg-tertiary px-4 pt-14 pb-4">
-        <View className="flex-row items-center">
+        <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             className="bg-quaternary p-2 rounded-full">
@@ -53,6 +121,27 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
             ellipsizeMode="tail">
             {series.length > 20 ? series.substring(0, 20) + '...' : series}
           </Text>
+          <View className="flex-row items-center gap-x-4">
+            {isSelecting && (
+              <MaterialCommunityIcons
+                name="close"
+                size={26}
+                color={primary}
+                onPress={() => {
+                  setEpisodeSelected([]);
+                  setIsSelecting(false);
+                }}
+              />
+            )}
+            {isSelecting && episodeSelected.length > 0 && (
+              <MaterialCommunityIcons
+                name="delete-outline"
+                size={26}
+                color={primary}
+                onPress={deleteEpisodes}
+              />
+            )}
+          </View>
         </View>
       </View>
 
@@ -69,11 +158,24 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
           renderItem={({item}) => {
             const fileName = item.uri.split('/').pop() || '';
             const episodeNumber = getEpisodeNumber(fileName);
+            const selected = isEpisodeSelected(item.uri);
 
             return (
               <TouchableOpacity
-                className="flex-row bg-tertiary rounded-lg overflow-hidden mb-2 h-24"
+                className={`flex-row rounded-lg overflow-hidden mb-2 h-24 ${
+                  isSelecting && selected ? 'bg-quaternary' : 'bg-tertiary'
+                }`}
                 onPress={() => {
+                  if (isSelecting) {
+                    if (settingsStorage.isHapticFeedbackEnabled()) {
+                      RNReactNativeHapticFeedback.trigger('effectTick', {
+                        enableVibrateFallback: true,
+                        ignoreAndroidSystemSettings: false,
+                      });
+                    }
+                    toggleSelection(item.uri);
+                    return;
+                  }
                   navigation.navigate('Player', {
                     episodeList: [{title: fileName || '', link: item.uri}],
                     linkIndex: 0,
@@ -84,6 +186,16 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                     providerValue: 'vega',
                     doNotTrack: true,
                   });
+                }}
+                onLongPress={() => {
+                  if (settingsStorage.isHapticFeedbackEnabled()) {
+                    RNReactNativeHapticFeedback.trigger('effectTick', {
+                      enableVibrateFallback: true,
+                      ignoreAndroidSystemSettings: false,
+                    });
+                  }
+                  setIsSelecting(true);
+                  setEpisodeSelected([item.uri]);
                 }}>
                 <View className="w-32 h-full relative">
                   {thumbnails[item.uri] ? (
