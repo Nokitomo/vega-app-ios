@@ -49,3 +49,4 @@ Nota: lo stack WatchHistory e raggiungibile da Settings.
 - Tab bar personalizzata con haptic feedback opzionale.
 - Uso di SafeAreaView e tema scuro custom.
 - In Info, il pulsante X torna alla schermata precedente senza reset dello stack.
+- Preferenze: "Show Tab Bar Labels" controlla la visibilita delle etichette nella tab bar; "Show Recently Watched" abilita/disabilita la sezione Continue Watching in Home.

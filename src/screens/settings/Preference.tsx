@@ -16,6 +16,7 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {themes} from '../../lib/constants';
 import {TextInput} from 'react-native';
 import Constants from 'expo-constants';
+import useUiSettingsStore from '../../lib/zustand/uiSettingsStore';
 // Lazy-load Firebase to allow running without google-services.json
 const getAnalytics = (): any | null => {
   try {
@@ -37,8 +38,11 @@ const Preferences = () => {
   const {primary, setPrimary, isCustom, setCustom} = useThemeStore(
     state => state,
   );
-  const [showRecentlyWatched, setShowRecentlyWatched] = useState(
-    settingsStorage.getBool('showRecentlyWatched') || false,
+  const showRecentlyWatched = useUiSettingsStore(
+    state => state.showRecentlyWatched,
+  );
+  const setShowRecentlyWatched = useUiSettingsStore(
+    state => state.setShowRecentlyWatched,
   );
   const [disableDrawer, setDisableDrawer] = useState(
     settingsStorage.getBool('disableDrawer') || false,
@@ -72,8 +76,11 @@ const Preferences = () => {
     settingsStorage.isSwipeGestureEnabled(),
   );
 
-  const [showTabBarLables, setShowTabBarLables] = useState<boolean>(
-    settingsStorage.showTabBarLabels(),
+  const showTabBarLables = useUiSettingsStore(
+    state => state.showTabBarLabels,
+  );
+  const setShowTabBarLables = useUiSettingsStore(
+    state => state.setShowTabBarLabels,
   );
 
   const [OpenExternalPlayer, setOpenExternalPlayer] = useState(
@@ -248,12 +255,7 @@ const Preferences = () => {
                 thumbColor={showTabBarLables ? primary : 'gray'}
                 value={showTabBarLables}
                 onValueChange={() => {
-                  settingsStorage.setShowTabBarLabels(!showTabBarLables);
                   setShowTabBarLables(!showTabBarLables);
-                  ToastAndroid.show(
-                    'Restart App to Apply Changes',
-                    ToastAndroid.SHORT,
-                  );
                 }}
               />
             </View>
@@ -280,10 +282,6 @@ const Preferences = () => {
                 thumbColor={showRecentlyWatched ? primary : 'gray'}
                 value={showRecentlyWatched}
                 onValueChange={() => {
-                  settingsStorage.setBool(
-                    'showRecentlyWatched',
-                    !showRecentlyWatched,
-                  );
                   setShowRecentlyWatched(!showRecentlyWatched);
                 }}
               />

@@ -16,12 +16,16 @@ import {TabStackParamList} from '../App';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
+import useUiSettingsStore from '../lib/zustand/uiSettingsStore';
 
 const ContinueWatching = () => {
   const {primary} = useThemeStore(state => state);
   const navigation =
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
   const {history, removeItem} = useWatchHistoryStore(state => state);
+  const showRecentlyWatched = useUiSettingsStore(
+    state => state.showRecentlyWatched,
+  );
   const [progressData, setProgressData] = useState<Record<string, number>>({});
   const [episodeTitleData, setEpisodeTitleData] = useState<
     Record<string, string>
@@ -181,6 +185,9 @@ const ContinueWatching = () => {
   };
 
   // Only render if we have items (MOVED AFTER ALL HOOKS)
+  if (!showRecentlyWatched) {
+    return null;
+  }
   if (recentItems.length === 0) {
     return null;
   }

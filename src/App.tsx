@@ -49,6 +49,7 @@ import notifee from '@notifee/react-native';
 import notificationService from './lib/services/Notification';
 import Orientation from 'react-native-orientation-locker';
 import useSearchCacheStore from './lib/zustand/searchCacheStore';
+import useUiSettingsStore from './lib/zustand/uiSettingsStore';
 // Lazy-load Firebase modules so app runs without google-services files
 const getAnalytics = (): any | null => {
   try {
@@ -199,7 +200,9 @@ const App = () => {
   }));
   const hasFirebase = Boolean(Constants?.expoConfig?.extra?.hasFirebase);
 
-  const showTabBarLables = settingsStorage.showTabBarLabels();
+  const showTabBarLables = useUiSettingsStore(
+    state => state.showTabBarLabels,
+  );
 
   SystemUI.setBackgroundColorAsync('black');
 
