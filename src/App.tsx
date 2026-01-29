@@ -473,7 +473,7 @@ const AppContent = () => {
           tabBarStyle: !isLargeScreen
             ? {
                 position: 'absolute',
-                bottom: 0,
+                bottom: showTabBarLables ? 0 : -insets.bottom,
                 height: 55 + insets.bottom,
                 borderRadius: 0,
                 // backgroundColor: 'rgba(0, 0, 0, 0.8)',
