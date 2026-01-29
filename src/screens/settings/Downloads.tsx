@@ -487,17 +487,22 @@ const Downloads = () => {
                 </View>
               )}
               {isSelecting && (
-                <View className="absolute top-2 right-2">
-                  <MaterialCommunityIcons
-                    name={
-                      isGroupSelected(item)
-                        ? 'check-circle'
-                        : 'checkbox-blank-circle-outline'
-                    }
-                    size={22}
-                    color={isGroupSelected(item) ? primary : 'white'}
-                  />
-                </View>
+                <>
+                  {isGroupSelected(item) && (
+                    <View className="absolute inset-0 bg-black/40" />
+                  )}
+                  <View className="absolute top-2 right-2 bg-black/70 rounded-full p-1">
+                    <MaterialCommunityIcons
+                      name={
+                        isGroupSelected(item)
+                          ? 'check-circle'
+                          : 'checkbox-blank-circle-outline'
+                      }
+                      size={20}
+                      color={isGroupSelected(item) ? primary : 'white'}
+                    />
+                  </View>
+                </>
               )}
             </View>
 
