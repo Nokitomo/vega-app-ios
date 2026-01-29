@@ -78,6 +78,13 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         data: grouped.get(day) || [],
       }));
   }, [calendarDayOrder, isCalendarView, posts]);
+  const chunkPosts = (items: Post[], size: number) => {
+    const rows: Post[][] = [];
+    for (let i = 0; i < items.length; i += size) {
+      rows.push(items.slice(i, i + size));
+    }
+    return rows;
+  };
 
   // Set up cleanup effect that runs on component unmount
   useEffect(() => {
@@ -233,46 +240,49 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                     style={{color: primary}}>
                     {section.title}
                   </Text>
-                  <View className="flex flex-row flex-wrap">
-                    {section.data.map(item => (
-                      <TouchableOpacity
-                        key={item.link}
-                        className="flex flex-col m-3"
-                        onPress={() =>
-                          navigation.navigate('Info', {
-                            link: item.link,
-                            provider: route.params.providerValue || provider.value,
-                            poster: item?.image,
-                          })
-                        }>
-                        <View className="relative">
-                          <ProviderImage
-                            className="rounded-md"
-                            uri={item.image}
-                            link={item.link}
-                            providerValue={
-                              route.params.providerValue || provider.value
-                            }
-                            style={{width: 100, height: 150}}
-                          />
-                          {item.episodeLabel ? (
-                            <View
-                              className="absolute top-1 right-1 rounded-full px-2 py-0.5"
-                              style={{backgroundColor: primary}}>
-                              <Text className="text-black text-[10px] font-semibold">
-                                {item.episodeLabel}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
-                        <Text className="text-white text-center truncate w-24 text-xs">
-                          {item?.title?.length > 24
-                            ? item.title.slice(0, 24) + '...'
-                            : item.title}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  {chunkPosts(section.data, 3).map((row, rowIndex) => (
+                    <View key={`${section.title}-${rowIndex}`} className="flex flex-row">
+                      {row.map(item => (
+                        <TouchableOpacity
+                          key={item.link}
+                          className="flex flex-col m-3"
+                          onPress={() =>
+                            navigation.navigate('Info', {
+                              link: item.link,
+                              provider:
+                                route.params.providerValue || provider.value,
+                              poster: item?.image,
+                            })
+                          }>
+                          <View className="relative">
+                            <ProviderImage
+                              className="rounded-md"
+                              uri={item.image}
+                              link={item.link}
+                              providerValue={
+                                route.params.providerValue || provider.value
+                              }
+                              style={{width: 100, height: 150}}
+                            />
+                            {item.episodeLabel ? (
+                              <View
+                                className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                                style={{backgroundColor: primary}}>
+                                <Text className="text-black text-[10px] font-semibold">
+                                  {item.episodeLabel}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
+                          <Text className="text-white text-center truncate w-24 text-xs">
+                            {item?.title?.length > 24
+                              ? item.title.slice(0, 24) + '...'
+                              : item.title}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  ))}
                 </View>
               ))
             )}
