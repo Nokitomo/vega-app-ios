@@ -210,9 +210,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   )}
                   {isSelecting && (
                     <>
-                      {selected && (
-                        <View className="absolute inset-0 bg-black/40" />
-                      )}
+                      {selected && <View className="absolute inset-0 bg-black/40" />}
                       <View className="absolute top-2 right-2 bg-black/70 rounded-full p-1">
                         <MaterialCommunityIcons
                           name={
@@ -232,6 +230,9 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                     </Text>
                   </View>
                 </View>
+                {isSelecting && selected && (
+                  <View className="absolute inset-0 bg-black/25" />
+                )}
                 <View className="flex-1 p-3 justify-center">
                   <Text className="text-base text-white font-medium mb-1">
                     Episode {episodeNumber}
