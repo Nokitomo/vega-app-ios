@@ -1,4 +1,10 @@
-import {ScrollView, View, Text, TouchableOpacity} from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
 import React, {useEffect, useMemo, useState, useRef} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList, SearchStackParamList} from '../App';
@@ -27,6 +33,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isEnd, setIsEnd] = useState<boolean>(false);
   const {provider} = useContentStore(state => state);
+  const {width: windowWidth} = useWindowDimensions();
   const [viewType, setViewType] = useState<number>(
     settingsStorage.getListViewType(),
   );
@@ -78,6 +85,25 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         data: grouped.get(day) || [],
       }));
   }, [calendarDayOrder, isCalendarView, posts]);
+  const gridColumns = 3;
+  const gridHorizontalPadding = 32;
+  const gridMaxItemWidth = 100;
+  const gridAvailableWidth = Math.max(0, windowWidth - gridHorizontalPadding);
+  const calculatedGridItemWidth = Math.floor(
+    gridAvailableWidth / gridColumns,
+  );
+  const gridItemWidth =
+    calculatedGridItemWidth > 0
+      ? Math.min(gridMaxItemWidth, calculatedGridItemWidth)
+      : gridMaxItemWidth;
+  const gridItemHeight = Math.round(gridItemWidth * 1.5);
+  const gridItemMarginH = Math.max(
+    0,
+    Math.floor(
+      (gridAvailableWidth - gridColumns * gridItemWidth) / (gridColumns * 2),
+    ),
+  );
+  const gridTitleWidth = Math.max(80, gridItemWidth - 4);
   const chunkPosts = (items: Post[], size: number) => {
     const rows: Post[][] = [];
     for (let i = 0; i < items.length; i += size) {
@@ -189,12 +215,22 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   // Limit the number of skeletons to prevent unnecessary renders
   const renderSkeletons = () => {
     const skeletonCount = viewType === 1 ? 6 : 3;
+    const itemWrapperStyle =
+      viewType === 1
+        ? {marginHorizontal: gridItemMarginH, marginVertical: 12}
+        : {marginHorizontal: 12, marginVertical: 12};
+    const imageSize =
+      viewType === 1
+        ? {width: gridItemWidth, height: gridItemHeight}
+        : {width: 100, height: 150};
+    const textWidth = viewType === 1 ? gridTitleWidth : 97;
     return Array.from({length: skeletonCount}).map((_, i) => (
       <View
-        className="mx-3 gap-0 flex mb-3 justify-center items-center"
+        className="gap-0 flex justify-center items-center"
+        style={itemWrapperStyle}
         key={i}>
-        <SkeletonLoader height={150} width={100} />
-        <SkeletonLoader height={12} width={97} />
+        <SkeletonLoader height={imageSize.height} width={imageSize.width} />
+        <SkeletonLoader height={12} width={textWidth} />
       </View>
     ));
   };
@@ -225,7 +261,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
           </TouchableOpacity>
         )}
       </View>
-      <View className="justify-center flex-row w-96 ">
+      <View className="justify-center flex-row w-full">
         {isCalendarView ? (
           <ScrollView showsVerticalScrollIndicator={false}>
             {isLoading ? (
@@ -242,17 +278,14 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                   </Text>
                   {chunkPosts(section.data, 3).map((row, rowIndex) => (
                     <View key={`${section.title}-${rowIndex}`} className="flex flex-row">
-                      {row.map((item, itemIndex) => {
-                        const itemClassName =
-                          itemIndex === 0
-                            ? 'flex flex-col my-3 mr-3'
-                            : itemIndex === row.length - 1
-                            ? 'flex flex-col my-3 ml-3'
-                            : 'flex flex-col m-3';
-                        return (
+                      {row.map(item => (
                         <TouchableOpacity
                           key={item.link}
-                          className={itemClassName}
+                          className="flex flex-col"
+                          style={{
+                            marginHorizontal: gridItemMarginH,
+                            marginVertical: 12,
+                          }}
                           onPress={() =>
                             navigation.navigate('Info', {
                               link: item.link,
@@ -269,7 +302,10 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                               providerValue={
                                 route.params.providerValue || provider.value
                               }
-                              style={{width: 100, height: 150}}
+                              style={{
+                                width: gridItemWidth,
+                                height: gridItemHeight,
+                              }}
                             />
                             {item.episodeLabel ? (
                               <View
@@ -281,14 +317,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                               </View>
                             ) : null}
                           </View>
-                          <Text className="text-white text-center truncate w-24 text-xs">
+                          <Text
+                            className="text-white text-center truncate text-xs"
+                            style={{width: gridTitleWidth}}>
                             {item?.title?.length > 24
                               ? item.title.slice(0, 24) + '...'
                               : item.title}
                           </Text>
                         </TouchableOpacity>
-                        );
-                      })}
+                      ))}
                     </View>
                   ))}
                 </View>
@@ -331,6 +368,14 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                     ? 'flex flex-col m-3'
                     : 'flex-row m-3 items-center'
                 }
+                style={
+                  viewType === 1
+                    ? {
+                        marginHorizontal: gridItemMarginH,
+                        marginVertical: 12,
+                      }
+                    : undefined
+                }
                 onPress={() =>
                   navigation.navigate('Info', {
                     link: item.link,
@@ -346,7 +391,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                     providerValue={route.params.providerValue || provider.value}
                     style={
                       viewType === 1
-                        ? {width: 100, height: 150}
+                        ? {width: gridItemWidth, height: gridItemHeight}
                         : {width: 70, height: 100}
                     }
                   />
@@ -363,9 +408,10 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                 <Text
                   className={
                     viewType === 1
-                      ? 'text-white text-center truncate w-24 text-xs'
+                      ? 'text-white text-center truncate text-xs'
                       : 'text-white ml-3 truncate w-72 font-semibold text-base'
-                  }>
+                  }
+                  style={viewType === 1 ? {width: gridTitleWidth} : undefined}>
                   {item?.title?.length > 24 && viewType === 1
                     ? item.title.slice(0, 24) + '...'
                     : item.title}
