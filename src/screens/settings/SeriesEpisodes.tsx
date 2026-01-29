@@ -231,7 +231,10 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   </View>
                 </View>
                 {isSelecting && selected && (
-                  <View className="absolute inset-0 bg-black/25" />
+                  <View
+                    className="absolute inset-0"
+                    style={{backgroundColor: primary, opacity: 0.25}}
+                  />
                 )}
                 <View className="flex-1 p-3 justify-center">
                   <Text className="text-base text-white font-medium mb-1">
