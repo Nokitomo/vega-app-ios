@@ -11,7 +11,7 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 ## Comandi standard
 - Avvio Metro (dev client): `npx expo start -c --dev-client --scheme com.vega --port 8081`
 - Build Android (dev client): `npx expo run:android --device \"Medium_phone_API_35\"`
-- Prebuild Android pulito: `npx expo prebuild -p android --clean`
+- Prebuild Android pulito: `npx expo prebuild -p android --clean` (NON ESEGUIRE: sovrascrive le customizzazioni native in android/)
 - Lint: `npm run lint`
 
 ## Git hygiene
@@ -26,3 +26,4 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 4) Rispondere sempre in italiano.
 5) Dopo ogni modifica al codice, eseguire il comando di analisi/lint appropriato (es. `flutter analyze` o equivalente). Gli info possono essere ignorati. Correggere solo errori bloccanti (rossi) e warning (gialli) senza cambiare comportamento o rompere l'app. Se non e certo che il fix non alteri il comportamento, fermarsi e fornire un report dettagliato con possibili soluzioni.
 6) Quando si eseguono git e commit, verificare con attenzione cosa si sta salvando nella storia del progetto. Se ci sono file che non andrebbero committati, non farlo e informare l'utente indicando quali file e perche.
+7) Sono presenti customizzazioni manuali in `android/`: non eseguire `npx expo prebuild` (neanche con `--clean`).
