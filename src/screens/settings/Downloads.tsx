@@ -402,6 +402,11 @@ const Downloads = () => {
                 ? 'bg-quaternary'
                 : 'bg-transparent'
             }`}
+            style={
+              isSelecting && isGroupSelected(item)
+                ? {borderColor: primary, borderWidth: 1}
+                : undefined
+            }
             onLongPress={() => {
               if (settingsStorage.isHapticFeedbackEnabled()) {
                 RNReactNativeHapticFeedback.trigger('effectTick', {
