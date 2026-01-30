@@ -163,5 +163,20 @@
   "Name or IMDB ID": "Nome o ID IMDB",
   "Select": "Seleziona",
   "Season": "Stagione",
-  "Episode": "Episodio"
+  "Episode": "Episodio",
+  "No Streams Available": "Nessuno stream disponibile",
+  "Server {{number}}": "Server {{number}}",
+  "Format: {{format}}": "Formato: {{format}}",
+  "Failed to load episodes. Please try again.": "Impossibile caricare gli episodi. Riprova.",
+  "Unknown Season": "Stagione sconosciuta",
+  "Search...": "Cerca...",
+  "Resume": "Riprendi",
+  "No stream found": "Nessuno stream trovato",
+  "Loading available servers...": "Caricamento server disponibili...",
+  "Select External Player Server": "Seleziona server del player esterno",
+  "{{count}} servers available": "{{count}} server disponibili",
+  "No servers available": "Nessun server disponibile",
+  "Marked as Unwatched": "Segnato come non visto",
+  "Mark as Watched": "Segna come visto",
+  "External Player": "Player esterno"
 }

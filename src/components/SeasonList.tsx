@@ -40,6 +40,7 @@ import {providerManager} from '../lib/services/ProviderManager';
 import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
 import SkeletonLoader from './Skeleton';
+import {useTranslation} from 'react-i18next';
 
 interface SeasonListProps {
   LinkList: Link[];
@@ -138,19 +139,6 @@ const areProgressMapsEqual = (
   return leftKeys.every(key => left[key] === right[key]);
 };
 
-const getEpisodeLabel = (episodeTitle?: string) => {
-  if (!episodeTitle) {
-    return undefined;
-  }
-
-  const match = episodeTitle.match(/\d+/);
-  if (!match) {
-    return undefined;
-  }
-
-  return `Ep. ${match[0]}`;
-};
-
 const normalizeTitle = (title?: string) => (title || '').trim().toLowerCase();
 
 const getEpisodeNumber = (title?: string) => {
@@ -211,16 +199,34 @@ const SeasonList: React.FC<SeasonListProps> = ({
   routeParams,
 }) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {addItem} = useWatchHistoryStore(state => state);
   const {fetchStreams} = useStreamData();
+  const getEpisodeLabel = useCallback(
+    (episodeTitle?: string) => {
+      if (!episodeTitle) {
+        return undefined;
+      }
+
+      const match = episodeTitle.match(/\d+/);
+      if (!match) {
+        return undefined;
+      }
+
+      return t('Ep. {{number}}', {number: match[0]});
+    },
+    [t],
+  );
 
   // Early return if no LinkList provided
   if (!LinkList || LinkList.length === 0) {
     return (
       <View className="p-4">
-        <Text className="text-white text-center">No Streams Available</Text>
+        <Text className="text-white text-center">
+          {t('No Streams Available')}
+        </Text>
       </View>
     );
   }
@@ -1024,7 +1030,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   ? item.title?.length > 27
                     ? item.title.slice(0, 27) + '...'
                     : item.title
-                  : 'Play'}
+                  : t('Play')}
               </Text>
               {episodeProgressMap[item.link] ? (
                 <View
@@ -1074,6 +1080,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       onLongPressHandler,
       primary,
       providerValue,
+      t,
     ],
   );
 
@@ -1087,16 +1094,18 @@ const SeasonList: React.FC<SeasonListProps> = ({
         onPress={() => openExternalPlayer(item.link)}>
         <View>
           <Text className="text-white text-lg capitalize font-bold">
-            {item.server || `Server ${index + 1}`}
+            {item.server || t('Server {{number}}', {number: index + 1})}
           </Text>
           <Text className="text-white text-xs opacity-80">
-            {item.type ? `Format: ${item.type.toUpperCase()}` : ''}
+            {item.type
+              ? t('Format: {{format}}', {format: item.type.toUpperCase()})
+              : ''}
           </Text>
         </View>
         <MaterialCommunityIcons name="vlc" size={24} color={primary} />
       </TouchableOpacity>
     ),
-    [primary, openExternalPlayer],
+    [openExternalPlayer, primary, t],
   );
 
   // Show loading skeleton while episodes are loading
@@ -1138,7 +1147,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 className={`px-3 py-2 bg-black text-white flex-row justify-start items-center border-b border-gray-500 text-center ${
                   activeSeason === item ? 'bg-quaternary' : ''
                 }`}>
-                <Text className="text-white">{item?.title || 'Unknown'}</Text>
+                <Text className="text-white">{item?.title || t('Unknown')}</Text>
               </View>
             )}
           />
@@ -1164,12 +1173,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
     return (
       <View className="p-4">
         <Text className="text-red-500 text-center">
-          Failed to load episodes. Please try again.
+          {t('Failed to load episodes. Please try again.')}
         </Text>
         <TouchableOpacity
           className="mt-2 bg-red-600 p-2 rounded-md"
           onPress={() => refetchEpisodes()}>
-          <Text className="text-white text-center">Retry</Text>
+          <Text className="text-white text-center">{t('Retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -1214,13 +1223,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
               className={`px-3 py-2 bg-black text-white flex-row justify-start items-center border-b border-gray-500 text-center ${
                 activeSeason === item ? 'bg-quaternary' : ''
               }`}>
-              <Text className="text-white">{item?.title || 'Unknown'}</Text>
+              <Text className="text-white">{item?.title || t('Unknown')}</Text>
             </View>
           )}
         />
       ) : (
         <Text className="text-red-600 text-lg font-semibold px-2">
-          {LinkList[0]?.title || 'Unknown Season'}
+          {LinkList[0]?.title || t('Unknown Season')}
         </Text>
       )}
 
@@ -1230,7 +1239,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         searchText.trim().length > 0) && (
         <View className="flex-row justify-between items-center mt-2">
           <TextInput
-            placeholder="Search..."
+            placeholder={t('Search...')}
             className="bg-black/30 text-white rounded-md p-2 h-10 w-[80%] border-collapse border border-white/10"
             value={searchText}
             onChangeText={setSearchText}
@@ -1261,7 +1270,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 color={primary}
               />
               <Text className="text-white font-semibold">
-                {resumeProgress?.currentTime ? 'Resume' : 'Play'}
+                {resumeProgress?.currentTime ? t('Resume') : t('Play')}
               </Text>
               {resumeProgress?.episodeTitle &&
               getEpisodeLabel(resumeProgress.episodeTitle) ? (
@@ -1269,7 +1278,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   {`- ${getEpisodeLabel(resumeProgress.episodeTitle)}`}
                 </Text>
               ) : (
-                <Text className="text-white/80 text-xs">- Ep. 1</Text>
+                <Text className="text-white/80 text-xs">
+                  {`- ${t('Ep. {{number}}', {number: 1})}`}
+                </Text>
               )}
             </View>
             <Text className="text-white/80 text-xs">
@@ -1322,7 +1333,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
           filteredAndSortedDirectLinks.length === 0 &&
           LinkList?.length === 0 && (
             <Text className="text-white text-lg font-semibold min-h-20">
-              No stream found
+              {t('No stream found')}
             </Text>
           )}
       </View>
@@ -1347,7 +1358,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
             <MaterialCommunityIcons name="vlc" size={70} color={primary} />
           </Animated.View>
           <Text className="text-white text-lg font-semibold mt-2">
-            Loading available servers...
+            {t('Loading available servers...')}
           </Text>
         </View>
       )}
@@ -1363,10 +1374,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
           className="flex-1 justify-center items-center bg-black/80">
           <View className="bg-tertiary rounded-xl p-4 w-[90%] max-w-[350px]">
             <Text className="text-white text-xl font-bold mb-2 text-center">
-              Select External Player Server
+              {t('Select External Player Server')}
             </Text>
             <Text className="text-white text-sm mb-4 text-center opacity-70">
-              {externalPlayerStreams.length} servers available
+              {t('{{count}} servers available', {
+                count: externalPlayerStreams.length,
+              })}
             </Text>
 
             {isLoadingStreams ? (
@@ -1379,7 +1392,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   )}
                   {externalPlayerStreams.length === 0 && (
                     <Text className="text-white text-center p-4">
-                      No servers available
+                      {t('No servers available')}
                     </Text>
                   )}
                 </ScrollView>
@@ -1388,7 +1401,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   className="mt-4 bg-black/30 py-2 rounded-md"
                   onPress={() => setShowServerModal(false)}>
                   <Text className="text-white text-center font-bold">
-                    Cancel
+                    {t('Cancel')}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -1411,14 +1424,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
               <TouchableOpacity
                 className="flex-row justify-center items-center gap-2 p-2"
                 onPress={markAsUnwatched}>
-                <Text className="text-white">Marked as Unwatched</Text>
+                <Text className="text-white">{t('Marked as Unwatched')}</Text>
                 <Ionicons name="checkmark-done" size={30} color={primary} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 className="flex-row justify-center items-center gap-2 pt-0 pb-2 px-2 bg-tertiary rounded-md"
                 onPress={markAsWatched}>
-                <Text className="text-white">Mark as Watched</Text>
+                <Text className="text-white">{t('Mark as Watched')}</Text>
                 <Ionicons name="checkmark" size={25} color={primary} />
               </TouchableOpacity>
             )}
@@ -1426,7 +1439,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
               className="flex-row justify-center bg-tertiary rounded-md items-center pt-0 pb-2 px-2 gap-2"
               onPress={handleStickyMenuExternalPlayer}>
               <Text className="text-white font-bold text-base">
-                External Player
+                {t('External Player')}
               </Text>
               <Feather name="external-link" size={20} color={primary} />
             </TouchableOpacity>
