@@ -9,6 +9,7 @@ export enum SettingsKeys {
   IS_CUSTOM_THEME = 'isCustomTheme',
   SHOW_TAB_BAR_LABELS = 'showTabBarLabels',
   CUSTOM_COLOR = 'customColor',
+  APP_LANGUAGE = 'appLanguage',
   // Feedback settings
   HAPTIC_FEEDBACK = 'hapticFeedback',
   NOTIFICATIONS_ENABLED = 'notificationsEnabled',
@@ -68,6 +69,15 @@ export class SettingsStorage {
   }
 
   // UI preferences
+  getAppLanguage(): 'en' | 'it' {
+    const stored = mainStorage.getString(SettingsKeys.APP_LANGUAGE);
+    return stored === 'it' ? 'it' : 'en';
+  }
+
+  setAppLanguage(language: 'en' | 'it'): void {
+    mainStorage.setString(SettingsKeys.APP_LANGUAGE, language);
+  }
+
   showTabBarLabels(): boolean {
     return mainStorage.getBool(SettingsKeys.SHOW_TAB_BAR_LABELS) === null
       ? false
