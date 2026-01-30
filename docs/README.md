@@ -1,6 +1,7 @@
 # Documentazione Vega
 
 Questa cartella raccoglie la documentazione tecnica e funzionale del progetto.
+Le sezioni includono note su localizzazione (i18n) e supporto lingua inglese/italiano.
 
 ## Indice
 - overview.md: panoramica dell'app e delle funzionalita principali.
