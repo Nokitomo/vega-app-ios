@@ -1,6 +1,7 @@
 import * as RNFS from '@dr.pogodin/react-native-fs';
 import axios from 'axios';
 import {notificationService} from './services/Notification';
+import i18n from '../i18n';
 
 interface SegmentInfo {
   duration: number;
@@ -96,7 +97,7 @@ const parseM3U8Playlist = async (
         // Recursively parse the actual playlist
         return await parseM3U8Playlist(bestQualityUrl, headers);
       } else {
-        throw new Error('No valid stream found in master playlist');
+        throw new Error(i18n.t('No valid stream found in master playlist'));
       }
     }
 
@@ -155,7 +156,7 @@ const downloadSegment = async (
   headers: any = {},
 ): Promise<void> => {
   if (downloadCancelled) {
-    throw new Error('Download cancelled');
+    throw new Error(i18n.t('Download cancelled'));
   }
 
   const response = await axios({
@@ -241,7 +242,7 @@ export const hlsDownloader2 = async ({
     const m3u8Data = await parseM3U8Playlist(videoUrl, headers);
 
     if (m3u8Data.segments.length === 0) {
-      throw new Error('No segments found in playlist');
+      throw new Error(i18n.t('No segments found in playlist'));
     }
 
     console.log(
@@ -255,7 +256,7 @@ export const hlsDownloader2 = async ({
     // Download segments in batches
     for (let i = 0; i < m3u8Data.segments.length; i += maxConcurrentDownloads) {
       if (downloadCancelled) {
-        throw new Error('Download cancelled by user');
+        throw new Error(i18n.t('Download cancelled by user'));
       }
 
       const batch = m3u8Data.segments.slice(i, i + maxConcurrentDownloads);
@@ -271,15 +272,22 @@ export const hlsDownloader2 = async ({
             (downloadedSegments / m3u8Data.segments.length) * 100;
 
           console.log(
-            `Downloaded segment ${segment.index + 1}/${
-              m3u8Data.segments.length
-            } (${progress.toFixed(1)}%)`,
+            i18n.t(
+              'Downloaded segment {{current}}/{{total}} ({{progress}}%)',
+              {
+                current: segment.index + 1,
+                total: m3u8Data.segments.length,
+                progress: progress.toFixed(1),
+              },
+            ),
           );
           await notificationService.showDownloadProgress(
             title,
             fileName,
             progress / 100,
-            `Downloaded ${progress.toFixed(1)}%`,
+            i18n.t('Downloaded {{progress}}%', {
+              progress: progress.toFixed(1),
+            }),
             hlsJobId,
           );
         } catch (error) {
@@ -297,7 +305,7 @@ export const hlsDownloader2 = async ({
     }
 
     if (downloadCancelled) {
-      throw new Error('Download cancelled by user');
+      throw new Error(i18n.t('Download cancelled by user'));
     }
 
     // Merge all segments into final file
@@ -306,7 +314,7 @@ export const hlsDownloader2 = async ({
       title,
       fileName,
       1,
-      'Merging video segments...',
+      i18n.t('Merging video segments...'),
       hlsJobId,
     );
 
@@ -322,7 +330,7 @@ export const hlsDownloader2 = async ({
       if (await RNFS.exists(path)) {
         await RNFS.unlink(path);
       }
-      throw new Error('Download cancelled by user');
+      throw new Error(i18n.t('Download cancelled by user'));
     }
 
     // Success
@@ -347,8 +355,8 @@ export const hlsDownloader2 = async ({
     }
 
     const errorMessage = downloadCancelled
-      ? 'Download cancelled'
-      : `Failed to download ${title}`;
+      ? i18n.t('Download cancelled')
+      : i18n.t('Failed to download {{title}}', {title});
     console.error(errorMessage);
 
     if (downloadCancelled) {
