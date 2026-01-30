@@ -108,5 +108,7 @@
   "Searched for": "Searched for",
   "Searching for": "Searching for",
   "No Content Found": "No Content Found",
-  "Webview": "Webview"
+  "Webview": "Webview",
+  "Failed to load content": "Failed to load content",
+  "Pull to refresh and try again": "Pull to refresh and try again"
 }

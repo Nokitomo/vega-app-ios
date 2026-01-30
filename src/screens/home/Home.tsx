@@ -26,11 +26,13 @@ import {providerManager} from '../../lib/services/ProviderManager';
 import Tutorial from '../../components/Touturial';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
 import {StatusBar} from 'expo-status-bar';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 
 const Home = ({}: Props) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const drawer = useRef<DrawerLayout>(null);
   const [isDrawerOpen] = useState(false);
@@ -166,10 +168,10 @@ const Home = ({}: Props) => {
     return (
       <View className="p-4 m-4 bg-red-500/20 rounded-lg min-h-64 flex-1 justify-center items-center">
         <Text className="text-red-400 text-center font-medium">
-          {error?.message || 'Failed to load content'}
+          {error?.message || t('Failed to load content')}
         </Text>
         <Text className="text-gray-400 text-center text-sm mt-1">
-          Pull to refresh and try again
+          {t('Pull to refresh and try again')}
         </Text>
       </View>
     );

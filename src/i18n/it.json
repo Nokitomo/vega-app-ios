@@ -108,5 +108,7 @@
   "Searched for": "Risultati per",
   "Searching for": "Ricerca di",
   "No Content Found": "Nessun contenuto trovato",
-  "Webview": "Webview"
+  "Webview": "Webview",
+  "Failed to load content": "Caricamento contenuti non riuscito",
+  "Pull to refresh and try again": "Trascina per aggiornare e riprova"
 }
