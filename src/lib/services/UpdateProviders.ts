@@ -2,6 +2,7 @@ import {extensionStorage, ProviderExtension} from '../storage/extensionStorage';
 import {extensionManager} from './ExtensionManager';
 import {settingsStorage} from '../storage';
 import {notificationService} from './Notification';
+import i18n from '../../i18n';
 
 export interface UpdateInfo {
   provider: ProviderExtension;
@@ -192,11 +193,14 @@ class UpdateProvidersService {
   private async showUpdatingNotification(
     providers: ProviderExtension[],
   ): Promise<void> {
+    const providerCount = providers.length;
+    const updatingMessage =
+      providerCount > 1
+        ? i18n.t('Updating {{count}} providers...', {count: providerCount})
+        : i18n.t('Updating {{count}} provider...', {count: providerCount});
     await notificationService.showUpdateProgress(
-      'Updating Providers',
-      `Updating ${providers.length} provider${
-        providers.length > 1 ? 's' : ''
-      }...`,
+      i18n.t('Updating Providers'),
+      updatingMessage,
       {
         max: 100,
         current: 0,
@@ -222,18 +226,33 @@ class UpdateProvidersService {
     let body = '';
 
     if (updated.length > 0 && failed.length === 0) {
-      title = 'Providers Updated Successfully';
-      body = `${updated.length} provider${
-        updated.length > 1 ? 's' : ''
-      } updated: ${updated.map(p => p.display_name).join(', ')}`;
+      title = i18n.t('Providers Updated Successfully');
+      body =
+        updated.length > 1
+          ? i18n.t('{{count}} providers updated: {{names}}', {
+              count: updated.length,
+              names: updated.map(p => p.display_name).join(', '),
+            })
+          : i18n.t('{{count}} provider updated: {{names}}', {
+              count: updated.length,
+              names: updated.map(p => p.display_name).join(', '),
+            });
     } else if (updated.length > 0 && failed.length > 0) {
-      title = 'Providers Update Complete';
-      body = `${updated.length} updated, ${failed.length} failed`;
+      title = i18n.t('Providers Update Complete');
+      body = i18n.t('{{updated}} updated, {{failed}} failed', {
+        updated: updated.length,
+        failed: failed.length,
+      });
     } else {
-      title = 'Provider Update Failed';
-      body = `Failed to update ${failed.length} provider${
-        failed.length > 1 ? 's' : ''
-      }`;
+      title = i18n.t('Provider Update Failed');
+      body =
+        failed.length > 1
+          ? i18n.t('Failed to update {{count}} providers', {
+              count: failed.length,
+            })
+          : i18n.t('Failed to update {{count}} provider', {
+              count: failed.length,
+            });
     }
 
     await notificationService.displayUpdateNotification({
