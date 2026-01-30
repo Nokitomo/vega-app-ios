@@ -6,6 +6,7 @@ import {downloadFolder} from './constants';
 import requestStoragePermission from './file/getStoragePermission';
 import {hlsDownloader2} from './hlsDownloader2';
 import {notificationService} from './services/Notification';
+import i18n from '../i18n';
 
 export const downloadManager = async ({
   title,
@@ -146,7 +147,10 @@ export const downloadManager = async ({
     ret.promise.catch(err => {
       deleteDownload();
       console.log('Download error:', err);
-      Alert.alert('Download failed', err.message || 'Failed to download');
+      Alert.alert(
+        i18n.t('Download failed'),
+        err.message || i18n.t('Failed to download'),
+      );
       notificationService.showDownloadFailed(title, fileName);
       setDownloadActive(false);
       setAlreadyDownloaded(false);
@@ -160,7 +164,7 @@ export const downloadManager = async ({
   } catch (error: any) {
     console.error('Download error:', error);
     deleteDownload();
-    Alert.alert('Download failed', 'Failed to download');
+    Alert.alert(i18n.t('Download failed'), i18n.t('Failed to download'));
     setDownloadActive(false);
     setAlreadyDownloaded(false);
   }
