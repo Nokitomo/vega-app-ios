@@ -14,3 +14,6 @@ Motivazioni principali:
 - Riproduzione media e servizi in foreground.
 - Download e accesso ai file locali.
 - Streaming e accesso alle reti.
+
+Nota i18n:
+- I testi di richiesta permesso storage sono localizzati in `src/i18n/`.
