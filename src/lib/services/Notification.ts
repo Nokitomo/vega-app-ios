@@ -8,6 +8,7 @@ import * as RNFS from '@dr.pogodin/react-native-fs';
 import {downloadFolder} from '../constants';
 import {cancelHlsDownload} from '../hlsDownloader2';
 import RNApkInstaller from '@himanshu8443/react-native-apk-installer';
+import i18n from '../../i18n';
 
 export interface NotificationOptions {
   id: string;
@@ -62,24 +63,24 @@ class NotificationService {
     // Default channel
     await notifee.createChannel({
       id: this._defaultChannelId,
-      name: 'Default Notifications',
+      name: i18n.t('Default Notifications'),
       importance: AndroidImportance.DEFAULT,
     });
 
     // Download channel
     await notifee.createChannel({
       id: this._downloadChannelId,
-      name: 'Download Notifications',
+      name: i18n.t('Download Notifications'),
       importance: AndroidImportance.HIGH,
-      description: 'Notifications for download progress and completion',
+      description: i18n.t('Notifications for download progress and completion'),
     });
 
     // Update channel
     await notifee.createChannel({
       id: this._updateChannelId,
-      name: 'Update Notifications',
+      name: i18n.t('Update Notifications'),
       importance: AndroidImportance.DEFAULT,
-      description: 'Notifications for app and provider updates',
+      description: i18n.t('Notifications for app and provider updates'),
     });
   }
 
@@ -173,7 +174,7 @@ class NotificationService {
     await this.displayDownloadNotification({
       id: fileName,
       title: title,
-      body: 'Starting download',
+      body: i18n.t('Starting download'),
       progress: {
         max: 100,
         current: 0,
@@ -204,7 +205,7 @@ class NotificationService {
       },
       actions: [
         {
-          title: 'Cancel',
+          title: i18n.t('Cancel'),
           pressAction: {
             id: fileName,
           },
@@ -221,7 +222,7 @@ class NotificationService {
     await this.cancelNotification(fileName);
     await this.displayDownloadNotification({
       id: `downloadComplete${fileName}`,
-      title: 'Download complete',
+      title: i18n.t('Download complete'),
       body: title,
     });
   }
@@ -233,7 +234,7 @@ class NotificationService {
     await this.cancelNotification(fileName);
     await this.displayDownloadNotification({
       id: `downloadFailed${fileName}`,
-      title: 'Download failed',
+      title: i18n.t('Download failed'),
       body: title,
     });
   }
