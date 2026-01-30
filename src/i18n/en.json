@@ -106,6 +106,8 @@
   "App Version: {{version}} ({{build}})": "App Version: {{version}} ({{build}})",
   "If this keeps happening, report on github or discord": "If this keeps happening, report on github or discord",
   "Invalid provider data": "Invalid provider data",
+  "No episode links module found for provider: {{provider}}": "No episode links module found for provider: {{provider}}",
+  "Invalid episode links module for provider: {{provider}}": "Invalid episode links module for provider: {{provider}}",
   "Success": "Success",
   "{{provider}} has been updated successfully!": "{{provider}} has been updated successfully!",
   "Failed to update provider. Please try again.": "Failed to update provider. Please try again.",

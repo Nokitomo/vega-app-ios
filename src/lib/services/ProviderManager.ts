@@ -2,6 +2,7 @@ import {ToastAndroid} from 'react-native';
 import {providerContext} from '../providers/providerContext';
 import {Catalog, EpisodeLink, Info, Post} from '../providers/types';
 import {extensionManager} from './ExtensionManager';
+import i18n from '../../i18n';
 
 export class ProviderManager {
   private createExecutionContext() {
@@ -268,7 +269,9 @@ export class ProviderManager {
       extensionManager.getProviderModules(providerValue)?.modules.episodes;
     if (!getEpisodeLinksModule) {
       throw new Error(
-        `No episode links module found for provider: ${providerValue}`,
+        i18n.t('No episode links module found for provider: {{provider}}', {
+          provider: providerValue,
+        }),
       );
     }
     try {
@@ -287,11 +290,15 @@ export class ProviderManager {
       console.error('Error creating episode links function:', error);
       console.error('Module content:', getEpisodeLinksModule);
       ToastAndroid.show(
-        `Invalid episode links module for provider: ${providerValue}`,
+        i18n.t('Invalid episode links module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
         ToastAndroid.LONG,
       );
       throw new Error(
-        `Invalid episode links module for provider: ${providerValue}`,
+        i18n.t('Invalid episode links module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
       );
     }
   };
