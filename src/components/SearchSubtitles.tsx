@@ -14,6 +14,7 @@ import useThemeStore from '../lib/zustand/themeStore';
 import {ScrollView} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {TextTracks, TextTrackType} from 'react-native-video';
+import {useTranslation} from 'react-i18next';
 
 const SearchSubtitles = ({
   searchQuery,
@@ -25,6 +26,7 @@ const SearchSubtitles = ({
   setExternalSubs: React.Dispatch<React.SetStateAction<TextTracks>>;
 }) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [season, setSeason] = useState('');
   const [episode, setEpisode] = useState('');
@@ -91,7 +93,7 @@ const SearchSubtitles = ({
       const data = await response.json();
       setLoading(false);
       if (data?.length === 0) {
-        setError('No Results Found');
+        setError(t('No Results Found'));
         setSearchResults([]);
         return;
       }
@@ -100,7 +102,7 @@ const SearchSubtitles = ({
       console.log('openSubtitles err', e);
       setLoading(false);
       setError(e?.message);
-      ToastAndroid.show('Error fetching subtitles', ToastAndroid.SHORT);
+      ToastAndroid.show(t('Error fetching subtitles'), ToastAndroid.SHORT);
     }
   };
   return (
@@ -110,7 +112,7 @@ const SearchSubtitles = ({
         onPress={() => setSearchModalVisible(true)}>
         <MaterialIcons name="add" size={20} color="white" />
         <Text className="text-base font-semibold text-white">
-          search subtitles online
+          {t('Search subtitles online')}
         </Text>
       </TouchableOpacity>
       <Modal
@@ -130,12 +132,12 @@ const SearchSubtitles = ({
               onPress={() => setSearchModalVisible(false)}
             />
             <Text className="text-white text-xl font-semibold">
-              Search Subtitles
+              {t('Search Subtitles')}
             </Text>
           </View>
           <View className="flex-row justify-between items-center px-4 py-2">
             <TextInput
-              placeholder="Name or IMDB ID"
+              placeholder={t('Name or IMDB ID')}
               className="bg-quaternary w-[60%] rounded-md p-2 text-white"
               onChangeText={text => setSearchQuery(text)}
               value={searchQuery}
@@ -159,7 +161,7 @@ const SearchSubtitles = ({
                 }}
                 labelField={'id'}
                 valueField={'id'}
-                placeholder="Select"
+                placeholder={t('Select')}
                 value={subId}
                 data={subLanguageIds}
                 onChange={async item => {
@@ -173,14 +175,14 @@ const SearchSubtitles = ({
               />
             </View>
             <TextInput
-              placeholder="Season"
+              placeholder={t('Season')}
               keyboardType="numeric"
               className="bg-quaternary text-white w-[10%] rounded-md p-2"
               onChangeText={text => setSeason(text)}
               value={season}
             />
             <TextInput
-              placeholder="Episode"
+              placeholder={t('Episode')}
               keyboardType="numeric"
               className="bg-quaternary text-white w-[10%] rounded-md p-2"
               onChangeText={text => setEpisode(text)}

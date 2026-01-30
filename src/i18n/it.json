@@ -155,5 +155,13 @@
   "Unable to load details": "Impossibile caricare i dettagli",
   "Select Provider": "Seleziona provider",
   "Content source": "Fonte contenuti",
-  "More": "Altro"
+  "More": "Altro",
+  "No Results Found": "Nessun risultato trovato",
+  "Error fetching subtitles": "Errore nel recupero sottotitoli",
+  "Search subtitles online": "Cerca sottotitoli online",
+  "Search Subtitles": "Cerca sottotitoli",
+  "Name or IMDB ID": "Nome o ID IMDB",
+  "Select": "Seleziona",
+  "Season": "Stagione",
+  "Episode": "Episodio"
 }

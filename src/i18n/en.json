@@ -155,5 +155,13 @@
   "Unable to load details": "Unable to load details",
   "Select Provider": "Select Provider",
   "Content source": "Content source",
-  "More": "More"
+  "More": "More",
+  "No Results Found": "No Results Found",
+  "Error fetching subtitles": "Error fetching subtitles",
+  "Search subtitles online": "Search subtitles online",
+  "Search Subtitles": "Search Subtitles",
+  "Name or IMDB ID": "Name or IMDB ID",
+  "Select": "Select",
+  "Season": "Season",
+  "Episode": "Episode"
 }
