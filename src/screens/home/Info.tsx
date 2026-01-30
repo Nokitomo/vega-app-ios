@@ -29,6 +29,7 @@ import useWatchListStore from '../../lib/zustand/watchListStore';
 import {useContentDetails} from '../../lib/hooks/useContentInfo';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
 import SkeletonLoader from '../../components/Skeleton';
+import {useTranslation} from 'react-i18next';
 // import {BlurView} from 'expo-blur';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Info'>;
@@ -36,6 +37,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const searchNavigation =
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {addItem, removeItem} = useWatchListStore(state => state);
   const {provider} = useContentStore(state => state);
   const providerValue = route.params.provider || provider.value;
@@ -119,8 +121,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
 
   // Memoized computed values
   const synopsis = useMemo(() => {
-    return meta?.description || info?.synopsis || 'No synopsis available';
-  }, [meta?.description, info?.synopsis]);
+    return meta?.description || info?.synopsis || t('No synopsis available');
+  }, [meta?.description, info?.synopsis, t]);
 
   const displayTitle = useMemo(() => {
     return meta?.name || info?.title;
@@ -231,21 +233,21 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
           backgroundColor="black"
         />
         <Text className="text-red-400 text-lg font-bold mb-4 text-center">
-          Failed to load content
+          {t('Failed to load content')}
         </Text>
         <Text className="text-gray-400 text-sm mb-6 text-center">
           {error.message ||
-            'An unexpected error occurred while loading the content'}
+            t('An unexpected error occurred while loading the content')}
         </Text>
         <TouchableOpacity
           onPress={handleRefresh}
           className="bg-red-600 px-6 py-3 rounded-lg mb-4">
-          <Text className="text-white font-semibold">Try Again</Text>
+          <Text className="text-white font-semibold">{t('Try Again')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           className="bg-gray-600 px-6 py-3 rounded-lg">
-          <Text className="text-white font-semibold">Go Back</Text>
+          <Text className="text-white font-semibold">{t('Go Back')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -362,7 +364,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     ))}
                     {info?.episodesCount ? (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        Episodes: {info.episodesCount}
+                        {t('Episodes: {{count}}', {
+                          count: info.episodesCount,
+                        })}
                       </Text>
                     ) : null}
                     {info?.tags?.slice(0, 3)?.map((tag: string) => (
@@ -377,7 +381,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   {meta?.awards && (
                     <View className="mb-2 w-full flex-row items-baseline gap-2">
                       <Text className="text-white text- font-semibold">
-                        Awards:
+                        {t('Awards:')}
                       </Text>
                       <Text className="text-white text-xs px-1 bg-tertiary rounded-sm">
                         {meta?.awards?.length > 50
@@ -390,7 +394,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   {(meta?.cast?.length! > 0 || info?.cast?.length! > 0) && (
                     <View className="mb-2 w-full flex-row items-start gap-2">
                       <Text className="text-white text-lg font-semibold pt-[0.9px]">
-                        Cast
+                        {t('Cast')}
                       </Text>
                       <View className="flex-row gap-1 flex-wrap">
                         {meta?.cast
@@ -432,7 +436,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     <SkeletonLoader show={infoLoading} height={25} width={180}>
                       <View className="flex-row items-center gap-2">
                         <Text className="text-white text-lg font-semibold">
-                          Synopsis
+                          {t('Synopsis')}
                         </Text>
                         <Text className="text-white text-xs bg-tertiary p-1 px-2 rounded-md">
                           {providerValue}
@@ -509,7 +513,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                                   color="rgb(156 163 175)"
                                 />
                                 <Text className="text-white text-base">
-                                  Open in Web
+                                  {t('Open in Web')}
                                 </Text>
                               </TouchableOpacity>
                               {/* search */}
@@ -531,7 +535,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                                   color="rgb(156 163 175)"
                                 />
                                 <Text className="text-white text-base">
-                                  Search Title
+                                  {t('Search Title')}
                                 </Text>
                               </TouchableOpacity>
                             </View>
@@ -549,7 +553,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         <Text
                           onPress={() => setReadMore(!readMore)}
                           className="text-white font-extrabold text-xs px-2 bg-tertiary rounded-md">
-                          read more
+                          {t('read more')}
                         </Text>
                       )}
                     </Text>
@@ -558,12 +562,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     <View className="mt-2">
                       {info?.studio ? (
                         <Text className="text-gray-400 text-xs">
-                          Studio: {info.studio}
+                          {t('Studio: {{name}}', {name: info.studio})}
                         </Text>
                       ) : null}
                       {info?.genres && info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
-                          Genres: {info.genres.join(' · ')}
+                          {t('Genres: {{list}}', {
+                            list: info.genres.join(' · '),
+                          })}
                         </Text>
                       ) : null}
                     </View>
@@ -597,7 +603,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                               : 'bg-quaternary'
                           }`}>
                           <Text className="text-white text-xs font-semibold">
-                            Episodes
+                            {t('Episodes')}
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -608,7 +614,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                               : 'bg-quaternary'
                           }`}>
                           <Text className="text-white text-xs font-semibold">
-                            Related
+                            {t('Related')}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -630,7 +636,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         <View className="gap-3">
                           {relatedItems.length === 0 ? (
                             <Text className="text-gray-400 text-xs">
-                              No related items available.
+                              {t('No related items available.')}
                             </Text>
                           ) : (
                             relatedItems.map((item, index) => (

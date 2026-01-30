@@ -110,5 +110,20 @@
   "No Content Found": "Nessun contenuto trovato",
   "Webview": "Webview",
   "Failed to load content": "Caricamento contenuti non riuscito",
-  "Pull to refresh and try again": "Trascina per aggiornare e riprova"
+  "Pull to refresh and try again": "Trascina per aggiornare e riprova",
+  "No synopsis available": "Nessuna sinossi disponibile",
+  "An unexpected error occurred while loading the content": "Si è verificato un errore imprevisto durante il caricamento del contenuto",
+  "Try Again": "Riprova",
+  "Go Back": "Indietro",
+  "Episodes: {{count}}": "Episodi: {{count}}",
+  "Awards:": "Premi:",
+  "Cast": "Cast",
+  "Synopsis": "Sinossi",
+  "Open in Web": "Apri nel web",
+  "Search Title": "Cerca titolo",
+  "read more": "leggi di più",
+  "Studio: {{name}}": "Studio: {{name}}",
+  "Genres: {{list}}": "Generi: {{list}}",
+  "Related": "Correlati",
+  "No related items available.": "Nessun elemento correlato disponibile."
 }

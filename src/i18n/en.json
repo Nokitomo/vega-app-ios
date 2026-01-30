@@ -110,5 +110,20 @@
   "No Content Found": "No Content Found",
   "Webview": "Webview",
   "Failed to load content": "Failed to load content",
-  "Pull to refresh and try again": "Pull to refresh and try again"
+  "Pull to refresh and try again": "Pull to refresh and try again",
+  "No synopsis available": "No synopsis available",
+  "An unexpected error occurred while loading the content": "An unexpected error occurred while loading the content",
+  "Try Again": "Try Again",
+  "Go Back": "Go Back",
+  "Episodes: {{count}}": "Episodes: {{count}}",
+  "Awards:": "Awards:",
+  "Cast": "Cast",
+  "Synopsis": "Synopsis",
+  "Open in Web": "Open in Web",
+  "Search Title": "Search Title",
+  "read more": "read more",
+  "Studio: {{name}}": "Studio: {{name}}",
+  "Genres: {{list}}": "Genres: {{list}}",
+  "Related": "Related",
+  "No related items available.": "No related items available."
 }
