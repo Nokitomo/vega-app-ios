@@ -13,6 +13,7 @@ import useThemeStore from '../lib/zustand/themeStore';
 import {providerManager} from '../lib/services/ProviderManager';
 import useContentStore from '../lib/zustand/contentStore';
 import useSearchCacheStore from '../lib/zustand/searchCacheStore';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<SearchStackParamList, 'SearchResults'>;
 
@@ -27,6 +28,7 @@ interface SearchPageData {
 
 const SearchResults = ({route}: Props): React.ReactElement => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {installedProviders} = useContentStore(state => state);
   const {getCache, setCache} = useSearchCacheStore(state => ({
     getCache: state.getCache,
@@ -239,7 +241,7 @@ const SearchResults = ({route}: Props): React.ReactElement => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="mt-14 px-4 flex flex-row justify-between items-center gap-x-3">
           <Text className="text-white text-2xl font-semibold ">
-            {isAllLoaded ? 'Searched for' : 'Searching for'}{' '}
+            {isAllLoaded ? t('Searched for') : t('Searching for')}{' '}
             <Text style={{color: primary}}>"{route?.params?.filter}"</Text>
           </Text>
           {!isAllLoaded && (
