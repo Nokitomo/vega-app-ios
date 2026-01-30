@@ -28,3 +28,7 @@ File: babel.config.js
 
 ## Typescript
 - tsconfig.json definisce target e path.
+
+## Localizzazione (i18n)
+- Configurazione in `src/i18n/index.ts` con i18next + react-i18next.
+- Lingue supportate: en, it. Risorse in `src/i18n/en.json` e `src/i18n/it.json`.
