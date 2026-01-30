@@ -34,6 +34,7 @@ File: src/lib/services/ProviderManager.ts
 - Usa providerContext con axios, cheerio, estrattori e utility.
 - I provider possono fornire piu stream per lo stesso episodio (es. AnimeUnity via VixCloud Server1/Server2 con fallback Download e varianti qualita da master playlist).
 - Nel player, su errori HTTP 403/503, viene fatto un refetch dei link stream per rigenerare i token prima di provare altri server, con cooldown per server e riuso della cache stream su mount.
+- I messaggi utente (errori e toast relativi ai provider) sono localizzati via i18n.
 
 ## ProviderContext
 File: src/lib/providers/providerContext.ts
@@ -43,6 +44,7 @@ File: src/lib/providers/providerContext.ts
 ## Storage provider
 - ExtensionStorage gestisce cache locale e stato installato/abilitato.
 - UpdateProvidersService verifica versioni e aggiorna automaticamente.
+- Le notifiche di aggiornamento provider usano testi localizzati.
 
 ## Dove stanno i provider
 - I provider non sono hardcoded nel repository dell'app.
