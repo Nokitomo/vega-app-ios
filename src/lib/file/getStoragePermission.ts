@@ -1,4 +1,5 @@
 import {Platform, PermissionsAndroid, Alert} from 'react-native';
+import i18n from '../../i18n';
 
 export default async function requestStoragePermission() {
   try {
@@ -9,17 +10,17 @@ export default async function requestStoragePermission() {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
       {
-        title: 'Storage Permission',
-        message: 'App needs access to your storage to download files.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        title: i18n.t('Storage Permission'),
+        message: i18n.t('App needs access to your storage to download files.'),
+        buttonNeutral: i18n.t('Ask Me Later'),
+        buttonNegative: i18n.t('Cancel'),
+        buttonPositive: i18n.t('OK'),
       },
     );
     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
       Alert.alert(
-        'Permission Denied',
-        'Please enable storage permission in settings',
+        i18n.t('Permission Denied'),
+        i18n.t('Please enable storage permission in settings'),
       );
     }
     return granted === PermissionsAndroid.RESULTS.GRANTED;
