@@ -86,5 +86,8 @@
   "Available ({{count}})": "Disponibili ({{count}})",
   "No providers available": "Nessun provider disponibile",
   "Install providers from the Available tab to get started": "Installa provider dalla scheda Disponibili per iniziare",
-  "Pull to refresh to check for available providers": "Trascina per aggiornare e verificare i provider disponibili"
+  "Pull to refresh to check for available providers": "Trascina per aggiornare e verificare i provider disponibili",
+  "Episodes": "Episodi",
+  "EP {{number}}": "EP {{number}}",
+  "Episode {{number}}": "Episodio {{number}}"
 }

@@ -9,6 +9,7 @@ import {RootStackParamList} from '../../App';
 import {downloadsStorage, settingsStorage} from '../../lib/storage';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useThemeStore from '../../lib/zustand/themeStore';
+import {useTranslation} from 'react-i18next';
 
 type SeriesEpisodesRouteProp = NativeStackScreenProps<
   RootStackParamList,
@@ -17,6 +18,7 @@ type SeriesEpisodesRouteProp = NativeStackScreenProps<
 
 const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {series, episodes: initialEpisodes, thumbnails} = route.params;
   const [episodes, setEpisodes] = useState(initialEpisodes);
   const [episodeSelected, setEpisodeSelected] = useState<string[]>([]);
@@ -146,8 +148,12 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
       {/* Episodes list */}
       <View className="flex-1 px-4">
         <View className="flex-row items-center justify-between py-4">
-          <Text className="text-white text-lg font-bold">Episodes</Text>
-          <Text className="text-gray-400">{episodes.length} episodes</Text>
+          <Text className="text-white text-lg font-bold">{t('Episodes')}</Text>
+          <Text className="text-gray-400">
+            {episodes.length === 1
+              ? t('{{count}} episode', {count: episodes.length})
+              : t('{{count}} episodes', {count: episodes.length})}
+          </Text>
         </View>
 
         <FlashList
@@ -230,7 +236,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   )}
                   <View className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded">
                     <Text className="text-white text-xs">
-                      EP {episodeNumber}
+                      {t('EP {{number}}', {number: episodeNumber})}
                     </Text>
                   </View>
                 </View>
@@ -242,7 +248,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                 )}
                 <View className="flex-1 p-3 justify-center">
                   <Text className="text-base text-white font-medium mb-1">
-                    Episode {episodeNumber}
+                    {t('Episode {{number}}', {number: episodeNumber})}
                   </Text>
                   <Text className="text-[8px] my-1 text-gray-400">
                     {fileName}

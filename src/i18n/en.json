@@ -86,5 +86,8 @@
   "Available ({{count}})": "Available ({{count}})",
   "No providers available": "No providers available",
   "Install providers from the Available tab to get started": "Install providers from the Available tab to get started",
-  "Pull to refresh to check for available providers": "Pull to refresh to check for available providers"
+  "Pull to refresh to check for available providers": "Pull to refresh to check for available providers",
+  "Episodes": "Episodes",
+  "EP {{number}}": "EP {{number}}",
+  "Episode {{number}}": "Episode {{number}}"
 }
