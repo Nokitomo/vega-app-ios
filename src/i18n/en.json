@@ -95,5 +95,7 @@
   "Disabled providers won't appear in search results": "Disabled providers won't appear in search results",
   "Changes will apply to new searches": "Changes will apply to new searches",
   "Watchlist": "Watchlist",
-  "Your watchlist is empty": "Your watchlist is empty"
+  "Your watchlist is empty": "Your watchlist is empty",
+  "Clear": "Clear",
+  "No watch history": "No watch history"
 }

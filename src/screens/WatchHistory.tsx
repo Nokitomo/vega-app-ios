@@ -14,10 +14,12 @@ import {WatchHistoryStackParamList} from '../App';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import useThemeStore from '../lib/zustand/themeStore';
 import {mainStorage} from '../lib/storage';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<WatchHistoryStackParamList, 'WatchHistory'>;
 const WatchHistory = ({navigation}: Props) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {history, clearHistory} = useWatchHistoryStore(state => state);
   const [progressData, setProgressData] = useState<Record<string, number>>({});
 
@@ -155,12 +157,14 @@ const WatchHistory = ({navigation}: Props) => {
       />
 
       <View className="flex-row justify-between items-center p-4">
-        <Text className="text-white text-2xl font-bold">Watch History</Text>
+        <Text className="text-white text-2xl font-bold">
+          {t('Watch History')}
+        </Text>
         {uniqueHistory.length > 0 && (
           <TouchableOpacity
             onPress={() => clearHistory()}
             className="bg-white/10 px-3 py-1 rounded-full">
-            <Text className="text-white">Clear</Text>
+            <Text className="text-white">{t('Clear')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -173,7 +177,7 @@ const WatchHistory = ({navigation}: Props) => {
           <View className="flex-1 justify-center items-center mt-10">
             <MaterialCommunityIcons name="history" size={80} color={primary} />
             <Text className="text-white/70 text-base mt-4">
-              No watch history
+              {t('No watch history')}
             </Text>
           </View>
         )}

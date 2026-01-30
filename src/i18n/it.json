@@ -95,5 +95,7 @@
   "Disabled providers won't appear in search results": "I provider disattivati non appariranno nei risultati di ricerca",
   "Changes will apply to new searches": "Le modifiche si applicheranno alle nuove ricerche",
   "Watchlist": "Lista da guardare",
-  "Your watchlist is empty": "La tua lista da guardare è vuota"
+  "Your watchlist is empty": "La tua lista da guardare è vuota",
+  "Clear": "Cancella",
+  "No watch history": "Nessuna cronologia di visione"
 }
