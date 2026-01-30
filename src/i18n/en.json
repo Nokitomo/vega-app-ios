@@ -145,5 +145,8 @@
   "Undefined": "Undefined",
   "Server": "Server",
   "Bitrate {{bitrate}} | Codec {{codec}}": "Bitrate {{bitrate}} | Codec {{codec}}",
-  "Playback Speed": "Playback Speed"
+  "Playback Speed": "Playback Speed",
+  "Continue Watching": "Continue Watching",
+  "{{count}} selected": "{{count}} selected",
+  "Ep. {{number}}": "Ep. {{number}}"
 }

@@ -145,5 +145,8 @@
   "Undefined": "Non definito",
   "Server": "Server",
   "Bitrate {{bitrate}} | Codec {{codec}}": "Bitrate {{bitrate}} | Codec {{codec}}",
-  "Playback Speed": "Velocità di riproduzione"
+  "Playback Speed": "Velocità di riproduzione",
+  "Continue Watching": "Continua a guardare",
+  "{{count}} selected": "{{count}} selezionati",
+  "Ep. {{number}}": "Ep. {{number}}"
 }

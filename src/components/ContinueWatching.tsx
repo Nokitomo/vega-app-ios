@@ -17,9 +17,11 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useUiSettingsStore from '../lib/zustand/uiSettingsStore';
+import {useTranslation} from 'react-i18next';
 
 const ContinueWatching = () => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
   const {history, removeItem} = useWatchHistoryStore(state => state);
@@ -40,7 +42,7 @@ const ContinueWatching = () => {
     if (!match) {
       return undefined;
     }
-    return `Ep. ${match[0]}`;
+    return t('Ep. {{number}}', {number: match[0]});
   };
 
   // Filter out duplicates and get the most recent items
@@ -198,13 +200,13 @@ const ContinueWatching = () => {
       className="mt-3 mb-8">
       <View className="flex flex-row justify-between items-center px-2 mb-3">
         <Text className="text-2xl font-semibold" style={{color: primary}}>
-          Continue Watching
+          {t('Continue Watching')}
         </Text>
 
         {selectionMode && selectedItems.size > 0 && (
           <View className="flex flex-row items-center">
             <Text className="text-white mr-1">
-              {selectedItems.size} selected
+              {t('{{count}} selected', {count: selectedItems.size})}
             </Text>
             <TouchableOpacity
               onPress={deleteSelectedItems}
