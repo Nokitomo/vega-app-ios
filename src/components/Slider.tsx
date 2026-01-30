@@ -9,6 +9,7 @@ import {FlashList} from '@shopify/flash-list';
 import type {FlashListProps} from '@shopify/flash-list';
 import SkeletonLoader from './Skeleton';
 import ProviderImage from './ProviderImage';
+import {useTranslation} from 'react-i18next';
 
 // import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
@@ -30,6 +31,7 @@ export default function Slider({
 }): JSX.Element {
   const {provider} = useContentStore(state => state);
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [isSelected, setSelected] = React.useState('');
@@ -60,7 +62,7 @@ export default function Slider({
                 isSearch: isSearch,
               })
             }>
-            <Text className="text-white text-sm">more</Text>
+            <Text className="text-white text-sm">{t('More')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -152,7 +154,7 @@ export default function Slider({
             !isLoading && posts.length === 0 ? (
               <View className="flex flex-row w-96 justify-center h-10 items-center">
                 <Text className="text-whiter text-center text-white">
-                  No content found
+                  {t('No Content Found')}
                 </Text>
               </View>
             ) : null
