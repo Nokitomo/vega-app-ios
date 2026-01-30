@@ -23,11 +23,11 @@ il problema e quasi sempre la New Architecture.
    - Poi ricostruisci:
 ```
 adb uninstall com.vega
-npx expo prebuild -p android --clean
 npx expo run:android --device "Medium_phone_API_35"
 ```
 Nota: non usare l'emulatore Pixel_6_Pro_API_35.
 Questo riallinea binario nativo e bundle JS.
+Nota: non eseguire `npx expo prebuild` (ci sono customizzazioni native).
 
 ## Errore Crashlytics: Default FirebaseApp not initialized
 Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleService-Info.plist, Crashlytics logga un errore.
@@ -41,3 +41,8 @@ Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleServi
 ## Expo Go in offline mode
 Se Expo segnala che Expo Go non e installato in offline mode:
 - Usa un dev client (`expo run:android`); Expo Go non e supportato per funzionalita native.
+
+## Stringhe non tradotte / chiavi visibili
+Sintomo: testi in inglese o chiavi raw (es. `Some Key`).
+- Verifica che la chiave esista in `src/i18n/en.json` e `src/i18n/it.json`.
+- Nei componenti usare `t(...)`; nei servizi usare `i18n.t(...)`.
