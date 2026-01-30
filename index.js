@@ -4,6 +4,7 @@
 
 import {AppRegistry} from 'react-native';
 import App from './src/App';
+import './src/i18n';
 import notifee from '@notifee/react-native';
 // import notificationService from './src/lib/services/Notification';
 
