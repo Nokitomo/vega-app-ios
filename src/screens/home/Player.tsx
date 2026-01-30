@@ -46,6 +46,7 @@ import {
 } from '../../lib/hooks/usePlayerSettings';
 import * as NavigationBar from 'expo-navigation-bar';
 import {StatusBar} from 'react-native';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Player'>;
 
@@ -74,6 +75,7 @@ const STREAM_RETRY_COOLDOWN_MS = 3000;
 
 const Player = ({route}: Props): React.JSX.Element => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {provider} = useContentStore();
   const navigation = useNavigation();
   const {addItem, updatePlaybackInfo, updateItemWithInfo} =
@@ -249,31 +251,34 @@ const Player = ({route}: Props): React.JSX.Element => {
   // const remoteMediaClient = Platform.isTV ? null : useRemoteMediaClient();
 
   // Memoized format quality function
-  const formatQuality = useCallback((quality: string) => {
-    if (quality === 'auto') {
+  const formatQuality = useCallback(
+    (quality: string) => {
+      if (quality === 'auto') {
+        return t('Auto');
+      }
+      const num = Number(quality);
+      if (num > 1080) {
+        return '4K';
+      }
+      if (num > 720) {
+        return '1080p';
+      }
+      if (num > 480) {
+        return '720p';
+      }
+      if (num > 360) {
+        return '480p';
+      }
+      if (num > 240) {
+        return '360p';
+      }
+      if (num > 144) {
+        return '240p';
+      }
       return quality;
-    }
-    const num = Number(quality);
-    if (num > 1080) {
-      return '4K';
-    }
-    if (num > 720) {
-      return '1080p';
-    }
-    if (num > 480) {
-      return '720p';
-    }
-    if (num > 360) {
-      return '480p';
-    }
-    if (num > 240) {
-      return '360p';
-    }
-    if (num > 144) {
-      return '240p';
-    }
-    return quality;
-  }, []);
+    },
+    [t],
+  );
 
   // Memoized next episode handler
   const handleNextEpisode = useCallback(() => {
@@ -285,9 +290,9 @@ const Player = ({route}: Props): React.JSX.Element => {
       setActiveEpisode(route.params?.episodeList[currentIndex + 1]);
       hasSetInitialTracksRef.current = false;
     } else {
-      ToastAndroid.show('No more episodes', ToastAndroid.SHORT);
+      ToastAndroid.show(t('No more episodes'), ToastAndroid.SHORT);
     }
-  }, [activeEpisode, route.params?.episodeList]);
+  }, [activeEpisode, route.params?.episodeList, t]);
 
   const extractHttpStatus = useCallback((errorEvent: any) => {
     const stackTrace = errorEvent?.error?.errorStackTrace || '';
@@ -329,7 +334,7 @@ const Player = ({route}: Props): React.JSX.Element => {
             lastAttempt: now,
           };
           ToastAndroid.show(
-            'Stream error, retrying token',
+            t('Stream error, retrying token'),
             ToastAndroid.SHORT,
           );
           const result = await refetch();
@@ -346,7 +351,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       }
       if (!switchToNextStream()) {
         ToastAndroid.show(
-          'Video could not be played, try again later',
+          t('Video could not be played, try again later'),
           ToastAndroid.SHORT,
         );
         navigation.goBack();
@@ -362,6 +367,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       setShowControls,
       shouldRefetchStream,
       switchToNextStream,
+      t,
     ],
   );
 
@@ -818,7 +824,9 @@ const Player = ({route}: Props): React.JSX.Element => {
               color="white"
             />
             <Text className="capitalize text-xs text-white opacity-70">
-              {audioTracks[selectedAudioTrackIndex]?.language || 'auto'}
+              {audioTracks[selectedAudioTrackIndex]?.language === 'auto'
+                ? t('Auto')
+                : audioTracks[selectedAudioTrackIndex]?.language || t('Auto')}
             </Text>
           </TouchableOpacity>
 
@@ -837,7 +845,7 @@ const Player = ({route}: Props): React.JSX.Element => {
             />
             <Text className="text-xs capitalize text-white opacity-70">
               {selectedTextTrackIndex === 1000
-                ? 'none'
+                ? t('None')
                 : textTracks[selectedTextTrackIndex]?.language}
             </Text>
           </TouchableOpacity>
@@ -867,7 +875,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                 size={24}
                 color="white"
               />
-              <Text className="text-white text-xs">PIP</Text>
+              <Text className="text-white text-xs">{t('PIP')}</Text>
             </TouchableOpacity>
           )}
 
@@ -896,12 +904,12 @@ const Player = ({route}: Props): React.JSX.Element => {
             <MaterialIcons name="fit-screen" size={28} color="white" />
             <Text className="text-white text-sm min-w-[38px]">
               {resizeMode === ResizeMode.NONE
-                ? 'Fit'
+                ? t('Fit')
                 : resizeMode === ResizeMode.COVER
-                  ? 'Cover'
+                  ? t('Cover')
                   : resizeMode === ResizeMode.STRETCH
-                    ? 'Stretch'
-                    : 'Contain'}
+                    ? t('Stretch')
+                    : t('Contain')}
             </Text>
           </TouchableOpacity>
 
@@ -914,7 +922,7 @@ const Player = ({route}: Props): React.JSX.Element => {
               <TouchableOpacity
                 className="flex-row items-center opacity-60"
                 onPress={handleNextEpisode}>
-                <Text className="text-white text-base">Next</Text>
+                <Text className="text-white text-base">{t('Next')}</Text>
                 <MaterialIcons name="skip-next" size={28} color="white" />
               </TouchableOpacity>
             )}
@@ -944,12 +952,12 @@ const Player = ({route}: Props): React.JSX.Element => {
             {activeTab === 'audio' && (
               <ScrollView className="w-full h-full p-1 px-4">
                 <Text className="text-lg font-bold text-center text-white">
-                  Audio
+                  {t('Audio')}
                 </Text>
                 {audioTracks.length === 0 && (
                   <View className="flex justify-center items-center">
                     <Text className="text-white text-xs">
-                      Loading audio tracks...
+                      {t('Loading audio tracks...')}
                     </Text>
                   </View>
                 )}
@@ -1009,7 +1017,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                 ListHeaderComponent={
                   <View>
                     <Text className="text-lg font-bold text-center text-white">
-                      Subtitle
+                      {t('Subtitle')}
                     </Text>
                     <TouchableOpacity
                       className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-3"
@@ -1027,7 +1035,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                           color:
                             selectedTextTrackIndex === 1000 ? primary : 'white',
                         }}>
-                        Disabled
+                        {t('Disabled')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1055,7 +1063,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                               title:
                                 asset.name && asset.name.length > 20
                                   ? asset.name.slice(0, 20) + '...'
-                                  : asset.name || 'undefined',
+                                  : asset.name || t('Undefined'),
                               language: 'und',
                               uri: asset.uri,
                             };
@@ -1067,7 +1075,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                       }}>
                       <MaterialIcons name="add" size={20} color="white" />
                       <Text className="text-base font-semibold text-white">
-                        Add external file
+                        {t('Add external file')}
                       </Text>
                     </TouchableOpacity>
                     <SearchSubtitles
@@ -1135,7 +1143,7 @@ const Player = ({route}: Props): React.JSX.Element => {
               <View className="flex flex-row w-full h-full p-1 px-4">
                 <ScrollView className="border-r border-white/50">
                   <Text className="w-full text-center text-white text-lg font-extrabold">
-                    Server
+                    {t('Server')}
                   </Text>
                   {streamData?.length > 0 &&
                     streamData?.map((track, i) => (
@@ -1166,7 +1174,7 @@ const Player = ({route}: Props): React.JSX.Element => {
 
                 <ScrollView>
                   <Text className="w-full text-center text-white text-lg font-extrabold">
-                    Quality
+                    {t('Quality')}
                   </Text>
                   {videoTracks &&
                     videoTracks.map((track: any, i: any) => (
@@ -1188,17 +1196,17 @@ const Player = ({route}: Props): React.JSX.Element => {
                           }}>
                           {track.height + 'p'}
                         </Text>
-                        <Text
-                          className={'text-sm italic'}
-                          style={{
-                            color:
-                              selectedQualityIndex === i ? primary : 'white',
-                          }}>
-                          {'Bitrate-' +
-                            track.bitrate +
-                            ' | Codec-' +
-                            (track?.codecs || 'unknown')}
-                        </Text>
+                      <Text
+                        className={'text-sm italic'}
+                        style={{
+                          color:
+                            selectedQualityIndex === i ? primary : 'white',
+                        }}>
+                        {t('Bitrate {{bitrate}} | Codec {{codec}}', {
+                          bitrate: track.bitrate,
+                          codec: track?.codecs || t('Unknown'),
+                        })}
+                      </Text>
                         {selectedQualityIndex === i && (
                           <MaterialIcons name="check" size={20} color="white" />
                         )}
@@ -1212,7 +1220,7 @@ const Player = ({route}: Props): React.JSX.Element => {
             {activeTab === 'speed' && (
               <ScrollView className="w-full h-full p-1 px-4">
                 <Text className="text-lg font-bold text-center text-white">
-                  Playback Speed
+                  {t('Playback Speed')}
                 </Text>
                 {playbacks.map((rate, i) => (
                   <TouchableOpacity
