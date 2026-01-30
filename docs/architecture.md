@@ -18,6 +18,7 @@
 - Provider: moduli remoti caricati dinamicamente via ExtensionManager.
 - Download e notifiche: DownloadManager + Notifee.
 - Networking/cache: TanStack React Query (QueryClientProvider in App).
+- Localizzazione: i18next + react-i18next con risorse in `src/i18n/`.
 
 ## Nuova architettura
 - newArchEnabled e disattivo in app.config.js e gradle.properties (stabilita).
