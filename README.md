@@ -9,6 +9,7 @@ Android and iOS app for streaming media.
 - WatchList.
 - External player and downloader support.
 - Dynamic providers with automatic updates.
+- English and Italian UI (i18n).
 <br>
 
 [![Discord](https://custom-icon-badges.demolab.com/badge/-Join_Discord-6567a5?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cr42m6maWy)
@@ -68,7 +69,7 @@ ___
      ```bash
      npx expo run:ios
      ```
-6. Clean prebuild (if needed)
+6. Clean prebuild (if needed, but can overwrite native customizations)
      ```bash
      npx expo prebuild -p android --clean
      npx expo prebuild -p ios --clean
