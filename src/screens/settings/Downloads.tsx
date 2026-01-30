@@ -13,6 +13,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {FlashList} from '@shopify/flash-list';
+import {useTranslation} from 'react-i18next';
 
 // Define supported video extensions
 const VIDEO_EXTENSIONS = [
@@ -115,6 +116,7 @@ const Downloads = () => {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const {t} = useTranslation();
 
   // Load cached data first, then refresh from filesystem
   useEffect(() => {
@@ -375,7 +377,7 @@ const Downloads = () => {
   return (
     <View className="mt-14 px-2 w-full h-full">
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-2xl">Downloads</Text>
+        <Text className="text-2xl">{t('Downloads')}</Text>
         <View className="flex-row gap-x-7 items-center">
           {isSelecting && (
             <MaterialCommunityIcons
@@ -407,7 +409,9 @@ const Downloads = () => {
         ListEmptyComponent={() =>
           !loading && (
             <View className="flex-1 justify-center items-center mt-10">
-              <Text className="text-center text-lg">Looks Empty Here!</Text>
+              <Text className="text-center text-lg">
+                {t('Looks Empty Here!')}
+              </Text>
             </View>
           )
         }
@@ -519,8 +523,9 @@ const Downloads = () => {
               </Text>
               {!item.isMovie && (
                 <Text className="text-gray-400 text-sm">
-                  {item.episodes.length} episode
-                  {item.episodes.length > 1 ? 's' : ''}
+                  {item.episodes.length === 1
+                    ? t('{{count}} episode', {count: item.episodes.length})
+                    : t('{{count}} episodes', {count: item.episodes.length})}
                 </Text>
               )}
             </View>

@@ -63,5 +63,8 @@
   "Bottom Elevation": "Margine inferiore",
   "More Subtitle Settings": "Altre impostazioni sottotitoli",
   "Reset to Default": "Ripristina predefiniti",
-  "Reset": "Ripristina"
+  "Reset": "Ripristina",
+  "Looks Empty Here!": "Qui è tutto vuoto!",
+  "{{count}} episode": "{{count}} episodio",
+  "{{count}} episodes": "{{count}} episodi"
 }

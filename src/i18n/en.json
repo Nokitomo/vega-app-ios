@@ -63,5 +63,8 @@
   "Bottom Elevation": "Bottom Elevation",
   "More Subtitle Settings": "More Subtitle Settings",
   "Reset to Default": "Reset to Default",
-  "Reset": "Reset"
+  "Reset": "Reset",
+  "Looks Empty Here!": "Looks Empty Here!",
+  "{{count}} episode": "{{count}} episode",
+  "{{count}} episodes": "{{count}} episodes"
 }
