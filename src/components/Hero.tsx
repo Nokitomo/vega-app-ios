@@ -21,6 +21,7 @@ import {Feather} from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {DrawerLayout} from 'react-native-gesture-handler';
 import {useHeroMetadata} from '../lib/hooks/useHomePageData';
+import {useTranslation} from 'react-i18next';
 
 interface HeroProps {
   isDrawerOpen: boolean;
@@ -29,6 +30,7 @@ interface HeroProps {
 
 const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
   const [searchActive, setSearchActive] = useState(false);
+  const {t} = useTranslation();
   const {provider} = useContentStore(state => state);
   const {hero} = useHeroStore(state => state);
 
@@ -154,7 +156,9 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
               onBlur={() => setSearchActive(false)}
               autoFocus={true}
               onSubmitEditing={e => handleSearchSubmit(e.nativeEvent.text)}
-              placeholder={`Search in ${provider.display_name}`}
+              placeholder={t('Search in {{provider}}', {
+                provider: provider.display_name,
+              })}
               className="w-[95%] px-4 h-10 rounded-full border-white border"
               placeholderTextColor="#999"
               textAlignVertical="center"
@@ -225,7 +229,9 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
                   onPress={handlePlayPress}
                   activeOpacity={0.8}>
                   <FontAwesome6 name="play" size={20} color="black" />
-                  <Text className="text-black font-bold text-lg">Play</Text>
+                  <Text className="text-black font-bold text-lg">
+                    {t('Play')}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -243,10 +249,10 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
         {error && !isLoading && (
           <View className="items-center">
             <Text className="text-white text-center text-xl font-bold">
-              {hero?.title || 'Content Unavailable'}
+              {hero?.title || t('Content Unavailable')}
             </Text>
             <Text className="text-gray-400 text-sm mt-2">
-              Unable to load details
+              {t('Unable to load details')}
             </Text>
           </View>
         )}

@@ -148,5 +148,9 @@
   "Playback Speed": "Velocità di riproduzione",
   "Continue Watching": "Continua a guardare",
   "{{count}} selected": "{{count}} selezionati",
-  "Ep. {{number}}": "Ep. {{number}}"
+  "Ep. {{number}}": "Ep. {{number}}",
+  "Search in {{provider}}": "Cerca in {{provider}}",
+  "Play": "Riproduci",
+  "Content Unavailable": "Contenuto non disponibile",
+  "Unable to load details": "Impossibile caricare i dettagli"
 }

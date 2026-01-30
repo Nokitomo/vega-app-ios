@@ -148,5 +148,9 @@
   "Playback Speed": "Playback Speed",
   "Continue Watching": "Continue Watching",
   "{{count}} selected": "{{count}} selected",
-  "Ep. {{number}}": "Ep. {{number}}"
+  "Ep. {{number}}": "Ep. {{number}}",
+  "Search in {{provider}}": "Search in {{provider}}",
+  "Play": "Play",
+  "Content Unavailable": "Content Unavailable",
+  "Unable to load details": "Unable to load details"
 }
