@@ -13,10 +13,12 @@ import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {settingsStorage} from '../lib/storage';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {RootStackParamList} from '../App';
+import {useTranslation} from 'react-i18next';
 
 const Tutorial = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const {provider: currentProvider, installedProviders} = useContentStore(
     state => state,
   );
@@ -78,11 +80,12 @@ const Tutorial = () => {
           style={{marginBottom: 16}}
         />
         <Text className="text-white text-2xl font-bold text-center mb-4">
-          No Provider Installed
+          {t('No Provider Installed')}
         </Text>
         <Text className="text-gray-400 text-base text-center mb-6 leading-6">
-          You need to install at least one provider to start watching content.
-          Providers give you access to different streaming sources.
+          {t(
+            'You need to install at least one provider to start watching content. Providers give you access to different streaming sources.',
+          )}
         </Text>
         <TouchableOpacity
           onPress={handleGoToExtensions}
@@ -90,7 +93,7 @@ const Tutorial = () => {
           style={{backgroundColor: primary}}>
           <MaterialCommunityIcons name="download" size={20} color="white" />
           <Text className="text-white font-semibold ml-2 text-base">
-            Install Providers
+            {t('Install Providers')}
           </Text>
         </TouchableOpacity>
       </Animated.View>
