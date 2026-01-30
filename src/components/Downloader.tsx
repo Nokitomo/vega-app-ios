@@ -28,6 +28,7 @@ import useThemeStore from '../lib/zustand/themeStore';
 import DownloadBottomSheet from './DownloadBottomSheet';
 import {settingsStorage} from '../lib/storage';
 import {providerManager} from '../lib/services/ProviderManager';
+import {useTranslation} from 'react-i18next';
 
 const DownloadComponent = ({
   link,
@@ -44,6 +45,7 @@ const DownloadComponent = ({
 }) => {
   const {primary} = useThemeStore(state => state);
   const {provider} = useContentStore(state => state);
+  const {t} = useTranslation();
   const effectiveProviderValue = providerValue || provider.value;
   const [alreadyDownloaded, setAlreadyDownloaded] = useState<string | boolean>(
     false,
@@ -214,7 +216,7 @@ const DownloadComponent = ({
             <View className="flex-1 bg-black/10 justify-center items-center p-4">
               <View className="bg-tertiary p-3 w-80 rounded-md justify-center items-center">
                 <Text className="text-2xl font-semibold my-3 text-white">
-                  Confirm to delete
+                  {t('Confirm to delete')}
                 </Text>
                 <View className="flex-row items-center justify-evenly w-full my-5">
                   <TouchableOpacity
@@ -222,7 +224,7 @@ const DownloadComponent = ({
                     className="p-2 rounded-md m-1 px-3"
                     style={{backgroundColor: primary}}>
                     <Text className="text-white font-semibold text-base rounded-md capitalize px-1">
-                      Yes
+                      {t('Yes')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -230,7 +232,7 @@ const DownloadComponent = ({
                     className="p-2 px-4 rounded-md m-1"
                     style={{backgroundColor: primary}}>
                     <Text className="text-white font-semibold text-base rounded-md capitalize px-1">
-                      No
+                      {t('No')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -244,7 +246,7 @@ const DownloadComponent = ({
           showModal={downloadModal}
           data={servers}
           loading={serverLoading}
-          title="Select Server To Download"
+          title={t('Select server to download')}
           onPressVideo={(server: Stream) => {
             const serverName = (server.server || '').toLowerCase();
             if (
@@ -253,7 +255,9 @@ const DownloadComponent = ({
               !serverName.includes('download')
             ) {
               ToastAndroid.show(
-                'This server is not supported for downloads. Please use AnimeUnity Download or an external downloader.',
+                t(
+                  'This server is not supported for downloads. Please use AnimeUnity Download or an external downloader.',
+                ),
                 ToastAndroid.LONG,
               );
               return;
@@ -272,7 +276,7 @@ const DownloadComponent = ({
           }}
           onPressSubs={(sub: {link: string; type: string; title: string}) => {
             downloadManager({
-              title: title + ' ' + sub.title + ' Subtitle ',
+              title: title + ' ' + sub.title + ' ' + t('Subtitle') + ' ',
               url: sub.link,
               fileName: fileName + '-' + sub.title,
               fileType: sub.type,
@@ -289,7 +293,7 @@ const DownloadComponent = ({
           showModal={longPressModal}
           data={downloadServers}
           loading={serverLoading}
-          title="Select Server To Open"
+          title={t('Select server to open')}
           onPressVideo={(server: Stream) => {
             longPressDownload(server.link);
           }}
@@ -332,7 +336,7 @@ const DownloadComponent = ({
             }
           }}
           className="absolute right-12 bg-quaternary/80 bottom-3 rounded-md px-2">
-          <Text className="text-lg text-white">Cancel</Text>
+          <Text className="text-lg text-white">{t('Cancel')}</Text>
         </Pressable>
       )}
     </>
