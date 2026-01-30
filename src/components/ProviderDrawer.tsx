@@ -5,12 +5,14 @@ import useThemeStore from '../lib/zustand/themeStore';
 import {DrawerLayout} from 'react-native-gesture-handler';
 import {BlurView} from 'expo-blur';
 import {MaterialIcons} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
 
 const ProviderDrawer = ({
   drawerRef,
 }: {
   drawerRef: React.RefObject<DrawerLayout>;
 }) => {
+  const {t} = useTranslation();
   const {provider, setProvider, installedProviders} = useContentStore(
     state => state,
   );
@@ -24,8 +26,12 @@ const ProviderDrawer = ({
       tint="dark"
       className="flex-1">
       <View className="mt-8 px-4 pb-4 border-b border-white/10">
-        <Text className="text-white text-2xl font-bold">Select Provider</Text>
-        <Text className="text-gray-400 mt-1 text-sm">Content source</Text>
+        <Text className="text-white text-2xl font-bold">
+          {t('Select Provider')}
+        </Text>
+        <Text className="text-gray-400 mt-1 text-sm">
+          {t('Content source')}
+        </Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-2">

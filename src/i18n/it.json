@@ -152,5 +152,7 @@
   "Search in {{provider}}": "Cerca in {{provider}}",
   "Play": "Riproduci",
   "Content Unavailable": "Contenuto non disponibile",
-  "Unable to load details": "Impossibile caricare i dettagli"
+  "Unable to load details": "Impossibile caricare i dettagli",
+  "Select Provider": "Seleziona provider",
+  "Content source": "Fonte contenuti"
 }

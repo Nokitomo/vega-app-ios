@@ -152,5 +152,7 @@
   "Search in {{provider}}": "Search in {{provider}}",
   "Play": "Play",
   "Content Unavailable": "Content Unavailable",
-  "Unable to load details": "Unable to load details"
+  "Unable to load details": "Unable to load details",
+  "Select Provider": "Select Provider",
+  "Content source": "Content source"
 }
