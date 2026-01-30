@@ -6,6 +6,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useThemeStore from '../lib/zustand/themeStore';
 import {settingsStorage} from '../lib/storage';
 import SkeletonLoader from './Skeleton';
+import {useTranslation} from 'react-i18next';
 
 const StreamModal = ({
   downloadModal,
@@ -21,12 +22,13 @@ const StreamModal = ({
   downloadFile: (link: string) => void;
 }) => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   return (
     <Modal animationType="fade" visible={downloadModal} transparent={true}>
       <View className="flex-1 bg-black/10 justify-center items-center p-4">
         <View className="bg-tertiary p-3 w-full rounded-md justify-center items-center">
           <Text className="text-lg font-semibold my-3 text-white">
-            Select a server to download
+            {t('Select server to download')}
           </Text>
           <View className="flex-row items-center flex-wrap gap-1 justify-evenly w-full my-5">
             {!serverLoading
@@ -46,7 +48,7 @@ const StreamModal = ({
                       }
                       Clipboard.setString(server.link);
                       ToastAndroid.show(
-                        'Link copied to clipboard',
+                        t('Link copied to clipboard'),
                         ToastAndroid.SHORT,
                       );
                     }}
@@ -74,7 +76,7 @@ const StreamModal = ({
               onPress={() => setDownloadModal(false)}
             />
             <Text className="text-[10px] text-center text-white">
-              Long press to copy download link
+              {t('Long press to copy download link')}
             </Text>
           </View>
           {/* close modal */}
