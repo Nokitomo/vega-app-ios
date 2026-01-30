@@ -8,9 +8,11 @@ import useThemeStore from '../lib/zustand/themeStore';
 import useWatchListStore from '../lib/zustand/watchListStore';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {StatusBar} from 'expo-status-bar';
+import {useTranslation} from 'react-i18next';
 
 const WatchList = () => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<WatchListStackParamList>>();
   const {watchList} = useWatchListStore(state => state);
@@ -83,7 +85,7 @@ const WatchList = () => {
         <Text
           className="text-2xl text-center font-bold mb-6 mt-4"
           style={{color: primary}}>
-          Watchlist
+          {t('Watchlist')}
         </Text>
 
         {watchList.length > 0 ? (
@@ -110,7 +112,7 @@ const WatchList = () => {
                 color={primary}
               />
               <Text className="text-white/70 text-base mt-4 text-center">
-                Your WatchList is empty
+                {t('Your watchlist is empty')}
               </Text>
             </View>
           </View>
