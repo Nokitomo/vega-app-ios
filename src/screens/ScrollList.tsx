@@ -20,11 +20,13 @@ import SkeletonLoader from '../components/Skeleton';
 import useThemeStore from '../lib/zustand/themeStore';
 import {providerManager} from '../lib/services/ProviderManager';
 import ProviderImage from '../components/ProviderImage';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ScrollList'>;
 
 const ScrollList = ({route}: Props): React.ReactElement => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<SearchStackParamList>>();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -341,7 +343,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
             {!isLoading && calendarSections.length === 0 ? (
               <View className="w-full h-full flex items-center justify-center">
                 <Text className="text-white text-center font-semibold text-lg">
-                  No Content Found
+                  {t('No Content Found')}
                 </Text>
               </View>
             ) : null}
@@ -428,7 +430,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         {!isCalendarView && !isLoading && posts.length === 0 ? (
           <View className="w-full h-full flex items-center justify-center">
             <Text className="text-white text-center font-semibold text-lg">
-              No Content Found
+              {t('No Content Found')}
             </Text>
           </View>
         ) : null}
