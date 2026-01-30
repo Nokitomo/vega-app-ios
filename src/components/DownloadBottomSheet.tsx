@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import React, {useEffect, useRef} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Stream} from '../lib/providers/types';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -38,6 +39,7 @@ const DownloadBottomSheet = ({
 }: Props) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const [activeTab, setActiveTab] = React.useState<1 | 2>(1);
 
   const subtitle = data.map(server => {
@@ -92,7 +94,7 @@ const DownloadBottomSheet = ({
                             activeTab === 1 ? 'white' : 'transparent',
                         }}
                         onPress={() => setActiveTab(1)}>
-                        Video
+                        {t('Video')}
                       </Text>
                       <Text
                         className={'text-lg p-1 font-semibold text-center'}
@@ -103,7 +105,7 @@ const DownloadBottomSheet = ({
                             activeTab === 2 ? 'white' : 'transparent',
                         }}
                         onPress={() => setActiveTab(2)}>
-                        Subtitle
+                        {t('Subtitle')}
                       </Text>
                     </View>
                   )}
@@ -129,7 +131,10 @@ const DownloadBottomSheet = ({
                             });
                           }
                           Clipboard.setString(item.link);
-                          ToastAndroid.show('Link copied', ToastAndroid.SHORT);
+                          ToastAndroid.show(
+                            t('Link copied'),
+                            ToastAndroid.SHORT,
+                          );
                         }}
                         onPress={() => {
                           onPressVideo(item);
@@ -157,13 +162,13 @@ const DownloadBottomSheet = ({
                               }
                               Clipboard.setString(item.uri);
                               ToastAndroid.show(
-                                'Link copied',
+                                t('Link copied'),
                                 ToastAndroid.SHORT,
                               );
                             }}
                             onPress={() => {
                               onPressSubs({
-                                server: 'Subtitles',
+                                server: t('Subtitles'),
                                 link: item.uri,
                                 type:
                                   item.type === TextTrackType.VTT
@@ -183,7 +188,7 @@ const DownloadBottomSheet = ({
                   : null}
                 {data.length === 0 && !loading && (
                   <Text className="text-red-500 text-lg text-center">
-                    No server found
+                    {t('No server found')}
                   </Text>
                 )}
               </BottomSheetScrollView>
