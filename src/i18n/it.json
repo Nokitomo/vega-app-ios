@@ -26,5 +26,18 @@
   "Hide Seek Buttons": "Nascondi pulsanti di salto",
   "Enable Swipe Gestures": "Abilita gesture di scorrimento",
   "Quality": "Qualità",
-  "Excluded Qualities": "Qualità escluse"
+  "Excluded Qualities": "Qualità escluse",
+  "Content Provider": "Provider di contenuti",
+  "No providers installed": "Nessun provider installato",
+  "Provider Manager": "Gestione provider",
+  "Options": "Opzioni",
+  "Downloads": "Download",
+  "Subtitle Style": "Stile sottotitoli",
+  "Watch History": "Cronologia visione",
+  "Data Management": "Gestione dati",
+  "Clear Cache": "Svuota cache",
+  "Clear Watch History": "Svuota cronologia",
+  "About": "Informazioni",
+  "Give a star ⭐": "Lascia una stella ⭐",
+  "Sponsor Project": "Sponsorizza il progetto"
 }

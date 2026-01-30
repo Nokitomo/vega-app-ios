@@ -32,10 +32,12 @@ import useWatchHistoryStore from '../../lib/zustand/watchHistrory';
 import Animated, {FadeInDown, FadeInUp, Layout} from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
 import RenderProviderFlagIcon from '../../components/RenderProviderFLagIcon';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Settings'>;
 
 const Settings = ({navigation}: Props) => {
+  const {t} = useTranslation();
   const tabNavigation =
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
   const {primary} = useThemeStore(state => state);
@@ -153,13 +155,17 @@ const Settings = ({navigation}: Props) => {
       }}>
       <View className="p-5">
         <Animated.View entering={FadeInUp.springify()}>
-          <Text className="text-2xl font-bold text-white mb-6">Settings</Text>
+          <Text className="text-2xl font-bold text-white mb-6">
+            {t('Settings')}
+          </Text>
         </Animated.View>
 
         {/* Content provider section */}
         <AnimatedSection delay={100}>
           <View className="mb-6 flex-col gap-3">
-            <Text className="text-gray-400 text-sm mb-1">Content Provider</Text>
+            <Text className="text-gray-400 text-sm mb-1">
+              {t('Content Provider')}
+            </Text>
             <View className="bg-[#1A1A1A] rounded-xl py-4">
               <ScrollView
                 horizontal
@@ -170,7 +176,7 @@ const Settings = ({navigation}: Props) => {
                 {providersList}
                 {installedProviders.length === 0 && (
                   <Text className="text-gray-500 text-sm">
-                    No providers installed
+                    {t('No providers installed')}
                   </Text>
                 )}
               </ScrollView>
@@ -193,7 +199,7 @@ const Settings = ({navigation}: Props) => {
                       className="text-white ml-3 text-base"
                       numberOfLines={1}
                       style={{flexShrink: 1}}>
-                      Provider Manager
+                      {t('Provider Manager')}
                     </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
@@ -206,7 +212,7 @@ const Settings = ({navigation}: Props) => {
         {/* Main options section */}
         <AnimatedSection delay={200}>
           <View className="mb-6">
-            <Text className="text-gray-400 text-sm mb-3">Options</Text>
+            <Text className="text-gray-400 text-sm mb-3">{t('Options')}</Text>
             <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
               {/* Downloads */}
               <TouchableNativeFeedback
@@ -219,7 +225,9 @@ const Settings = ({navigation}: Props) => {
                       size={22}
                       color={primary}
                     />
-                    <Text className="text-white ml-3 text-base">Downloads</Text>
+                    <Text className="text-white ml-3 text-base">
+                      {t('Downloads')}
+                    </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
                 </View>
@@ -239,7 +247,7 @@ const Settings = ({navigation}: Props) => {
                       color={primary}
                     />
                     <Text className="text-white ml-3 text-base">
-                      Subtitle Style
+                      {t('Subtitle Style')}
                     </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
@@ -278,7 +286,7 @@ const Settings = ({navigation}: Props) => {
                       className="text-white ml-3 text-base"
                       numberOfLines={1}
                       style={{flexShrink: 1}}>
-                      Watch History
+                      {t('Watch History')}
                     </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
@@ -297,7 +305,7 @@ const Settings = ({navigation}: Props) => {
                       color={primary}
                     />
                     <Text className="text-white ml-3 text-base">
-                      Preferences
+                      {t('Preferences')}
                     </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
@@ -310,11 +318,13 @@ const Settings = ({navigation}: Props) => {
         {/* Data Management section */}
         <AnimatedSection delay={300}>
           <View className="mb-6">
-            <Text className="text-gray-400 text-sm mb-3">Data Management</Text>
+            <Text className="text-gray-400 text-sm mb-3">
+              {t('Data Management')}
+            </Text>
             <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
               {/* Clear Cache */}
               <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-                <Text className="text-white text-base">Clear Cache</Text>
+                <Text className="text-white text-base">{t('Clear Cache')}</Text>
                 <TouchableOpacity
                   className="bg-[#262626] px-4 py-2 rounded-lg"
                   onPress={clearCacheHandler}>
@@ -329,7 +339,7 @@ const Settings = ({navigation}: Props) => {
               {/* Clear Watch History */}
               <View className="flex-row items-center justify-between p-4">
                 <Text className="text-white text-base flex-1" numberOfLines={1}>
-                  Clear Watch History
+                  {t('Clear Watch History')}
                 </Text>
                 <TouchableOpacity
                   className="bg-[#262626] px-4 py-2 rounded-lg"
@@ -348,7 +358,7 @@ const Settings = ({navigation}: Props) => {
         {/* About & GitHub section */}
         <AnimatedSection delay={400}>
           <View className="mb-6">
-            <Text className="text-gray-400 text-sm mb-3">About</Text>
+            <Text className="text-gray-400 text-sm mb-3">{t('About')}</Text>
             <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
               {/* About */}
               <TouchableNativeFeedback
@@ -357,7 +367,9 @@ const Settings = ({navigation}: Props) => {
                 <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
                   <View className="flex-row items-center">
                     <Feather name="info" size={22} color={primary} />
-                    <Text className="text-white ml-3 text-base">About</Text>
+                    <Text className="text-white ml-3 text-base">
+                      {t('About')}
+                    </Text>
                   </View>
                   <Feather name="chevron-right" size={20} color="gray" />
                 </View>
@@ -371,7 +383,7 @@ const Settings = ({navigation}: Props) => {
                   <View className="flex-row items-center">
                     <AntDesign name="github" size={22} color={primary} />
                     <Text className="text-white ml-3 text-base">
-                      Give a star ⭐
+                      {t('Give a star ⭐')}
                     </Text>
                   </View>
                   <Feather name="external-link" size={20} color="gray" />
@@ -386,7 +398,7 @@ const Settings = ({navigation}: Props) => {
                   <View className="flex-row items-center">
                     <AntDesign name="heart" size={22} color="#ff69b4" />
                     <Text className="text-white ml-3 text-base">
-                      Sponsor Project
+                      {t('Sponsor Project')}
                     </Text>
                   </View>
                   <Feather name="external-link" size={20} color="gray" />

@@ -26,5 +26,18 @@
   "Hide Seek Buttons": "Hide Seek Buttons",
   "Enable Swipe Gestures": "Enable Swipe Gestures",
   "Quality": "Quality",
-  "Excluded Qualities": "Excluded Qualities"
+  "Excluded Qualities": "Excluded Qualities",
+  "Content Provider": "Content Provider",
+  "No providers installed": "No providers installed",
+  "Provider Manager": "Provider Manager",
+  "Options": "Options",
+  "Downloads": "Downloads",
+  "Subtitle Style": "Subtitle Style",
+  "Watch History": "Watch History",
+  "Data Management": "Data Management",
+  "Clear Cache": "Clear Cache",
+  "Clear Watch History": "Clear Watch History",
+  "About": "About",
+  "Give a star ⭐": "Give a star ⭐",
+  "Sponsor Project": "Sponsor Project"
 }
