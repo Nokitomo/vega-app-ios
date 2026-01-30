@@ -5,6 +5,7 @@ File: src/lib/services/Notification.ts
 - Usa Notifee per canali: default, download, update.
 - Gestisce progress download, completamento e fallimenti.
 - Gestisce azioni (cancel download, installazione APK).
+- Titoli e testi notifica sono localizzati via i18n.
 
 ## Download
 - DownloadManager (src/lib/services/DownloadManager.ts) gestisce stato e persistenza.
@@ -16,6 +17,7 @@ File: src/lib/services/UpdateProviders.ts
 - Confronta versioni provider e avvia update automatici.
 - Mostra notifiche di progresso tramite NotificationService.
 - Controllo automatico ogni 6 ore; auto-update solo se le notifiche sono abilitate.
+- Messaggi di update sono localizzati via i18n.
 
 ## Estensioni
 ExtensionManager (src/lib/services/ExtensionManager.ts)
