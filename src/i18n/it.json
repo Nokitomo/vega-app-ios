@@ -199,6 +199,8 @@
   "Download cancelled by user": "Download annullato dall'utente",
   "Downloaded segment {{current}}/{{total}} ({{progress}}%)": "Segmento scaricato {{current}}/{{total}} ({{progress}}%)",
   "Downloaded {{progress}}%": "Scaricato {{progress}}%",
+  "Downloading": "Download in corso",
+  "Downloaded {{title}}": "{{title}} scaricato",
   "Merging video segments...": "Unione dei segmenti video...",
   "Auto": "Auto",
   "None": "Nessuno",

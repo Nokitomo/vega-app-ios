@@ -2,6 +2,7 @@ import {FFmpegKit, FFprobeKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import notifee from '@notifee/react-native';
 import {Downloads} from './zustand/downloadsStore';
 import {settingsStorage} from './storage';
+import i18n from '../i18n';
 
 const getVideoDuration = async (videoUrl: string) => {
   try {
@@ -44,7 +45,7 @@ export const hlsDownloader = async ({
   const command = `-headers "${ffprobeHttpHeaders}" -i ${videoUrl} -c copy -bsf:a aac_adtstoasc -f mp4 -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -timeout 5000000 -preset ultrafast ${path}`;
   const channelId = await notifee.createChannel({
     id: 'download',
-    name: 'Download Notifications',
+    name: i18n.t('Download Notifications'),
   });
   const primary = settingsStorage.getPrimaryColor();
   try {
@@ -65,8 +66,8 @@ export const hlsDownloader = async ({
           downloadStore.removeActiveDownload(fileName);
           await notifee.cancelNotification(fileName);
           await notifee.displayNotification({
-            title: 'Download completed',
-            body: `Downloaded ${title}`,
+            title: i18n.t('Download completed'),
+            body: i18n.t('Downloaded {{title}}', {title}),
             android: {
               pressAction: {
                 id: 'default',
@@ -82,8 +83,8 @@ export const hlsDownloader = async ({
           console.log('Download failed');
           await notifee.cancelNotification(fileName);
           await notifee.displayNotification({
-            title: 'Download failed',
-            body: `Failed to download ${title}`,
+            title: i18n.t('Download failed'),
+            body: i18n.t('Failed to download {{title}}', {title}),
             android: {
               pressAction: {
                 id: 'default',
@@ -111,8 +112,10 @@ export const hlsDownloader = async ({
             title: title,
             body:
               progress > 100
-                ? 'Downloading'
-                : `Downloaded ${progress.toFixed(2)}%`,
+                ? i18n.t('Downloading')
+                : i18n.t('Downloaded {{progress}}%', {
+                    progress: progress.toFixed(2),
+                  }),
             id: fileName,
             data: {fileName, jobId: log.getSessionId()},
             android: {
@@ -130,7 +133,7 @@ export const hlsDownloader = async ({
               channelId,
               actions: [
                 {
-                  title: 'Cancel',
+                  title: i18n.t('Cancel'),
                   pressAction: {
                     id: fileName,
                   },
@@ -146,8 +149,8 @@ export const hlsDownloader = async ({
     downloadStore.removeActiveDownload(fileName);
     console.log('Error downloading', error);
     await notifee.displayNotification({
-      title: 'Download failed',
-      body: `Failed to download ${fileName}`,
+      title: i18n.t('Download failed'),
+      body: i18n.t('Failed to download {{title}}', {title: fileName}),
       android: {
         pressAction: {
           id: 'default',
