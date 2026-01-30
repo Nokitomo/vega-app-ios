@@ -17,6 +17,8 @@ import {themes} from '../../lib/constants';
 import {TextInput} from 'react-native';
 import Constants from 'expo-constants';
 import useUiSettingsStore from '../../lib/zustand/uiSettingsStore';
+import {useTranslation} from 'react-i18next';
+import {setAppLanguage, SupportedLanguage} from '../../i18n';
 // Lazy-load Firebase to allow running without google-services.json
 const getAnalytics = (): any | null => {
   try {
@@ -35,6 +37,7 @@ const getCrashlytics = (): any | null => {
 
 const Preferences = () => {
   const hasFirebase = Boolean(Constants?.expoConfig?.extra?.hasFirebase);
+  const {t} = useTranslation();
   const {primary, setPrimary, isCustom, setCustom} = useThemeStore(
     state => state,
   );
@@ -44,6 +47,13 @@ const Preferences = () => {
   const setShowRecentlyWatched = useUiSettingsStore(
     state => state.setShowRecentlyWatched,
   );
+  const [language, setLanguage] = useState<SupportedLanguage>(
+    settingsStorage.getAppLanguage(),
+  );
+  const languageOptions = [
+    {label: t('English'), value: 'en'},
+    {label: t('Italian'), value: 'it'},
+  ];
   const [disableDrawer, setDisableDrawer] = useState(
     settingsStorage.getBool('disableDrawer') || false,
   );
@@ -106,15 +116,65 @@ const Preferences = () => {
         paddingTop: StatusBar.currentHeight || 0,
       }}>
       <View className="p-5">
-        <Text className="text-2xl font-bold text-white mb-6">Preferences</Text>
+        <Text className="text-2xl font-bold text-white mb-6">
+          {t('Preferences')}
+        </Text>
+
+        {/* Language Section */}
+        <View className="mb-6">
+          <Text className="text-gray-400 text-sm mb-3">{t('Language')}</Text>
+          <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
+            <View className="flex-row items-center px-4 justify-between p-4 border-b border-[#262626]">
+              <Text className="text-white text-base">
+                {t('App Language')}
+              </Text>
+              <View className="w-36">
+                <Dropdown
+                  selectedTextStyle={{
+                    color: 'white',
+                    fontSize: 14,
+                    fontWeight: '500',
+                  }}
+                  containerStyle={{
+                    backgroundColor: '#262626',
+                    borderRadius: 8,
+                    borderWidth: 0,
+                    marginTop: 4,
+                  }}
+                  itemTextStyle={{color: 'white'}}
+                  activeColor="#3A3A3A"
+                  itemContainerStyle={{
+                    backgroundColor: '#262626',
+                    borderWidth: 0,
+                  }}
+                  style={{
+                    backgroundColor: '#262626',
+                    borderWidth: 0,
+                  }}
+                  iconStyle={{tintColor: 'white'}}
+                  placeholderStyle={{color: 'white'}}
+                  labelField="label"
+                  valueField="value"
+                  data={languageOptions}
+                  value={language}
+                  onChange={item => {
+                    const nextLanguage = item.value as SupportedLanguage;
+                    setLanguage(nextLanguage);
+                    setAppLanguage(nextLanguage);
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
 
         {/* Theme Section */}
         <View className="mb-6">
-          <Text className="text-gray-400 text-sm mb-3">Appearance</Text>
+          <Text className="text-gray-400 text-sm mb-3">{t('Appearance')}</Text>
           <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
             {/* Theme Selector */}
             <View className="flex-row items-center px-4 justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Theme</Text>
+              <Text className="text-white text-base">{t('Theme')}</Text>
               <View className="w-36">
                 {isCustom ? (
                   <View className="flex-row items-center gap-2">
@@ -127,14 +187,14 @@ const Preferences = () => {
                         paddingVertical: 4,
                         fontSize: 14,
                       }}
-                      placeholder="Hex Color"
+                      placeholder={t('Hex Color')}
                       placeholderTextColor="gray"
                       value={customColor}
                       onChangeText={setCustomColor}
                       onSubmitEditing={e => {
                         if (e.nativeEvent.text.length < 7) {
                           ToastAndroid.show(
-                            'Invalid Color',
+                            t('Invalid Color'),
                             ToastAndroid.SHORT,
                           );
                           return;
@@ -180,9 +240,15 @@ const Preferences = () => {
                     }}
                     iconStyle={{tintColor: 'white'}}
                     placeholderStyle={{color: 'white'}}
-                    labelField="name"
+                    labelField="label"
                     valueField="color"
-                    data={themes}
+                    data={themes.map(theme => ({
+                      ...theme,
+                      label:
+                        theme.name === 'Custom'
+                          ? t('Custom')
+                          : theme.name,
+                    }))}
                     value={primary}
                     onChange={value => {
                       if (value.name === 'Custom') {
@@ -199,7 +265,9 @@ const Preferences = () => {
 
             {/* Haptic Feedback */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Haptic Feedback</Text>
+              <Text className="text-white text-base">
+                {t('Haptic Feedback')}
+              </Text>
               <Switch
                 thumbColor={hapticFeedback ? primary : 'gray'}
                 value={hapticFeedback}
@@ -213,7 +281,7 @@ const Preferences = () => {
             {/* Analytics & Crashlytics Opt-In */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
               <Text className="text-white text-base">
-                Usage & Crash Reports
+                {t('Usage & Crash Reports')}
               </Text>
               <Switch
                 thumbColor={telemetryOptIn ? primary : 'gray'}
@@ -250,7 +318,9 @@ const Preferences = () => {
 
             {/* Show Tab Bar Labels */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Show Tab Bar Labels</Text>
+              <Text className="text-white text-base">
+                {t('Show Tab Bar Labels')}
+              </Text>
               <Switch
                 thumbColor={showTabBarLables ? primary : 'gray'}
                 value={showTabBarLables}
@@ -262,7 +332,9 @@ const Preferences = () => {
 
             {/* Show Hamburger Menu */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Show Hamburger Menu</Text>
+              <Text className="text-white text-base">
+                {t('Show Hamburger Menu')}
+              </Text>
               <Switch
                 thumbColor={showHamburgerMenu ? primary : 'gray'}
                 value={showHamburgerMenu}
@@ -276,7 +348,7 @@ const Preferences = () => {
             {/* Show Recently Watched */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
               <Text className="text-white text-base">
-                Show Recently Watched
+                {t('Show Recently Watched')}
               </Text>
               <Switch
                 thumbColor={showRecentlyWatched ? primary : 'gray'}
@@ -289,7 +361,7 @@ const Preferences = () => {
 
             {/* Disable Drawer */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Disable Drawer</Text>
+              <Text className="text-white text-base">{t('Disable Drawer')}</Text>
               <Switch
                 thumbColor={disableDrawer ? primary : 'gray'}
                 value={disableDrawer}
@@ -303,7 +375,7 @@ const Preferences = () => {
             {/* Always Use External Downloader */}
             <View className="flex-row items-center justify-between p-4">
               <Text className="text-white text-base">
-                Always Use External Downloader
+                {t('Always Use External Downloader')}
               </Text>
               <Switch
                 thumbColor={alwaysUseExternalDownload ? primary : 'gray'}
@@ -322,12 +394,12 @@ const Preferences = () => {
 
         {/* Player Settings */}
         <View className="mb-6">
-          <Text className="text-gray-400 text-sm mb-3">Player</Text>
+          <Text className="text-gray-400 text-sm mb-3">{t('Player')}</Text>
           <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
             {/* External Player */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
               <Text className="text-white text-base">
-                Always Use External Player
+                {t('Always Use External Player')}
               </Text>
               <Switch
                 thumbColor={OpenExternalPlayer ? primary : 'gray'}
@@ -341,7 +413,9 @@ const Preferences = () => {
 
             {/* Media Controls */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Media Controls</Text>
+              <Text className="text-white text-base">
+                {t('Media Controls')}
+              </Text>
               <Switch
                 thumbColor={showMediaControls ? primary : 'gray'}
                 value={showMediaControls}
@@ -354,7 +428,9 @@ const Preferences = () => {
 
             {/* Hide Seek Buttons */}
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-              <Text className="text-white text-base">Hide Seek Buttons</Text>
+              <Text className="text-white text-base">
+                {t('Hide Seek Buttons')}
+              </Text>
               <Switch
                 thumbColor={hideSeekButtons ? primary : 'gray'}
                 value={hideSeekButtons}
@@ -368,7 +444,7 @@ const Preferences = () => {
             {/* Swipe Gestures */}
             <View className="flex-row items-center justify-between p-4">
               <Text className="text-white text-base">
-                Enable Swipe Gestures
+                {t('Enable Swipe Gestures')}
               </Text>
               <Switch
                 thumbColor={enableSwipeGesture ? primary : 'gray'}
@@ -384,10 +460,10 @@ const Preferences = () => {
 
         {/* Quality Settings */}
         <View className="mb-6">
-          <Text className="text-gray-400 text-sm mb-3">Quality</Text>
+          <Text className="text-gray-400 text-sm mb-3">{t('Quality')}</Text>
           <View className="bg-[#1A1A1A] rounded-xl p-4">
             <Text className="text-white text-base mb-3">
-              Excluded Qualities
+              {t('Excluded Qualities')}
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {['360p', '480p', '720p'].map((quality, index) => (
