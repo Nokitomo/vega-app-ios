@@ -54,6 +54,7 @@ import notificationService from './lib/services/Notification';
 import Orientation from 'react-native-orientation-locker';
 import useSearchCacheStore from './lib/zustand/searchCacheStore';
 import useUiSettingsStore from './lib/zustand/uiSettingsStore';
+import {useTranslation} from 'react-i18next';
 // Lazy-load Firebase modules so app runs without google-services files
 const getAnalytics = (): any | null => {
   try {
@@ -191,6 +192,7 @@ const AppContent = () => {
     'You have passed a style to FlashList',
     'new NativeEventEmitter()',
   ]);
+  const {t} = useTranslation();
   const HomeStack = createNativeStackNavigator<HomeStackParamList>();
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const SearchStack = createNativeStackNavigator<SearchStackParamList>();
@@ -522,7 +524,7 @@ const AppContent = () => {
           name="HomeStack"
           component={HomeStackScreen}
           options={{
-            title: 'Home',
+            title: t('Home'),
             tabBarIcon: ({focused, color, size}) => (
               <Animated.View
                 style={{
@@ -541,7 +543,7 @@ const AppContent = () => {
           name="SearchStack"
           component={SearchStackScreen}
           options={{
-            title: 'Search',
+            title: t('Search'),
             tabBarIcon: ({focused, color, size}) => (
               <Animated.View
                 style={{
@@ -560,7 +562,7 @@ const AppContent = () => {
           name="WatchListStack"
           component={WatchListStackScreen}
           options={{
-            title: 'Watch List',
+            title: t('Watch List'),
             tabBarIcon: ({focused, color, size}) => (
               <Animated.View
                 style={{
@@ -579,7 +581,7 @@ const AppContent = () => {
           name="SettingsStack"
           component={SettingsStackScreen}
           options={{
-            title: 'Settings',
+            title: t('Settings'),
             tabBarIcon: ({focused, color, size}) => (
               <Animated.View
                 style={{
