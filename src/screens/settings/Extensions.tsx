@@ -32,6 +32,7 @@ import {
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {settingsStorage} from '../../lib/storage';
 import RenderProviderFlagIcon from '../../components/RenderProviderFLagIcon';
+import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<SettingsStackParamList, 'Extensions'>;
 
@@ -50,6 +51,7 @@ const dedupeProviders = (providers: ProviderExtension[]) => {
 };
 
 const Extensions = ({navigation}: Props) => {
+  const {t} = useTranslation();
   const {primary} = useThemeStore(state => state);
   const {
     provider: activeExtensionProvider,
@@ -109,7 +111,7 @@ const Extensions = ({navigation}: Props) => {
 
   const handleUpdateProvider = async (provider: ProviderExtension) => {
     if (!provider || !provider.value) {
-      Alert.alert('Error', 'Invalid provider data');
+      Alert.alert(t('Error'), t('Invalid provider data'));
       return;
     }
 
@@ -128,8 +130,10 @@ const Extensions = ({navigation}: Props) => {
         await checkForUpdates();
 
         Alert.alert(
-          'Success',
-          `${provider.display_name} has been updated successfully!`,
+          t('Success'),
+          t('{{provider}} has been updated successfully!', {
+            provider: provider.display_name,
+          }),
         );
 
         // Update the active provider if it was the one being updated
@@ -137,11 +141,17 @@ const Extensions = ({navigation}: Props) => {
           setActiveExtensionProvider(provider);
         }
       } else {
-        Alert.alert('Error', 'Failed to update provider. Please try again.');
+        Alert.alert(
+          t('Error'),
+          t('Failed to update provider. Please try again.'),
+        );
       }
     } catch (error) {
       console.error('Update error:', error);
-      Alert.alert('Error', 'Failed to update provider. Please try again.');
+      Alert.alert(
+        t('Error'),
+        t('Failed to update provider. Please try again.'),
+      );
     } finally {
       setUpdatingProvider(null);
     }
@@ -158,7 +168,7 @@ const Extensions = ({navigation}: Props) => {
   };
   const handleInstallProvider = async (provider: ProviderExtension) => {
     if (!provider || !provider.value) {
-      Alert.alert('Error', 'Invalid provider data');
+      Alert.alert(t('Error'), t('Invalid provider data'));
       return;
     }
 
@@ -175,8 +185,10 @@ const Extensions = ({navigation}: Props) => {
       loadProviders();
 
       Alert.alert(
-        'Success',
-        `${provider.display_name} has been installed successfully!`,
+        t('Success'),
+        t('{{provider}} has been installed successfully!', {
+          provider: provider.display_name,
+        }),
       );
       setInstalledProviders(extensionStorage.getInstalledProviders() || []);
       if (
@@ -187,26 +199,29 @@ const Extensions = ({navigation}: Props) => {
       }
     } catch (error) {
       console.error('Installation error:', error);
-      Alert.alert('Error', 'Failed to install provider. Please try again.');
+      Alert.alert(
+        t('Error'),
+        t('Failed to install provider. Please try again.'),
+      );
     } finally {
       setInstallingProvider(null);
     }
   };
   const handleUninstallProvider = (provider: ProviderExtension) => {
     if (!provider || !provider.value) {
-      Alert.alert('Error', 'Invalid provider data');
+      Alert.alert(t('Error'), t('Invalid provider data'));
       return;
     }
 
     Alert.alert(
-      'Uninstall Provider',
-      `Are you sure you want to uninstall ${
-        provider.display_name || 'this provider'
-      }?`,
+      t('Uninstall Provider'),
+      t('Are you sure you want to uninstall {{provider}}?', {
+        provider: provider.display_name || t('this provider'),
+      }),
       [
-        {text: 'Cancel', style: 'cancel'},
+        {text: t('Cancel'), style: 'cancel'},
         {
-          text: 'Uninstall',
+          text: t('Uninstall'),
           style: 'destructive',
           onPress: () => {
             extensionStorage.uninstallProvider(provider.value);
@@ -233,7 +248,7 @@ const Extensions = ({navigation}: Props) => {
   };
   const handleSetActiveProvider = (provider: ProviderExtension) => {
     if (!provider || !provider.value) {
-      Alert.alert('Error', 'Invalid provider data');
+      Alert.alert(t('Error'), t('Invalid provider data'));
       return;
     }
 
@@ -260,8 +275,10 @@ const Extensions = ({navigation}: Props) => {
     } catch (error) {
       console.error('Refresh error:', error);
       Alert.alert(
-        'Error',
-        'Failed to refresh providers list. Please check your internet connection.',
+        t('Error'),
+        t(
+          'Failed to refresh providers list. Please check your internet connection.',
+        ),
       );
     } finally {
       setRefreshing(false);
@@ -301,24 +318,24 @@ const Extensions = ({navigation}: Props) => {
           <View className="flex-1 mx-3">
             <View className="flex-row items-center flex-wrap">
               <Text className="text-white text-lg font-bold tracking-wide">
-                {item.display_name || 'Unknown Provider'}
+                {item.display_name || t('Unknown Provider')}
               </Text>
               {hasUpdate && updateInfo && (
                 <View
                   style={{backgroundColor: primary}}
                   className="px-2 py-0.5 rounded-full ml-1">
                   <Text className="text-xs text-white font-semibold bg-gray-800">
-                    Update
+                    {t('Update')}
                   </Text>
                 </View>
               )}
             </View>
             <Text className="text-gray-400 text-sm ">
-              Version{' '}
+              {t('Version')}{' '}
               <Text className="text-white font-medium">
-                {item.version || 'Unknown'}
+                {item.version || t('Unknown')}
               </Text>{' '}
-              • {item.type || 'Unknown'}
+              • {item.type || t('Unknown')}
             </Text>
           </View>
           {/* Right: Buttons */}
@@ -406,7 +423,9 @@ const Extensions = ({navigation}: Props) => {
         <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
           <AntDesign name="arrow-left" size={24} color="white" />
         </TouchableOpacity>
-        <Text className="text-white text-xl font-semibold">Providers</Text>
+        <Text className="text-white text-xl font-semibold">
+          {t('Providers')}
+        </Text>
         <TouchableOpacity onPress={handleRefresh}>
           <Feather name="refresh-cw" size={24} color={primary} />
         </TouchableOpacity>
@@ -424,7 +443,9 @@ const Extensions = ({navigation}: Props) => {
             className={`text-center font-medium ${
               activeTab === 'installed' ? 'text-white' : 'text-gray-400'
             }`}>
-            Installed ({(installedProviders || []).length})
+            {t('Installed ({{count}})', {
+              count: (installedProviders || []).length,
+            })}
           </Text>
         </TouchableOpacity>
 
@@ -439,7 +460,9 @@ const Extensions = ({navigation}: Props) => {
             className={`text-center font-medium ${
               activeTab === 'available' ? 'text-white' : 'text-gray-400'
             }`}>
-            Available ({(availableProviders || []).length})
+            {t('Available ({{count}})', {
+              count: (availableProviders || []).length,
+            })}
           </Text>
         </TouchableOpacity>
       </View>
@@ -469,13 +492,13 @@ const Extensions = ({navigation}: Props) => {
             />
             <Text className="text-gray-400 text-lg mt-4">
               {activeTab === 'installed'
-                ? 'No providers installed'
-                : 'No providers available'}
+                ? t('No providers installed')
+                : t('No providers available')}
             </Text>
             <Text className="text-gray-500 text-sm mt-2 text-center px-8">
               {activeTab === 'installed'
-                ? 'Install providers from the Available tab to get started'
-                : 'Pull to refresh to check for available providers'}
+                ? t('Install providers from the Available tab to get started')
+                : t('Pull to refresh to check for available providers')}
             </Text>
           </View>
         }
