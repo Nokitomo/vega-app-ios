@@ -43,3 +43,7 @@ npx expo prebuild -p ios --clean
 ## Build produzione
 - Android: usa EAS o build gradle manuale.
 - fastlane/ contiene metadata per Play Store.
+
+## Verifica lingua (i18n)
+- In app: Settings -> Preferences -> App Language.
+- Testare sia inglese che italiano durante QA, includendo notifiche e messaggi di errore.
