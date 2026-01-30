@@ -17,12 +17,14 @@ import Animated, {
 import {searchOMDB} from '../lib/services/omdb';
 import debounce from 'lodash/debounce';
 import {OMDBResult} from '../types/omdb';
+import {useTranslation} from 'react-i18next';
 
 const MAX_VISIBLE_RESULTS = 15; // Limit number of animated items to prevent excessive callbacks
 const MAX_HISTORY_ITEMS = 30; // Maximum number of history items to store
 
 const Search = () => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<SearchStackParamList>>();
   const [searchText, setSearchText] = useState('');
@@ -107,7 +109,9 @@ const Search = () => {
         entering={FadeInDown.springify()}
         layout={Layout.springify()}
         className="px-4 pt-4">
-        <Text className="text-white text-xl font-bold mb-3">Search</Text>
+        <Text className="text-white text-xl font-bold mb-3">
+          {t('Search')}
+        </Text>
         <View className="flex-row items-center space-x-3 mb-2">
           <View className="flex-1">
             <View className="overflow-hidden rounded-xl bg-[#141414] shadow-lg shadow-black/50">
@@ -120,7 +124,7 @@ const Search = () => {
                   />
                   <TextInput
                     className="flex-1 text-white text-base ml-3"
-                    placeholder="Search titles..."
+                    placeholder={t('Search titles...')}
                     placeholderTextColor="#666"
                     value={searchText}
                     onChangeText={setSearchText}
@@ -189,7 +193,7 @@ const Search = () => {
                     <View>
                       <Text className="text-white text-base">{item.Title}</Text>
                       <Text className="text-white/50 text-xs">
-                        {item.Type === 'series' ? 'TV Show' : 'Movie'} •{' '}
+                        {item.Type === 'series' ? t('TV Show') : t('Movie')} •{' '}
                         {item.Year}
                       </Text>
                     </View>
@@ -207,12 +211,14 @@ const Search = () => {
             className="px-4 flex-1">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-white/90 text-base font-semibold">
-                Recent Searches
+                {t('Recent Searches')}
               </Text>
               <TouchableOpacity
                 onPress={clearHistory}
                 className="bg-red-500/10 rounded-full px-2 py-0.5">
-                <Text className="text-red-500 text-xs">Clear All</Text>
+                <Text className="text-red-500 text-xs">
+                  {t('Clear All')}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -249,10 +255,10 @@ const Search = () => {
               <Ionicons name="search" size={32} color={primary} />
             </View>
             <Text className="text-white/70 text-base text-center">
-              Search for your favorite titles
+              {t('Search for your favorite titles')}
             </Text>
             <Text className="text-white/40 text-sm text-center mt-1">
-              Your recent searches will appear here
+              {t('Your recent searches will appear here')}
             </Text>
           </AnimatedContainer>
         )}
