@@ -77,6 +77,8 @@
   "{{count}} episode": "{{count}} episodio",
   "{{count}} episodes": "{{count}} episodi",
   "Error": "Errore",
+  "Something went wrong": "Qualcosa è andato storto",
+  "An unexpected error occurred": "Si è verificato un errore imprevisto",
   "Invalid provider data": "Dati provider non validi",
   "Success": "Operazione riuscita",
   "{{provider}} has been updated successfully!": "{{provider}} è stato aggiornato con successo!",

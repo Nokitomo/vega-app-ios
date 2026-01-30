@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import useThemeStore from '../lib/zustand/themeStore';
+import {useTranslation} from 'react-i18next';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -12,19 +13,20 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   resetError,
 }) => {
   const {primary} = useThemeStore();
+  const {t} = useTranslation();
   return (
     <View className="flex-1 justify-center items-center p-4 bg-black">
       <Text className="text-red-400 text-lg font-bold mb-4 text-center">
-        Something went wrong
+        {t('Something went wrong')}
       </Text>
       <Text className="text-gray-400 text-sm mb-6 text-center">
-        {error.message || 'An unexpected error occurred'}
+        {error.message || t('An unexpected error occurred')}
       </Text>
       <TouchableOpacity
         onPress={resetError}
         className="px-6 py-3 rounded-lg"
         style={{backgroundColor: primary}}>
-        <Text className="text-white font-semibold">Try Again</Text>
+        <Text className="text-white font-semibold">{t('Try Again')}</Text>
       </TouchableOpacity>
     </View>
   );
