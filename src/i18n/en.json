@@ -89,5 +89,9 @@
   "Pull to refresh to check for available providers": "Pull to refresh to check for available providers",
   "Episodes": "Episodes",
   "EP {{number}}": "EP {{number}}",
-  "Episode {{number}}": "Episode {{number}}"
+  "Episode {{number}}": "Episode {{number}}",
+  "Disable Providers": "Disable Providers",
+  "Enable All": "Enable All",
+  "Disabled providers won't appear in search results": "Disabled providers won't appear in search results",
+  "Changes will apply to new searches": "Changes will apply to new searches"
 }

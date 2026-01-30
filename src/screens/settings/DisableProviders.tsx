@@ -11,9 +11,11 @@ import {providersStorage} from '../../lib/storage';
 import {providersList} from '../../lib/constants';
 import useThemeStore from '../../lib/zustand/themeStore';
 import {SvgUri} from 'react-native-svg';
+import {useTranslation} from 'react-i18next';
 
 const DisableProviders = () => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const [disabledProviders, setDisabledProviders] = useState<string[]>(
     providersStorage.getDisabledProviders(),
   );
@@ -37,17 +39,17 @@ const DisableProviders = () => {
       <View className="p-5">
         <View className="flex-row items-center justify-between mb-6">
           <Text className="text-2xl font-bold text-white">
-            Disable Providers
+            {t('Disable Providers')}
           </Text>
           <TouchableOpacity
             onPress={enableAll}
             className="bg-[#262626] px-4 py-2 rounded-lg">
-            <Text className="text-white text-xs">Enable All</Text>
+            <Text className="text-white text-xs">{t('Enable All')}</Text>
           </TouchableOpacity>
         </View>
 
         <Text className="text-gray-400 text-sm mb-3">
-          Disabled providers won't appear in search results
+          {t("Disabled providers won't appear in search results")}
         </Text>
 
         <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
@@ -66,7 +68,7 @@ const DisableProviders = () => {
                 <View>
                   <Text className="text-white text-base">{provider.name}</Text>
                   <Text className="text-gray-400 text-xs">
-                    {provider.type || 'Content Provider'}
+                    {provider.type || t('Content Provider')}
                   </Text>
                 </View>
               </View>
@@ -82,7 +84,7 @@ const DisableProviders = () => {
         </View>
 
         <Text className="text-gray-400 text-xs text-center mt-4">
-          Changes will apply to new searches
+          {t('Changes will apply to new searches')}
         </Text>
       </View>
     </ScrollView>

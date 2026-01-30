@@ -89,5 +89,9 @@
   "Pull to refresh to check for available providers": "Trascina per aggiornare e verificare i provider disponibili",
   "Episodes": "Episodi",
   "EP {{number}}": "EP {{number}}",
-  "Episode {{number}}": "Episodio {{number}}"
+  "Episode {{number}}": "Episodio {{number}}",
+  "Disable Providers": "Disattiva provider",
+  "Enable All": "Abilita tutti",
+  "Disabled providers won't appear in search results": "I provider disattivati non appariranno nei risultati di ricerca",
+  "Changes will apply to new searches": "Le modifiche si applicheranno alle nuove ricerche"
 }
