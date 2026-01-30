@@ -39,5 +39,22 @@
   "Clear Watch History": "Clear Watch History",
   "About": "About",
   "Give a star ⭐": "Give a star ⭐",
-  "Sponsor Project": "Sponsor Project"
+  "Sponsor Project": "Sponsor Project",
+  "Download completed": "Download completed",
+  "Download complete": "Download complete",
+  "Tap to install": "Tap to install",
+  "Downloading update": "Downloading update",
+  "Version {{current}} -> {{target}}": "Version {{current}} -> {{target}}",
+  "New update available": "New update available",
+  "Update v{{current}} -> {{target}}": "Update v{{current}} -> {{target}}",
+  "Cancel": "Cancel",
+  "Update": "Update",
+  "App is up to date": "App is up to date",
+  "Failed to check for update": "Failed to check for update",
+  "App information and updates": "App information and updates",
+  "Version": "Version",
+  "Auto install updates": "Auto install updates",
+  "Check updates on start": "Check updates on start",
+  "Automatically check for updates when app starts": "Automatically check for updates when app starts",
+  "Check for updates": "Check for updates"
 }

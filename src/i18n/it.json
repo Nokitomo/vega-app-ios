@@ -39,5 +39,22 @@
   "Clear Watch History": "Svuota cronologia",
   "About": "Informazioni",
   "Give a star ⭐": "Lascia una stella ⭐",
-  "Sponsor Project": "Sponsorizza il progetto"
+  "Sponsor Project": "Sponsorizza il progetto",
+  "Download completed": "Download completato",
+  "Download complete": "Download completato",
+  "Tap to install": "Tocca per installare",
+  "Downloading update": "Download aggiornamento in corso",
+  "Version {{current}} -> {{target}}": "Versione {{current}} -> {{target}}",
+  "New update available": "Nuovo aggiornamento disponibile",
+  "Update v{{current}} -> {{target}}": "Aggiornamento v{{current}} -> {{target}}",
+  "Cancel": "Annulla",
+  "Update": "Aggiorna",
+  "App is up to date": "L'app è aggiornata",
+  "Failed to check for update": "Verifica aggiornamenti non riuscita",
+  "App information and updates": "Informazioni e aggiornamenti app",
+  "Version": "Versione",
+  "Auto install updates": "Installazione automatica aggiornamenti",
+  "Check updates on start": "Controlla aggiornamenti all'avvio",
+  "Automatically check for updates when app starts": "Controlla automaticamente gli aggiornamenti all'avvio",
+  "Check for updates": "Controlla aggiornamenti"
 }

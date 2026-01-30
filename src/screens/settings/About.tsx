@@ -16,6 +16,8 @@ import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useThemeStore from '../../lib/zustand/themeStore';
 import * as Application from 'expo-application';
 import {notificationService} from '../../lib/services/Notification';
+import {useTranslation} from 'react-i18next';
+import i18n from '../../i18n';
 
 // download update
 const downloadUpdate = async (url: string, name: string) => {
@@ -26,8 +28,8 @@ const downloadUpdate = async (url: string, name: string) => {
     if (await RNFS.exists(`${RNFS.DownloadDirectoryPath}/${name}`)) {
       await notificationService.displayUpdateNotification({
         id: 'downloadComplete',
-        title: 'Download Completed',
-        body: 'Tap to install',
+        title: i18n.t('Download completed'),
+        body: i18n.t('Tap to install'),
         data: {name: `${name}`, action: 'install'},
       });
       return;
@@ -45,8 +47,11 @@ const downloadUpdate = async (url: string, name: string) => {
     progress: res => {
       console.log('progress', res.bytesWritten, res.contentLength);
       notificationService.showUpdateProgress(
-        'Downloading Update',
-        `Version ${Application.nativeApplicationVersion} -> ${name}`,
+        i18n.t('Downloading update'),
+        i18n.t('Version {{current}} -> {{target}}', {
+          current: Application.nativeApplicationVersion,
+          target: name,
+        }),
         {
           current: res.bytesWritten,
           max: res.contentLength,
@@ -60,8 +65,8 @@ const downloadUpdate = async (url: string, name: string) => {
       await notificationService.cancelNotification('updateProgress');
       await notificationService.displayUpdateNotification({
         id: 'downloadComplete',
-        title: 'Download Complete',
-        body: 'Tap to install',
+        title: i18n.t('Download complete'),
+        body: i18n.t('Tap to install'),
         data: {name, action: 'install'},
       });
     }
@@ -85,11 +90,17 @@ export const checkForUpdate = async (
       data.tag_name.replace('v', '')?.split('.').join(''),
     );
     if (compareVersions(localVersion || '', data.tag_name.replace('v', ''))) {
-      ToastAndroid.show('New update available', ToastAndroid.SHORT);
-      Alert.alert(`Update v${localVersion} -> ${data.tag_name}`, data.body, [
-        {text: 'Cancel'},
+      ToastAndroid.show(i18n.t('New update available'), ToastAndroid.SHORT);
+      Alert.alert(
+        i18n.t('Update v{{current}} -> {{target}}', {
+          current: localVersion,
+          target: data.tag_name,
+        }),
+        data.body,
+        [
+          {text: i18n.t('Cancel')},
         {
-          text: 'Update',
+          text: i18n.t('Update'),
           onPress: () =>
             autoDownload
               ? downloadUpdate(
@@ -106,7 +117,8 @@ export const checkForUpdate = async (
         remoteVersion,
       );
     } else {
-      showToast && ToastAndroid.show('App is up to date', ToastAndroid.SHORT);
+      showToast &&
+        ToastAndroid.show(i18n.t('App is up to date'), ToastAndroid.SHORT);
       console.log(
         'local version',
         localVersion,
@@ -115,7 +127,10 @@ export const checkForUpdate = async (
       );
     }
   } catch (error) {
-    ToastAndroid.show('Failed to check for update', ToastAndroid.SHORT);
+    ToastAndroid.show(
+      i18n.t('Failed to check for update'),
+      ToastAndroid.SHORT,
+    );
     console.log('Update error', error);
   }
   setUpdateLoading(false);
@@ -123,6 +138,7 @@ export const checkForUpdate = async (
 
 const About = () => {
   const {primary} = useThemeStore(state => state);
+  const {t} = useTranslation();
   const [updateLoading, setUpdateLoading] = useState(false);
   const [autoDownload, setAutoDownload] = useState(
     settingsStorage.isAutoDownloadEnabled(),
@@ -134,16 +150,16 @@ const About = () => {
   return (
     <View className="flex-1 bg-black mt-8">
       <View className="px-4 py-3 border-b border-white/10">
-        <Text className="text-2xl font-bold text-white">About</Text>
+        <Text className="text-2xl font-bold text-white">{t('About')}</Text>
         <Text className="text-gray-400 mt-1 text-sm">
-          App information and updates
+          {t('App information and updates')}
         </Text>
       </View>
 
       <View className="p-4 space-y-4 pb-24">
         {/* Version */}
         <View className="bg-white/10 p-4 rounded-lg flex-row justify-between items-center">
-          <Text className="text-white text-base">Version</Text>
+          <Text className="text-white text-base">{t('Version')}</Text>
           <Text className="text-white/70">
             v{Application.nativeApplicationVersion}
           </Text>
@@ -151,7 +167,9 @@ const About = () => {
 
         {/* Auto Install Updates */}
         <View className="bg-white/10 p-4 rounded-lg flex-row justify-between items-center">
-          <Text className="text-white text-base">Auto Install Updates</Text>
+          <Text className="text-white text-base">
+            {t('Auto install updates')}
+          </Text>
           <Switch
             value={autoDownload}
             onValueChange={() => {
@@ -165,9 +183,11 @@ const About = () => {
         {/* Auto Check Updates */}
         <View className="bg-white/10 p-3 rounded-lg flex-row justify-between items-center">
           <View className="flex-1 mr-2">
-            <Text className="text-white text-base">Check Updates on Start</Text>
+            <Text className="text-white text-base">
+              {t('Check updates on start')}
+            </Text>
             <Text className="text-gray-400 text-sm">
-              Automatically check for updates when app starts
+              {t('Automatically check for updates when app starts')}
             </Text>
           </View>
           <Switch
@@ -188,7 +208,9 @@ const About = () => {
           <View className="bg-white/10 p-4 rounded-lg flex-row justify-between items-center mt-4">
             <View className="flex-row items-center space-x-3">
               <MaterialCommunityIcons name="update" size={22} color="white" />
-              <Text className="text-white text-base">Check for Updates</Text>
+              <Text className="text-white text-base">
+                {t('Check for updates')}
+              </Text>
             </View>
             <Feather name="chevron-right" size={20} color="white" />
           </View>
