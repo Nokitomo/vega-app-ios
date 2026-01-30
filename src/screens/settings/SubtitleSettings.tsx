@@ -11,6 +11,7 @@ import {startActivityAsync, ActivityAction} from 'expo-intent-launcher';
 import {settingsStorage} from '../../lib/storage';
 import useThemeStore from '../../lib/zustand/themeStore';
 import {Feather, Entypo} from '@expo/vector-icons';
+import {useTranslation} from 'react-i18next';
 
 const SubtitlePreference = () => {
   const [fontSize, setFontSize] = React.useState(
@@ -23,6 +24,7 @@ const SubtitlePreference = () => {
     settingsStorage.getSubtitleBottomPadding(),
   );
   const {primary} = useThemeStore();
+  const {t} = useTranslation();
 
   const handleSubtitleSize = (action: 'increase' | 'decrease') => {
     if (fontSize < 5 || fontSize > 30) {
@@ -77,12 +79,12 @@ const SubtitlePreference = () => {
       }}>
       <View className="p-5">
         <Text className="text-2xl font-bold text-white mb-6">
-          Subtitle Preferences
+          {t('Subtitle Preferences')}
         </Text>
 
         <View className="bg-[#1A1A1A] rounded-xl overflow-hidden">
           <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-            <Text className="text-white text-base">Font Size</Text>
+            <Text className="text-white text-base">{t('Font Size')}</Text>
             <View className="flex-row items-center gap-4">
               <TouchableOpacity onPress={() => handleSubtitleSize('decrease')}>
                 <Entypo name="minus" size={23} color={primary} />
@@ -98,7 +100,7 @@ const SubtitlePreference = () => {
 
           {/* opacity */}
           <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-            <Text className="text-white text-base">Opacity</Text>
+            <Text className="text-white text-base">{t('Opacity')}</Text>
             <View className="flex-row items-center gap-4">
               <TouchableOpacity
                 onPress={() => handleSubtitleOpacity('decrease')}>
@@ -116,7 +118,9 @@ const SubtitlePreference = () => {
 
           {/* bottom padding */}
           <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-            <Text className="text-white text-base">Bottom Elevation</Text>
+            <Text className="text-white text-base">
+              {t('Bottom Elevation')}
+            </Text>
             <View className="flex-row items-center gap-4">
               <TouchableOpacity
                 onPress={() => handleSubtitleBottomPadding('decrease')}>
@@ -141,7 +145,7 @@ const SubtitlePreference = () => {
             <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
               <View className="flex-row items-center">
                 <Text className="text-white text-base">
-                  More Subtitle Settings
+                  {t('More Subtitle Settings')}
                 </Text>
               </View>
               <Feather name="chevron-right" size={20} color="gray" />
@@ -150,7 +154,9 @@ const SubtitlePreference = () => {
 
           {/* reset */}
           <View className="flex-row items-center justify-between p-4 border-b border-[#262626]">
-            <Text className="text-white text-base">Reset to Default</Text>
+            <Text className="text-white text-base">
+              {t('Reset to Default')}
+            </Text>
             <TouchableOpacity
               onPress={() => {
                 settingsStorage.setSubtitleFontSize(16);
@@ -162,7 +168,7 @@ const SubtitlePreference = () => {
               }}>
               <View className="w-32 flex-row items-center justify-center">
                 <Text className="text-white text-base bg-[#262626] px-3 py-1 rounded-md text-center">
-                  Reset
+                  {t('Reset')}
                 </Text>
               </View>
             </TouchableOpacity>

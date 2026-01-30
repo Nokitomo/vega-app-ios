@@ -56,5 +56,12 @@
   "Auto install updates": "Auto install updates",
   "Check updates on start": "Check updates on start",
   "Automatically check for updates when app starts": "Automatically check for updates when app starts",
-  "Check for updates": "Check for updates"
+  "Check for updates": "Check for updates",
+  "Subtitle Preferences": "Subtitle Preferences",
+  "Font Size": "Font Size",
+  "Opacity": "Opacity",
+  "Bottom Elevation": "Bottom Elevation",
+  "More Subtitle Settings": "More Subtitle Settings",
+  "Reset to Default": "Reset to Default",
+  "Reset": "Reset"
 }

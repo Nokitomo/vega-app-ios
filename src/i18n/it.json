@@ -56,5 +56,12 @@
   "Auto install updates": "Installazione automatica aggiornamenti",
   "Check updates on start": "Controlla aggiornamenti all'avvio",
   "Automatically check for updates when app starts": "Controlla automaticamente gli aggiornamenti all'avvio",
-  "Check for updates": "Controlla aggiornamenti"
+  "Check for updates": "Controlla aggiornamenti",
+  "Subtitle Preferences": "Preferenze sottotitoli",
+  "Font Size": "Dimensione carattere",
+  "Opacity": "Opacità",
+  "Bottom Elevation": "Margine inferiore",
+  "More Subtitle Settings": "Altre impostazioni sottotitoli",
+  "Reset to Default": "Ripristina predefiniti",
+  "Reset": "Ripristina"
 }
