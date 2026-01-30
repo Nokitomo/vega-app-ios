@@ -5,6 +5,7 @@ import {providerManager} from '../services/ProviderManager';
 import {settingsStorage} from '../storage';
 import {ifExists} from '../file/ifExists';
 import {Stream} from '../providers/types';
+import i18n from '../../i18n';
 
 interface UseStreamOptions {
   activeEpisode: any;
@@ -43,7 +44,11 @@ export const useStream = ({
       // Handle direct URL (downloaded content)
       if (routeParams?.directUrl) {
         return [
-          {server: 'Downloaded', link: routeParams.directUrl, type: 'mp4'},
+          {
+            server: i18n.t('Downloaded'),
+            link: routeParams.directUrl,
+            type: 'mp4',
+          },
         ];
       }
 
@@ -57,7 +62,13 @@ export const useStream = ({
 
         const exists = await ifExists(file);
         if (exists) {
-          return [{server: 'downloaded', link: exists, type: 'mp4'}];
+          return [
+            {
+              server: i18n.t('Downloaded'),
+              link: exists,
+              type: 'mp4',
+            },
+          ];
         }
       }
 
@@ -80,7 +91,7 @@ export const useStream = ({
         filteredQualities?.length > 0 ? filteredQualities : data;
 
       if (!filteredData || filteredData.length === 0) {
-        throw new Error('No streams available');
+        throw new Error(i18n.t('No Streams Available'));
       }
 
       return filteredData;
@@ -119,7 +130,10 @@ export const useStream = ({
   useEffect(() => {
     if (error) {
       console.error('Stream fetch error:', error);
-      ToastAndroid.show('No stream found, try again later', ToastAndroid.SHORT);
+      ToastAndroid.show(
+        i18n.t('No stream found, try again later'),
+        ToastAndroid.SHORT,
+      );
     }
   }, [error]);
 
@@ -129,7 +143,7 @@ export const useStream = ({
       if (currentIndex < streamData.length - 1) {
         setSelectedStream(streamData[currentIndex + 1]);
         ToastAndroid.show(
-          'Video could not be played, Trying next server',
+          i18n.t('Video could not be played, Trying next server'),
           ToastAndroid.SHORT,
         );
         return true;
