@@ -13,6 +13,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Application from 'expo-application';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
+import {useTranslation} from 'react-i18next';
+import i18n from '../i18n';
 // Lazy-load Crashlytics to avoid requiring Firebase when not configured
 const getCrashlytics = (): any | null => {
   try {
@@ -126,28 +128,30 @@ export default class GlobalErrorBoundary extends React.Component<
     }
 
     const errorReport = `
-App Version: ${Application.nativeApplicationVersion}
-Build: ${Application.nativeBuildVersion}
-Time: ${new Date().toLocaleString()}
+${i18n.t('App Version')}: ${Application.nativeApplicationVersion}
+${i18n.t('Build')}: ${Application.nativeBuildVersion}
+${i18n.t('Time')}: ${new Date().toLocaleString()}
 
-Error: ${error.message}
+${i18n.t('Error')}: ${error.message}
 
-Stack Trace:
+${i18n.t('Stack Trace:')}
 ${error.stack}
 
-Component Stack:
-${errorInfo?.componentStack || 'Not available'}
+${i18n.t('Component Stack:')}
+${errorInfo?.componentStack || i18n.t('Not available')}
     `;
 
     Alert.alert(
-      'Error Report',
-      'Error details have been logged to console. You can copy this information for support.',
+      i18n.t('Error Report'),
+      i18n.t(
+        'Error details have been logged to console. You can copy this information for support.',
+      ),
       [
         {
-          text: 'Copy to Clipboard',
+          text: i18n.t('Copy to Clipboard'),
           onPress: () => Clipboard.setString(errorReport),
         },
-        {text: 'OK'},
+        {text: i18n.t('OK')},
       ],
     );
   };
@@ -197,6 +201,7 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
   onShowReport,
 }) => {
   const {primary} = useThemeStore();
+  const {t} = useTranslation();
   const {width} = Dimensions.get('window');
   const isTablet = width > 768;
 
@@ -217,27 +222,27 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
           </View>
 
           <Text className="text-white text-2xl font-bold text-center mb-2">
-            Oops! Something went wrong
+            {t('Oops! Something went wrong')}
           </Text>
 
           <Text className="text-gray-400 text-base text-center leading-6">
-            The app encountered an unexpected error and needs to restart.
+            {t('The app encountered an unexpected error and needs to restart.')}
           </Text>
         </View>
 
         <View className="bg-gray-900 rounded-lg p-4 mb-6">
           <Text className="text-red-400 text-sm font-medium mb-2">
-            Error Details:
+            {t('Error Details:')}
           </Text>
           <Text className="text-gray-300 text-sm">
-            {error.message || 'Unknown error occurred'}
+            {error.message || t('Unknown error occurred')}
           </Text>
         </View>
 
         {showDetails && (
           <View className="bg-gray-900 rounded-lg p-4 mb-6">
             <Text className="text-orange-400 text-sm font-medium mb-2">
-              Technical Details:
+              {t('Technical Details:')}
             </Text>
             <ScrollView className="max-h-32">
               <Text className="text-gray-400 text-xs font-mono">
@@ -245,7 +250,8 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
               </Text>
               {errorInfo?.componentStack && (
                 <Text className="text-gray-500 text-xs font-mono mt-2">
-                  Component Stack:{'\n'}
+                  {t('Component Stack:')}
+                  {'\n'}
                   {errorInfo.componentStack}
                 </Text>
               )}
@@ -261,7 +267,7 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
             <View className="flex-row items-center">
               <Ionicons name="refresh" size={20} color="white" />
               <Text className="text-white font-semibold text-base ml-2">
-                Restart App
+                {t('Restart App')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -276,7 +282,7 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
               <Text
                 className="font-semibold text-base ml-2"
                 style={{color: primary}}>
-                Try Again
+                {t('Try Again')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -293,7 +299,7 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
                   color="#9ca3af"
                 />
                 <Text className="text-gray-400 text-sm ml-2">
-                  {showDetails ? 'Hide' : 'Show'} Details
+                  {showDetails ? t('Hide Details') : t('Show Details')}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -304,7 +310,9 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
               activeOpacity={0.8}>
               <View className="flex-row items-center">
                 <Ionicons name="bug" size={16} color="#9ca3af" />
-                <Text className="text-gray-400 text-sm ml-2">Report</Text>
+                <Text className="text-gray-400 text-sm ml-2">
+                  {t('Report')}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -312,11 +320,13 @@ const ErrorFallbackUI: React.FC<ErrorFallbackUIProps> = ({
 
         <View className="mt-8 pt-6 border-t border-gray-800">
           <Text className="text-gray-500 text-xs text-center">
-            App Version: {Application.nativeApplicationVersion} (
-            {Application.nativeBuildVersion})
+            {t('App Version: {{version}} ({{build}})', {
+              version: Application.nativeApplicationVersion,
+              build: Application.nativeBuildVersion,
+            })}
           </Text>
           <Text className="text-gray-600 text-xs text-center mt-1">
-            If this keeps happening, report on github or discord
+            {t('If this keeps happening, report on github or discord')}
           </Text>
         </View>
       </ScrollView>
