@@ -16,7 +16,7 @@ Wrapper: src/lib/storage/StorageService.ts
 - cacheStorage: storage secondario per cache
 
 Manager specifici:
-- SettingsStorage: preferenze UI, feedback, player, telemetry.
+- SettingsStorage: preferenze UI, feedback, player, telemetry, lingua app.
 - WatchListStorage / WatchHistoryStorage: liste persistenti.
 - DownloadsStorage: stato download e cache file/thumbnails.
 - ProvidersStorage / ExtensionStorage: provider disponibili e installati.
