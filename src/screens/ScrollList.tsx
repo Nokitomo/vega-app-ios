@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from 'react-native';
-import React, {useEffect, useMemo, useState, useRef} from 'react';
+import React, {useEffect, useMemo, useState, useRef, useCallback} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList, SearchStackParamList} from '../App';
 import {Post} from '../lib/providers/types';
@@ -114,6 +114,13 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         data: grouped.get(dayKey) || [],
       }));
   }, [calendarDayOrder, isCalendarView, posts, t]);
+  const resolveEpisodeLabel = useCallback(
+    (post: Post) =>
+      post.episodeLabelKey
+        ? t(post.episodeLabelKey, post.episodeLabelParams)
+        : post.episodeLabel,
+    [t],
+  );
   const gridColumns = 3;
   const gridFallbackHorizontalPadding = 32;
   const gridMaxItemWidth = 100;
@@ -342,15 +349,18 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                                 height: gridItemHeight,
                               }}
                             />
-                            {item.episodeLabel ? (
-                              <View
-                                className="absolute top-1 right-1 rounded-full px-2 py-0.5"
-                                style={{backgroundColor: primary}}>
-                                <Text className="text-black text-[10px] font-semibold">
-                                  {item.episodeLabel}
-                                </Text>
-                              </View>
-                            ) : null}
+                            {(() => {
+                              const episodeLabel = resolveEpisodeLabel(item);
+                              return episodeLabel ? (
+                                <View
+                                  className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                                  style={{backgroundColor: primary}}>
+                                  <Text className="text-black text-[10px] font-semibold">
+                                    {episodeLabel}
+                                  </Text>
+                                </View>
+                              ) : null;
+                            })()}
                           </View>
                           <Text
                             className="text-white text-center truncate text-xs"
@@ -426,15 +436,18 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                         : {width: 70, height: 100}
                     }
                   />
-                  {item.episodeLabel ? (
-                    <View
-                      className="absolute top-1 right-1 rounded-full px-2 py-0.5"
-                      style={{backgroundColor: primary}}>
-                      <Text className="text-black text-[10px] font-semibold">
-                        {item.episodeLabel}
-                      </Text>
-                    </View>
-                  ) : null}
+                  {(() => {
+                    const episodeLabel = resolveEpisodeLabel(item);
+                    return episodeLabel ? (
+                      <View
+                        className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                        style={{backgroundColor: primary}}>
+                        <Text className="text-black text-[10px] font-semibold">
+                          {episodeLabel}
+                        </Text>
+                      </View>
+                    ) : null;
+                  })()}
                 </View>
                 <Text
                   className={
