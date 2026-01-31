@@ -82,7 +82,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error loading catalog:', error);
       console.error('Module content:', catalogModule);
-      throw new Error(`Invalid catalog module for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('Invalid catalog module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
   };
   getGenres = ({providerValue}: {providerValue: string}): Catalog[] => {
@@ -100,7 +104,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error loading genres:', error);
       console.error('Module content:', catalogModule);
-      throw new Error(`Invalid catalog module for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('Invalid catalog module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
   };
   getPosts = async ({
@@ -118,7 +126,11 @@ export class ProviderManager {
     const getPostsModule =
       extensionManager.getProviderModules(providerValue)?.modules.posts;
     if (!getPostsModule) {
-      throw new Error(`No posts module found for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('No posts module found for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
     try {
       const moduleExports = this.executeModule(
@@ -141,7 +153,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error creating posts function:', error);
       console.error('Module content:', getPostsModule);
-      throw new Error(`Invalid posts module for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('Invalid posts module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
   };
   getSearchPosts = async ({
@@ -159,7 +175,11 @@ export class ProviderManager {
     const getPostsModule =
       extensionManager.getProviderModules(providerValue)?.modules.posts;
     if (!getPostsModule) {
-      throw new Error(`No posts module found for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('No posts module found for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
     try {
       const moduleExports = this.executeModule(
@@ -182,7 +202,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error creating search posts function:', error);
       console.error('Module content:', getPostsModule);
-      throw new Error(`Invalid posts module for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('Invalid posts module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
   };
   getMetaData = async ({
@@ -196,7 +220,11 @@ export class ProviderManager {
     const getMetaDataModule =
       extensionManager.getProviderModules(provider)?.modules.meta;
     if (!getMetaDataModule) {
-      throw new Error(`No meta data module found for provider: ${provider}`);
+      throw new Error(
+        i18n.t('No meta data module found for provider: {{provider}}', {
+          provider,
+        }),
+      );
     }
     try {
       const moduleExports = this.executeModule(
@@ -215,7 +243,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error creating meta data function:', error);
       console.error('Module content:', getMetaDataModule);
-      throw new Error(`Invalid meta data module for provider: ${provider}`);
+      throw new Error(
+        i18n.t('Invalid meta data module for provider: {{provider}}', {
+          provider,
+        }),
+      );
     }
   };
   getStream = async ({
@@ -233,7 +265,11 @@ export class ProviderManager {
     const getStreamModule =
       extensionManager.getProviderModules(providerValue)?.modules.stream;
     if (!getStreamModule) {
-      throw new Error(`No stream module found for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('No stream module found for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
     try {
       const moduleExports = this.executeModule(
@@ -254,7 +290,11 @@ export class ProviderManager {
     } catch (error) {
       console.error('Error creating stream function:', error);
       console.error('Module content:', getStreamModule);
-      throw new Error(`Invalid stream module for provider: ${providerValue}`);
+      throw new Error(
+        i18n.t('Invalid stream module for provider: {{provider}}', {
+          provider: providerValue,
+        }),
+      );
     }
   };
   getEpisodes = async ({
