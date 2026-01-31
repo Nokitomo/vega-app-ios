@@ -1,6 +1,7 @@
 import {Content} from './zustand/contentStore';
 import {Post} from './providers/types';
 import {providerManager} from './services/ProviderManager';
+import i18n from '../i18n';
 
 export interface HomePageData {
   title: string;
@@ -31,7 +32,7 @@ export const getHomePageDataOptimized = async (
       });
 
       if (signal.aborted) {
-        throw new Error('Request aborted');
+        throw new Error(i18n.t('Request aborted'));
       }
 
       console.log(`✅ Fetched ${data?.length || 0} posts for: ${item.title}`);
@@ -49,7 +50,7 @@ export const getHomePageDataOptimized = async (
         title: item.title,
         Posts: [],
         filter: item.filter,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : i18n.t('Unknown error'),
       };
     }
   });
@@ -79,7 +80,7 @@ export const getHomePageDataOptimized = async (
         title: catalogs[index].title,
         Posts: [],
         filter: catalogs[index].filter,
-        error: result.reason?.message || 'Failed to load',
+        error: result.reason?.message || i18n.t('Failed to load'),
       });
     }
   });
@@ -90,7 +91,7 @@ export const getHomePageDataOptimized = async (
 
   // Ensure we have at least some data
   if (successCount === 0) {
-    throw new Error('Failed to load any content categories');
+    throw new Error(i18n.t('Failed to load any content categories'));
   }
 
   return homePageData;
