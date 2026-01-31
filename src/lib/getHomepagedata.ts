@@ -5,6 +5,8 @@ import i18n from '../i18n';
 
 export interface HomePageData {
   title: string;
+  titleKey?: string;
+  titleParams?: Record<string, string | number>;
   Posts: Post[];
   filter: string;
   error?: string;
@@ -39,6 +41,8 @@ export const getHomePageDataOptimized = async (
 
       return {
         title: item.title,
+        titleKey: item.titleKey,
+        titleParams: item.titleParams,
         Posts: data || [],
         filter: item.filter,
       };
@@ -48,6 +52,8 @@ export const getHomePageDataOptimized = async (
       // Return partial data with error info instead of failing completely
       return {
         title: item.title,
+        titleKey: item.titleKey,
+        titleParams: item.titleParams,
         Posts: [],
         filter: item.filter,
         error: error instanceof Error ? error.message : i18n.t('Unknown error'),
@@ -78,6 +84,8 @@ export const getHomePageDataOptimized = async (
       // Add empty category to maintain layout
       homePageData.push({
         title: catalogs[index].title,
+        titleKey: catalogs[index].titleKey,
+        titleParams: catalogs[index].titleParams,
         Posts: [],
         filter: catalogs[index].filter,
         error: result.reason?.message || i18n.t('Failed to load'),
