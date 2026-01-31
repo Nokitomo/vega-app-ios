@@ -168,6 +168,15 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [info?.linkList]);
 
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
+  const displayTags = useMemo(() => {
+    if (!info?.tags || info.tags.length === 0) {
+      return [];
+    }
+    return info.tags.slice(0, 3).map(tag => {
+      const key = info.tagKeys?.[tag];
+      return key ? t(key) : tag;
+    });
+  }, [info?.tags, info?.tagKeys, t]);
   const infoStack = route.params?.infoStack ?? [];
   const showInfoBack = infoStack.length > 0;
 
@@ -369,7 +378,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         })}
                       </Text>
                     ) : null}
-                    {info?.tags?.slice(0, 3)?.map((tag: string) => (
+                    {displayTags.map(tag => (
                       <Text
                         key={tag}
                         className="text-white text-xs bg-tertiary px-2 rounded-md">
