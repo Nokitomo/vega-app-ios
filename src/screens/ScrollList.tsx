@@ -24,6 +24,49 @@ import {useTranslation} from 'react-i18next';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ScrollList'>;
 
+const CALENDAR_DAY_KEYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+  'undetermined',
+] as const;
+
+const CALENDAR_DAY_MAP: Record<string, (typeof CALENDAR_DAY_KEYS)[number]> = {
+  lunedì: 'monday',
+  martedì: 'tuesday',
+  mercoledì: 'wednesday',
+  giovedì: 'thursday',
+  venerdì: 'friday',
+  sabato: 'saturday',
+  domenica: 'sunday',
+  monday: 'monday',
+  tuesday: 'tuesday',
+  wednesday: 'wednesday',
+  thursday: 'thursday',
+  friday: 'friday',
+  saturday: 'saturday',
+  sunday: 'sunday',
+  undetermined: 'undetermined',
+};
+
+const CALENDAR_DAY_LABEL_KEYS: Record<
+  (typeof CALENDAR_DAY_KEYS)[number],
+  string
+> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+  undetermined: 'Undetermined',
+};
+
 const ScrollList = ({route}: Props): React.ReactElement => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
@@ -45,49 +88,32 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   const abortController = useRef<AbortController | null>(null);
   const isMounted = useRef(true);
   const isLoadingMore = useRef(false);
-  const calendarDayOrder = useMemo(
-    () => [
-      'Lunedì',
-      'Martedì',
-      'Mercoledì',
-      'Giovedì',
-      'Venerdì',
-      'Sabato',
-      'Domenica',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-      'Undetermined',
-    ],
-    [],
-  );
+  const calendarDayOrder = CALENDAR_DAY_KEYS;
   const calendarSections = useMemo(() => {
     if (!isCalendarView) {
       return [];
     }
     const grouped = new Map<string, Post[]>();
     posts.forEach(post => {
-      if (!post.day) {
+      const rawDay = post.day?.trim().toLowerCase();
+      if (!rawDay) {
         return;
       }
-      if (!calendarDayOrder.includes(post.day)) {
+      const dayKey = CALENDAR_DAY_MAP[rawDay];
+      if (!dayKey) {
         return;
       }
-      const items = grouped.get(post.day) || [];
+      const items = grouped.get(dayKey) || [];
       items.push(post);
-      grouped.set(post.day, items);
+      grouped.set(dayKey, items);
     });
     return calendarDayOrder
-      .filter(day => grouped.get(day)?.length)
-      .map(day => ({
-        title: day,
-        data: grouped.get(day) || [],
+      .filter(dayKey => grouped.get(dayKey)?.length)
+      .map(dayKey => ({
+        title: t(CALENDAR_DAY_LABEL_KEYS[dayKey]),
+        data: grouped.get(dayKey) || [],
       }));
-  }, [calendarDayOrder, isCalendarView, posts]);
+  }, [calendarDayOrder, isCalendarView, posts, t]);
   const gridColumns = 3;
   const gridFallbackHorizontalPadding = 32;
   const gridMaxItemWidth = 100;
