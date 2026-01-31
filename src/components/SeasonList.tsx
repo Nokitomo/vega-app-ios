@@ -518,7 +518,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         const streams = await fetchStreams(link, streamType, providerValue);
 
         if (!streams || streams.length === 0) {
-          ToastAndroid.show('No stream available', ToastAndroid.SHORT);
+          ToastAndroid.show(t('No stream available'), ToastAndroid.SHORT);
           return;
         }
 
@@ -529,12 +529,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
         setShowServerModal(true);
 
         ToastAndroid.show(
-          `Found ${streams.length} servers`,
+          t('Found {{count}} servers', {count: streams.length}),
           ToastAndroid.SHORT,
         );
       } catch (error) {
         console.error('Error fetching streams:', error);
-        ToastAndroid.show('Failed to load streams', ToastAndroid.SHORT);
+        ToastAndroid.show(t('Failed to load streams'), ToastAndroid.SHORT);
       } finally {
         setVlcLoading(false);
         setIsLoadingStreams(false);
@@ -555,7 +555,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
       });
     } catch (error) {
       console.error('Error opening external player:', error);
-      ToastAndroid.show('Failed to open external player', ToastAndroid.SHORT);
+      ToastAndroid.show(
+        t('Failed to open external player'),
+        ToastAndroid.SHORT,
+      );
     } finally {
       setVlcLoading(false);
     }
@@ -797,14 +800,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     const resumeList = getPlayableList();
     if (!resumeList || resumeList.length === 0) {
-      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
       setPendingPlay(null);
       return;
     }
 
     const resumeIndex = resolveEpisodeIndex(resumeList, pendingPlay);
     if (resumeIndex < 0) {
-      ToastAndroid.show('Episode not available', ToastAndroid.SHORT);
+      ToastAndroid.show(t('Episode not available'), ToastAndroid.SHORT);
       setPendingPlay(null);
       return;
     }
@@ -864,17 +867,17 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
     const resumeList = getPlayableList();
     if (!resumeList || resumeList.length === 0) {
-      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
       return;
     }
 
     const resumeIndex = resolveEpisodeIndex(resumeList, target);
     if (resumeIndex < 0) {
       if (isResume) {
-        ToastAndroid.show('Episode not available', ToastAndroid.SHORT);
+        ToastAndroid.show(t('Episode not available'), ToastAndroid.SHORT);
         return;
       }
-      ToastAndroid.show('No episodes available', ToastAndroid.SHORT);
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
       return;
     }
 
