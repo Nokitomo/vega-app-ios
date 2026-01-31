@@ -726,7 +726,9 @@ const Player = ({route}: Props): React.JSX.Element => {
               <Animated.View style={[loadingIconStyle]} className="mb-2">
                 <MaterialIcons name="hourglass-empty" size={60} color="white" />
               </Animated.View>
-              <Text className="text-white text-lg mt-4">Loading stream...</Text>
+              <Text className="text-white text-lg mt-4">
+                {t('Loading stream...')}
+              </Text>
             </Animated.View>
           </View>
         </TouchableNativeFeedback>
@@ -740,12 +742,12 @@ const Player = ({route}: Props): React.JSX.Element => {
       <SafeAreaView className="bg-black flex-1 justify-center items-center">
         <StatusBar translucent={true} hidden={true} />
         <Text className="text-red-500 text-lg text-center mb-4">
-          Failed to load stream. Please try again.
+          {t('Failed to load stream. Please try again.')}
         </Text>
         <TouchableOpacity
           className="bg-red-600 px-4 py-2 rounded-md"
           onPress={() => navigation.goBack()}>
-          <Text className="text-white">Go Back</Text>
+          <Text className="text-white">{t('Go Back')}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );

@@ -254,6 +254,8 @@
   "Failed to open external player": "Failed to open external player",
   "No episodes available": "No episodes available",
   "Episode not available": "Episode not available",
+  "Loading stream...": "Loading stream...",
+  "Failed to load stream. Please try again.": "Failed to load stream. Please try again.",
   "No server found": "No server found",
   "Loading available servers...": "Loading available servers...",
   "Select External Player Server": "Select External Player Server",

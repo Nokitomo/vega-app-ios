@@ -254,6 +254,8 @@
   "Failed to open external player": "Impossibile aprire il player esterno",
   "No episodes available": "Nessun episodio disponibile",
   "Episode not available": "Episodio non disponibile",
+  "Loading stream...": "Caricamento stream...",
+  "Failed to load stream. Please try again.": "Impossibile caricare lo stream. Riprova.",
   "No server found": "Nessun server trovato",
   "Loading available servers...": "Caricamento server disponibili...",
   "Select External Player Server": "Seleziona server del player esterno",
