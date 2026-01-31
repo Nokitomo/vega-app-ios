@@ -78,6 +78,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {addItem} = useWatchHistoryStore(state => state);
   const {fetchStreams} = useStreamData();
+  const resolveTitle = useCallback(
+    (item?: {
+      title?: string;
+      titleKey?: string;
+      titleParams?: Record<string, string | number>;
+    }) => (item?.titleKey ? t(item.titleKey, item.titleParams) : item?.title),
+    [t],
+  );
 
   // Memoized initial active season
   const [activeSeason, setActiveSeason] = useState<Link>(() => {
@@ -86,6 +94,43 @@ const SeasonList: React.FC<SeasonListProps> = ({
     );
     return cached ? JSON.parse(cached) : LinkList[0];
   });
+  const linkListWithDisplayTitle = useMemo(
+    () =>
+      LinkList.map(item => ({
+        ...item,
+        displayTitle: resolveTitle(item) || item.title,
+      })),
+    [LinkList, resolveTitle],
+  );
+  const activeSeasonValue = useMemo(() => {
+    if (!activeSeason) {
+      return linkListWithDisplayTitle[0];
+    }
+    const match = linkListWithDisplayTitle.find(item =>
+      activeSeason.episodesLink
+        ? item.episodesLink === activeSeason.episodesLink
+        : item.directLinks === activeSeason.directLinks &&
+          item.title === activeSeason.title,
+    );
+    return (
+      match || {
+        ...activeSeason,
+        displayTitle: resolveTitle(activeSeason) || activeSeason.title,
+      }
+    );
+  }, [activeSeason, linkListWithDisplayTitle, resolveTitle]);
+  const isSameSeason = useCallback(
+    (current: Link, candidate: Link) => {
+      if (current.episodesLink && candidate.episodesLink) {
+        return current.episodesLink === candidate.episodesLink;
+      }
+      if (current.directLinks && candidate.directLinks) {
+        return current.directLinks === candidate.directLinks;
+      }
+      return current.title === candidate.title;
+    },
+    [],
+  );
 
   // React Query for episodes
   const {
@@ -377,6 +422,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
   // Memoized episode render item
   const renderEpisodeItem = useCallback(
     ({item, index}: {item: EpisodeLink; index: number}) => {
+      const episodeTitle = item.titleKey
+        ? t(item.titleKey, item.titleParams)
+        : item.title;
       return (
         <View
           key={item.link + index}
@@ -403,9 +451,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
               onLongPress={() => onLongPressHandler(true, item.link, 'series')}>
               <Ionicons name="play-circle" size={28} color={primary} />
               <Text className="text-white">
-                {item.title.length > 30
-                  ? item.title.slice(0, 30) + '...'
-                  : item.title}
+                {episodeTitle.length > 30
+                  ? episodeTitle.slice(0, 30) + '...'
+                  : episodeTitle}
               </Text>
             </TouchableOpacity>
             <Downloader
@@ -438,12 +486,16 @@ const SeasonList: React.FC<SeasonListProps> = ({
       onLongPressHandler,
       primary,
       providerValue,
+      t,
     ],
   );
 
   // Memoized direct link render item
   const renderDirectLinkItem = useCallback(
     ({item, index}: {item: any; index: number}) => {
+      const directTitle = item.titleKey
+        ? t(item.titleKey, item.titleParams)
+        : item.title;
       return (
         <View
           key={item.link + index}
@@ -472,9 +524,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
               <Text className="text-white">
                 {activeSeason?.directLinks?.length &&
                 activeSeason?.directLinks?.length > 1
-                  ? item.title?.length > 27
-                    ? item.title.slice(0, 27) + '...'
-                    : item.title
+                  ? directTitle?.length > 27
+                    ? directTitle.slice(0, 27) + '...'
+                    : directTitle
                   : t('Play')}
               </Text>
             </TouchableOpacity>
@@ -549,13 +601,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
               height: 20,
               fontWeight: 'bold',
             }}
-            labelField={'title'}
+            labelField={'displayTitle'}
             valueField={
               LinkList[0]?.episodesLink ? 'episodesLink' : 'directLinks'
             }
             onChange={handleSeasonChange}
-            value={activeSeason}
-            data={LinkList}
+            value={activeSeasonValue}
+            data={linkListWithDisplayTitle}
             style={{
               overflow: 'hidden',
               borderWidth: 1,
@@ -574,9 +626,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
             renderItem={item => (
               <View
                 className={`px-3 py-2 bg-black text-white flex-row justify-start items-center border-b border-gray-500 text-center ${
-                  activeSeason === item ? 'bg-quaternary' : ''
+                  activeSeasonValue && isSameSeason(activeSeasonValue, item)
+                    ? 'bg-quaternary'
+                    : ''
                 }`}>
-                <Text className="text-white">{item.title}</Text>
+                <Text className="text-white">
+                  {item.displayTitle || item.title}
+                </Text>
               </View>
             )}
           />
@@ -633,13 +689,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
             height: 20,
             fontWeight: 'bold',
           }}
-          labelField={'title'}
+          labelField={'displayTitle'}
           valueField={
             LinkList[0]?.episodesLink ? 'episodesLink' : 'directLinks'
           }
           onChange={handleSeasonChange}
-          value={activeSeason}
-          data={LinkList}
+          value={activeSeasonValue}
+          data={linkListWithDisplayTitle}
           style={{
             overflow: 'hidden',
             borderWidth: 1,
@@ -658,15 +714,19 @@ const SeasonList: React.FC<SeasonListProps> = ({
           renderItem={item => (
             <View
               className={`px-3 py-2 bg-black text-white flex-row justify-start items-center border-b border-gray-500 text-center ${
-                activeSeason === item ? 'bg-quaternary' : ''
+                activeSeasonValue && isSameSeason(activeSeasonValue, item)
+                  ? 'bg-quaternary'
+                  : ''
               }`}>
-              <Text className="text-white">{item.title}</Text>
+              <Text className="text-white">
+                {item.displayTitle || item.title}
+              </Text>
             </View>
           )}
         />
       ) : (
         <Text className="text-red-600 text-lg font-semibold px-2">
-          {LinkList[0]?.title}
+          {resolveTitle(LinkList[0]) || LinkList[0]?.title}
         </Text>
       )}
 
