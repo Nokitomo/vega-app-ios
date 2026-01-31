@@ -204,7 +204,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         const streams = await fetchStreams(link, type, providerValue);
 
         if (!streams || streams.length === 0) {
-          ToastAndroid.show('No stream available', ToastAndroid.SHORT);
+          ToastAndroid.show(t('No stream available'), ToastAndroid.SHORT);
           return;
         }
 
@@ -215,12 +215,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
         setShowServerModal(true);
 
         ToastAndroid.show(
-          `Found ${streams.length} servers`,
+          t('Found {{count}} servers', {count: streams.length}),
           ToastAndroid.SHORT,
         );
       } catch (error) {
         console.error('Error fetching streams:', error);
-        ToastAndroid.show('Failed to load streams', ToastAndroid.SHORT);
+        ToastAndroid.show(t('Failed to load streams'), ToastAndroid.SHORT);
       } finally {
         setVlcLoading(false);
         setIsLoadingStreams(false);
@@ -241,7 +241,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
       });
     } catch (error) {
       console.error('Error opening external player:', error);
-      ToastAndroid.show('Failed to open external player', ToastAndroid.SHORT);
+      ToastAndroid.show(
+        t('Failed to open external player'),
+        ToastAndroid.SHORT,
+      );
     } finally {
       setVlcLoading(false);
     }
