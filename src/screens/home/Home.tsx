@@ -48,6 +48,12 @@ const Home = ({}: Props) => {
   const {setHero} = useHeroStore(state => state);
   const heroCacheTtlMs = 7 * 24 * 60 * 60 * 1000;
 
+  const resolveCatalogTitle = useCallback(
+    (item: {title: string; titleKey?: string; titleParams?: Record<string, string | number>}) =>
+      item.titleKey ? t(item.titleKey, item.titleParams) : item.title,
+    [t],
+  );
+
   // React Query for home page data with better error handling
   const {
     data: homeData = [],
@@ -135,12 +141,12 @@ const Home = ({}: Props) => {
         <Slider
           isLoading={true}
           key={`loading-${item.filter}-${index}`}
-          title={item.title}
+          title={resolveCatalogTitle(item)}
           posts={[]}
           filter={item.filter}
         />
       ));
-  }, [provider?.value]);
+  }, [provider?.value, resolveCatalogTitle]);
 
   // Memoized content sliders
   const contentSliders = useMemo(() => {
@@ -148,12 +154,12 @@ const Home = ({}: Props) => {
       <Slider
         isLoading={false}
         key={`content-${item.filter}-${item.Posts.length}-${refreshNonce}`}
-        title={item.title}
+        title={resolveCatalogTitle(item)}
         posts={item.Posts}
         filter={item.filter}
       />
     ));
-  }, [homeData, refreshNonce]);
+  }, [homeData, refreshNonce, resolveCatalogTitle]);
 
   const scrollKey = useMemo(() => {
     return `${provider?.value ?? 'none'}:${homeData.length}:${isLoading}`;
