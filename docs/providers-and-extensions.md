@@ -27,6 +27,14 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - `catalog.js` puo esportare `archiveFilters` con metadati (order, status, type, season, years, dubbed, genres).
 - `genres` espone scorciatoie per filtri di archive (usabili come sezioni o menu).
 
+## i18n dai provider (AnimeUnity)
+- Alcuni campi possono includere chiavi i18n opzionali per tradurre etichette in app.
+- `catalog.js`: `titleKey`/`titleParams` per i titoli delle sezioni.
+- `posts`: `episodeLabelKey`/`episodeLabelParams` (con fallback su `episodeLabel`).
+- `meta` e `episodes`: `titleKey`/`titleParams` per stagioni/episodi, `tagKeys` per tradurre tag.
+- L'app usa le chiavi se presenti, altrimenti mostra il testo originale.
+- Al momento queste chiavi sono usate solo da AnimeUnity e dai provider futuri.
+
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
 - Esegue i moduli in un contesto isolato (new Function).
