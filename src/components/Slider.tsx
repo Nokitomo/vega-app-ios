@@ -118,15 +118,20 @@ export default function Slider({
                     }
                     style={{width: 100, height: 150}}
                   />
-                  {item.episodeLabel ? (
-                    <View
-                      className="absolute top-1 right-1 rounded-full px-2 py-0.5"
-                      style={{backgroundColor: primary}}>
-                      <Text className="text-black text-[10px] font-semibold">
-                        {item.episodeLabel}
-                      </Text>
-                    </View>
-                  ) : null}
+                  {(() => {
+                    const episodeLabel = item.episodeLabelKey
+                      ? t(item.episodeLabelKey, item.episodeLabelParams)
+                      : item.episodeLabel;
+                    return episodeLabel ? (
+                      <View
+                        className="absolute top-1 right-1 rounded-full px-2 py-0.5"
+                        style={{backgroundColor: primary}}>
+                        <Text className="text-black text-[10px] font-semibold">
+                          {episodeLabel}
+                        </Text>
+                      </View>
+                    ) : null;
+                  })()}
                 </View>
                 {/* {isSelected === item.link && (
                   <View className="absolute top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center z-50">
