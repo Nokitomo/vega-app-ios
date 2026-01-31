@@ -122,8 +122,13 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
     if (!heroData) {
       return [];
     }
-    return (heroData.genre || heroData.tags || []).slice(0, 3);
-  }, [heroData]);
+    const tags = (heroData.genre || heroData.tags || []) as string[];
+    const tagKeys = (heroData as {tagKeys?: Record<string, string>}).tagKeys;
+    return tags.slice(0, 3).map(tag => {
+      const key = tagKeys?.[tag];
+      return key ? t(key) : tag;
+    });
+  }, [heroData, t]);
 
   if (error) {
     console.error('Hero metadata error:', error);
