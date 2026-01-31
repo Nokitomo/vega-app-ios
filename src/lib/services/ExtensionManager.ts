@@ -4,6 +4,7 @@ import {
   ProviderExtension,
   ProviderModule,
 } from '../storage/extensionStorage';
+import i18n from '../../i18n';
 /**
  * Extension manager service for handling dynamic provider loading
  */
@@ -63,7 +64,7 @@ export class ExtensionManager {
       }
 
       if (!response) {
-        throw new Error('Invalid manifest format');
+        throw new Error(i18n.t('Invalid manifest format'));
       }
 
       const providers: ProviderExtension[] = response.data.map((item: any) => ({
@@ -148,7 +149,9 @@ export class ExtensionManager {
       const missingRequired = requiredFiles.filter(file => !modules[file]);
       if (missingRequired.length > 0) {
         throw new Error(
-          `Missing required files: ${missingRequired.join(', ')}`,
+          i18n.t('Missing required files: {{files}}', {
+            files: missingRequired.join(', '),
+          }),
         );
       }
 
@@ -196,7 +199,9 @@ export class ExtensionManager {
           if (response.data) {
             modules[fileName] = response.data;
           } else {
-            throw new Error(`No data received for ${fileName}`);
+            throw new Error(
+              i18n.t('No data received for {{file}}', {file: fileName}),
+            );
           }
         } catch (error) {
           // Only log error for required files
@@ -217,7 +222,11 @@ export class ExtensionManager {
       await Promise.all(downloadPromises);
 
       if (!modules.posts) {
-        throw new Error(`No data received for ${providerValue}`);
+        throw new Error(
+          i18n.t('No data received for {{provider}}', {
+            provider: providerValue,
+          }),
+        );
       }
 
       const providerModule: ProviderModule = {
