@@ -127,6 +127,8 @@
   "Failed to load": "Failed to load",
   "Request aborted": "Request aborted",
   "Failed to load any content categories": "Failed to load any content categories",
+  "Error: No data returned from provider": "Error: No data returned from provider",
+  "Invalid imdbId or type": "Invalid imdbId or type",
   "Oops! Something went wrong": "Oops! Something went wrong",
   "The app encountered an unexpected error and needs to restart.": "The app encountered an unexpected error and needs to restart.",
   "Error Details:": "Error Details:",

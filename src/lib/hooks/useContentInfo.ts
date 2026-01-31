@@ -2,6 +2,7 @@ import {useQuery} from '@tanstack/react-query';
 import {providerManager} from '../services/ProviderManager';
 import {cacheStorage} from '../storage';
 import axios from 'axios';
+import i18n from '../../i18n';
 
 // Hook for fetching content info/metadata
 export const useContentInfo = (link: string, providerValue: string) => {
@@ -15,7 +16,7 @@ export const useContentInfo = (link: string, providerValue: string) => {
         provider: providerValue,
       });
       if (!data || (!data?.title && !data?.synopsis && !data?.image)) {
-        throw new Error('Error: No data returned from provider');
+        throw new Error(i18n.t('Error: No data returned from provider'));
       }
 
       return data;
@@ -56,7 +57,7 @@ export const useEnhancedMetadata = (imdbId: string, type: string) => {
       try {
         // Validate imdbId and type
         if (!imdbId || !type) {
-          throw new Error('Invalid imdbId or type');
+          throw new Error(i18n.t('Invalid imdbId or type'));
         }
       } catch (error) {
         console.log('Error validating imdbId or type:', error);

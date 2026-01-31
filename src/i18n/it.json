@@ -127,6 +127,8 @@
   "Failed to load": "Impossibile caricare",
   "Request aborted": "Richiesta annullata",
   "Failed to load any content categories": "Impossibile caricare nessuna categoria di contenuti",
+  "Error: No data returned from provider": "Errore: nessun dato restituito dal provider",
+  "Invalid imdbId or type": "ImdbId o tipo non valido",
   "Oops! Something went wrong": "Ops! Qualcosa è andato storto",
   "The app encountered an unexpected error and needs to restart.": "L'app ha riscontrato un errore imprevisto e deve riavviarsi.",
   "Error Details:": "Dettagli errore:",
