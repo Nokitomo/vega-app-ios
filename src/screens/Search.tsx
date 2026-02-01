@@ -18,7 +18,6 @@ import {searchOMDB} from '../lib/services/omdb';
 import debounce from 'lodash/debounce';
 import {OMDBResult} from '../types/omdb';
 import {useTranslation} from 'react-i18next';
-import {setNavBarSuspended} from '../lib/services/NavBarState';
 
 const MAX_VISIBLE_RESULTS = 15; // Limit number of animated items to prevent excessive callbacks
 const MAX_HISTORY_ITEMS = 30; // Maximum number of history items to store
@@ -229,15 +228,8 @@ const Search = () => {
                     placeholderTextColor="#666"
                     value={searchText}
                     onChangeText={setSearchText}
-                    onPressIn={() => setNavBarSuspended(true)}
-                    onFocus={() => {
-                      setNavBarSuspended(true);
-                      setIsFocused(true);
-                    }}
-                    onBlur={() => {
-                      setNavBarSuspended(false);
-                      setIsFocused(false);
-                    }}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     onSubmitEditing={e => handleSearch(e.nativeEvent.text)}
                     returnKeyType="search"
                   />
