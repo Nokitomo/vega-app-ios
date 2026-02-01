@@ -34,6 +34,7 @@ import {
   LogBox,
   PixelRatio,
   Platform,
+  TextInput,
   ViewStyle,
 } from 'react-native';
 import {EpisodeLink} from './lib/providers/types';
@@ -245,7 +246,11 @@ const AppContent = () => {
     if (Platform.OS !== 'android') {
       return;
     }
-    if (keyboardVisibleRef.current) {
+    const focusedInput =
+      typeof TextInput.State?.currentlyFocusedInput === 'function'
+        ? TextInput.State.currentlyFocusedInput()
+        : TextInput.State?.currentlyFocusedField?.();
+    if (keyboardVisibleRef.current || focusedInput) {
       return;
     }
     try {
