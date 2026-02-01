@@ -17,7 +17,7 @@ import {
 } from '@react-navigation/native-stack';
 import {HomeStackParamList, TabStackParamList} from '../../App';
 import LinearGradient from 'react-native-linear-gradient';
-import SeasonList from '../../components/SeasonList';
+import SeasonListNew from '../../components/SeasonListNew';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {settingsStorage, watchListStorage} from '../../lib/storage';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -710,7 +710,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         </TouchableOpacity>
                       </View>
                       {infoView === 'episodes' ? (
-                        <SeasonList
+                        <SeasonListNew
                           refreshing={false}
                           providerValue={providerValue}
                           LinkList={filteredLinkList}
