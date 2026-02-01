@@ -114,6 +114,7 @@ export type RootStackParamList = {
     type: string;
     primaryTitle?: string;
     secondaryTitle?: string;
+    seasonEpisodesLink?: string;
     poster: {
       logo?: string;
       poster?: string;
