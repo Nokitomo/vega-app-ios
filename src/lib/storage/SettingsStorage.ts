@@ -8,6 +8,7 @@ export enum SettingsKeys {
   PRIMARY_COLOR = 'primaryColor',
   IS_CUSTOM_THEME = 'isCustomTheme',
   SHOW_TAB_BAR_LABELS = 'showTabBarLabels',
+  SHOW_RECENTLY_WATCHED = 'showRecentlyWatched',
   CUSTOM_COLOR = 'customColor',
   APP_LANGUAGE = 'appLanguage',
   // Feedback settings
@@ -86,6 +87,16 @@ export class SettingsStorage {
 
   setShowTabBarLabels(show: boolean): void {
     mainStorage.setBool(SettingsKeys.SHOW_TAB_BAR_LABELS, show);
+  }
+
+  showRecentlyWatched(): boolean {
+    return mainStorage.getBool(SettingsKeys.SHOW_RECENTLY_WATCHED) === null
+      ? true
+      : mainStorage.getBool(SettingsKeys.SHOW_RECENTLY_WATCHED);
+  }
+
+  setShowRecentlyWatched(show: boolean): void {
+    mainStorage.setBool(SettingsKeys.SHOW_RECENTLY_WATCHED, show);
   }
 
   isHapticFeedbackEnabled(): boolean {
