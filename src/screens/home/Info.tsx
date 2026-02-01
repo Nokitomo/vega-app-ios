@@ -127,6 +127,16 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     return meta?.description || info?.synopsis || t('No synopsis available');
   }, [providerValue, meta?.description, info?.synopsis, t]);
 
+  const badgeYear = useMemo(
+    () => meta?.year || info?.year,
+    [meta?.year, info?.year],
+  );
+  const badgeRuntime = useMemo(
+    () => meta?.runtime || info?.runtime,
+    [meta?.runtime, info?.runtime],
+  );
+  const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
+
   const displayTitle = useMemo(() => {
     if (meta?.name) {
       return meta.name;
@@ -195,6 +205,22 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       return key ? t(key) : genre;
     });
   }, [info?.genres, info?.tagKeys, t]);
+  const badgeGenres = useMemo(() => {
+    if (meta?.genres && meta.genres.length > 0) {
+      return meta.genres.slice(0, 2);
+    }
+    if (localizedGenres.length > 0) {
+      return localizedGenres.slice(0, 2);
+    }
+    return [];
+  }, [meta?.genres, localizedGenres]);
+  const showInfoDetails = useMemo(
+    () =>
+      !!info?.studio ||
+      (info?.genres && info.genres.length > 0) ||
+      (showProviderFallback && (!!info?.country || !!info?.director)),
+    [info?.studio, info?.genres, showProviderFallback, info?.country, info?.director],
+  );
   const infoStack = route.params?.infoStack ?? [];
   const showInfoBack = infoStack.length > 0;
 
@@ -372,17 +398,17 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                 <View className="p-4 bg-black">
                   <View className="flex-row gap-x-3 gap-y-1 flex-wrap items-center mb-4">
                     {/* badges */}
-                    {meta?.year && (
+                    {badgeYear && (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        {meta?.year}
+                        {badgeYear}
                       </Text>
                     )}
-                    {meta?.runtime && (
+                    {badgeRuntime && (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        {meta?.runtime}
+                        {badgeRuntime}
                       </Text>
                     )}
-                    {meta?.genres?.slice(0, 2).map((genre: string) => (
+                    {badgeGenres.map((genre: string) => (
                       <Text
                         key={genre}
                         className="text-white text-xs bg-tertiary px-2 rounded-md">
@@ -585,7 +611,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       )}
                     </Text>
                   </SkeletonLoader>
-                  {info?.studio || (info?.genres && info.genres.length > 0) ? (
+                  {showInfoDetails ? (
                     <View className="mt-2">
                       {info?.studio ? (
                         <Text className="text-gray-400 text-xs">
@@ -597,6 +623,16 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                           {t('Genres: {{list}}', {
                             list: localizedGenres.join(' · '),
                           })}
+                        </Text>
+                      ) : null}
+                      {showProviderFallback && info?.country ? (
+                        <Text className="text-gray-400 text-xs mt-1">
+                          {t('Country: {{name}}', {name: info.country})}
+                        </Text>
+                      ) : null}
+                      {showProviderFallback && info?.director ? (
+                        <Text className="text-gray-400 text-xs mt-1">
+                          {t('Director: {{name}}', {name: info.director})}
                         </Text>
                       ) : null}
                     </View>
