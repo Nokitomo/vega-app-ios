@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback} from 'react';
+import React, {useState, useMemo, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   TextInput,
 } from 'react-native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
@@ -25,9 +25,16 @@ import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {EpisodeLink, Link} from '../lib/providers/types';
 import {RootStackParamList} from '../App';
 import Downloader from './Downloader';
-import {cacheStorage, mainStorage, settingsStorage} from '../lib/storage';
+import {
+  cacheStorage,
+  mainStorage,
+  settingsStorage,
+  watchHistoryStorage,
+} from '../lib/storage';
 import {ifExists} from '../lib/file/ifExists';
 import {useEpisodes, useStreamData} from '../lib/hooks/useEpisodes';
+import {extensionManager} from '../lib/services/ExtensionManager';
+import {providerManager} from '../lib/services/ProviderManager';
 import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
 import {useTranslation} from 'react-i18next';
@@ -39,6 +46,7 @@ interface SeasonListProps {
     poster?: string;
     background?: string;
   };
+  type: string;
   metaTitle: string;
   providerValue: string;
   refreshing?: boolean;
@@ -56,6 +64,7 @@ interface PlayHandlerProps {
   secondaryTitle?: string;
   seasonTitle: string;
   episodeData: EpisodeLink[] | Link['directLinks'];
+  seasonEpisodesLink?: string;
 }
 
 interface StickyMenuState {
@@ -64,9 +73,128 @@ interface StickyMenuState {
   type?: string;
 }
 
+interface ResumeProgress {
+  currentTime: number;
+  duration?: number;
+  episodeTitle?: string;
+  episodeLink?: string;
+  seasonTitle?: string;
+  seasonEpisodesLink?: string;
+}
+
+interface PendingPlay {
+  isResume: boolean;
+  episodeNumber?: number;
+  episodeTitle?: string;
+  episodeLink?: string;
+  seasonEpisodesLink?: string;
+}
+
+type PlayableItem = {
+  title?: string;
+  link?: string;
+};
+
+const formatResumeTime = (seconds: number) => {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainingSeconds = safeSeconds % 60;
+  const pad = (value: number) => value.toString().padStart(2, '0');
+
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+  }
+
+  return `${pad(minutes)}:${pad(remainingSeconds)}`;
+};
+
+const areResumeProgressEqual = (
+  left: ResumeProgress | null,
+  right: ResumeProgress | null,
+) => {
+  if (!left && !right) {
+    return true;
+  }
+  if (!left || !right) {
+    return false;
+  }
+  return (
+    left.currentTime === right.currentTime &&
+    left.duration === right.duration &&
+    left.episodeTitle === right.episodeTitle &&
+    left.episodeLink === right.episodeLink &&
+    left.seasonTitle === right.seasonTitle &&
+    left.seasonEpisodesLink === right.seasonEpisodesLink
+  );
+};
+
+const areProgressMapsEqual = (
+  left: Record<string, number>,
+  right: Record<string, number>,
+) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+  return leftKeys.every(key => left[key] === right[key]);
+};
+
+const normalizeTitle = (title?: string) => (title || '').trim().toLowerCase();
+
+const getEpisodeNumber = (title?: string) => {
+  if (!title) {
+    return undefined;
+  }
+
+  const match = title.match(/\d+/);
+  if (!match) {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(match[0], 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parseEpisodeRange = (episodesLink?: string) => {
+  if (!episodesLink) {
+    return null;
+  }
+
+  const parts = episodesLink.split('|');
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const start = Number.parseInt(parts[1], 10);
+  const end = Number.parseInt(parts[2], 10);
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start <= 0 ||
+    end < start
+  ) {
+    return null;
+  }
+
+  return {start, end};
+};
+
+const findSeasonForEpisodeNumber = (linkList: Link[], episodeNumber: number) =>
+  linkList.find(item => {
+    const range = parseEpisodeRange(item.episodesLink);
+    if (!range) {
+      return false;
+    }
+    return episodeNumber >= range.start && episodeNumber <= range.end;
+  });
+
 const SeasonList: React.FC<SeasonListProps> = ({
   LinkList,
   poster,
+  type,
   metaTitle,
   providerValue,
   refreshing: _refreshing,
@@ -86,13 +214,58 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }) => (item?.titleKey ? t(item.titleKey, item.titleParams) : item?.title),
     [t],
   );
+  const getEpisodeLabel = useCallback(
+    (episodeTitle?: string) => {
+      if (!episodeTitle) {
+        return undefined;
+      }
+
+      const match = episodeTitle.match(/\d+/);
+      if (!match) {
+        return undefined;
+      }
+
+      return t('Ep. {{number}}', {number: match[0]});
+    },
+    [t],
+  );
+
+  // Early return if no LinkList provided
+  if (!LinkList || LinkList.length === 0) {
+    return (
+      <View className="p-4">
+        <Text className="text-white text-center">
+          {t('No Streams Available')}
+        </Text>
+      </View>
+    );
+  }
 
   // Memoized initial active season
   const [activeSeason, setActiveSeason] = useState<Link>(() => {
+    if (!LinkList || LinkList.length === 0) {
+      return {} as Link;
+    }
+
     const cached = cacheStorage.getString(
       `ActiveSeason${metaTitle + providerValue}`,
     );
-    return cached ? JSON.parse(cached) : LinkList[0];
+
+    if (cached) {
+      try {
+        const parsedSeason = JSON.parse(cached);
+        const seasonExists = LinkList.find(
+          link => link.title === parsedSeason.title,
+        );
+        if (seasonExists) {
+          return parsedSeason;
+        }
+      } catch (error) {
+        console.warn('Failed to parse cached season:', error);
+      }
+    }
+
+    return LinkList[0];
   });
   const linkListWithDisplayTitle = useMemo(
     () =>
@@ -160,15 +333,45 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const [showServerModal, setShowServerModal] = useState<boolean>(false);
   const [externalPlayerStreams, setExternalPlayerStreams] = useState<any[]>([]);
   const [isLoadingStreams, setIsLoadingStreams] = useState<boolean>(false);
+  const [resumeProgress, setResumeProgress] = useState<ResumeProgress | null>(
+    null,
+  );
+  const [episodeProgressMap, setEpisodeProgressMap] = useState<
+    Record<string, number>
+  >({});
+  const [pendingPlay, setPendingPlay] = useState<PendingPlay | null>(null);
+
+  const normalizedEpisodes = useMemo(() => {
+    if (!episodeList || !Array.isArray(episodeList)) {
+      return [];
+    }
+
+    return episodeList.filter(
+      episode => episode && episode.title && episode.link,
+    );
+  }, [episodeList]);
+
+  const normalizedDirectLinks = useMemo(() => {
+    if (
+      !activeSeason?.directLinks ||
+      !Array.isArray(activeSeason.directLinks)
+    ) {
+      return [];
+    }
+
+    return activeSeason.directLinks.filter(
+      link => link && link.title && link.link,
+    );
+  }, [activeSeason?.directLinks]);
 
   // Memoized filtering and sorting logic for episodes
   const filteredAndSortedEpisodes = useMemo(() => {
-    let episodes = episodeList;
+    let episodes = normalizedEpisodes;
 
     // Apply search filter
     if (searchText.trim()) {
       episodes = episodes.filter(episode =>
-        episode.title.toLowerCase().includes(searchText.toLowerCase()),
+        episode?.title?.toLowerCase().includes(searchText.toLowerCase()),
       );
     }
 
@@ -182,16 +385,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
   // Memoized direct links processing
   const filteredAndSortedDirectLinks = useMemo(() => {
-    if (!activeSeason?.directLinks) {
-      return [];
-    }
-
-    let links = activeSeason.directLinks;
+    let links = normalizedDirectLinks;
 
     // Apply search filter
     if (searchText.trim()) {
       links = links.filter(link =>
-        link.title.toLowerCase().includes(searchText.toLowerCase()),
+        link?.title?.toLowerCase().includes(searchText.toLowerCase()),
       );
     }
 
@@ -206,11 +405,27 @@ const SeasonList: React.FC<SeasonListProps> = ({
   // Memoized title alignment
   const titleAlignment = useMemo(() => {
     const hasLongTitles =
-      filteredAndSortedEpisodes.some(ep => ep.title.length > 27) ||
-      filteredAndSortedDirectLinks.some(link => link.title.length > 27);
+      filteredAndSortedEpisodes.some(ep => ep?.title && ep.title.length > 27) ||
+      filteredAndSortedDirectLinks.some(
+        link => link?.title && link.title.length > 27,
+      );
 
     return hasLongTitles ? 'justify-start' : 'justify-center';
   }, [filteredAndSortedEpisodes, filteredAndSortedDirectLinks]);
+
+  const sortedEpisodes = useMemo(() => {
+    if (sortOrder === 'desc') {
+      return [...normalizedEpisodes].reverse();
+    }
+    return normalizedEpisodes;
+  }, [normalizedEpisodes, sortOrder]);
+
+  const sortedDirectLinks = useMemo(() => {
+    if (sortOrder === 'desc') {
+      return [...normalizedDirectLinks].reverse();
+    }
+    return normalizedDirectLinks;
+  }, [normalizedDirectLinks, sortOrder]);
 
   // Memoized completion checker
   const isCompleted = useCallback((link: string) => {
@@ -239,14 +454,116 @@ const SeasonList: React.FC<SeasonListProps> = ({
     [metaTitle, providerValue],
   );
 
+  const getProgressPercent = useCallback((link: string) => {
+    if (!link) {
+      return 0;
+    }
+
+    try {
+      const cachedProgress = cacheStorage.getString(link);
+      if (!cachedProgress) {
+        return 0;
+      }
+
+      const parsed = JSON.parse(cachedProgress);
+      if (!parsed?.position || !parsed?.duration) {
+        return 0;
+      }
+
+      const percentage = (parsed.position / parsed.duration) * 100;
+      return Math.min(Math.max(percentage, 0), 100);
+    } catch (error) {
+      console.error('Error reading episode progress:', error);
+      return 0;
+    }
+  }, []);
+
+  const refreshProgressData = useCallback(() => {
+    const progressKey = `watch_history_progress_${routeParams.link}`;
+    const storedProgress = mainStorage.getString(progressKey);
+    let nextResume: ResumeProgress | null = null;
+    const hasHistory = watchHistoryStorage
+      .getWatchHistory()
+      .some(item => item.link === routeParams.link);
+
+    if (!hasHistory) {
+      setResumeProgress(prev =>
+        areResumeProgressEqual(prev, null) ? prev : null,
+      );
+      setEpisodeProgressMap(prev =>
+        areProgressMapsEqual(prev, {}) ? prev : {},
+      );
+      return;
+    }
+
+    if (!storedProgress) {
+      nextResume = null;
+    } else {
+      try {
+        const parsed = JSON.parse(storedProgress);
+        if (parsed?.currentTime > 0) {
+          nextResume = {
+            currentTime: parsed.currentTime,
+            duration: parsed.duration,
+            episodeTitle: parsed.episodeTitle,
+            episodeLink: parsed.episodeLink,
+            seasonTitle: parsed.seasonTitle || undefined,
+            seasonEpisodesLink: parsed.seasonEpisodesLink || undefined,
+          };
+        } else {
+          nextResume = null;
+        }
+      } catch (error) {
+        console.error('Error parsing resume progress:', error);
+        nextResume = null;
+      }
+    }
+
+    setResumeProgress(prev =>
+      areResumeProgressEqual(prev, nextResume) ? prev : nextResume,
+    );
+
+    const progressMap: Record<string, number> = {};
+    const allEpisodes = Array.isArray(episodeList) ? episodeList : [];
+    const allDirectLinks = Array.isArray(activeSeason?.directLinks)
+      ? activeSeason?.directLinks
+      : [];
+
+    [...allEpisodes, ...allDirectLinks].forEach(item => {
+      if (!item?.link) {
+        return;
+      }
+
+      const percentage = getProgressPercent(item.link);
+      if (percentage > 0) {
+        progressMap[item.link] = percentage;
+      }
+    });
+
+    setEpisodeProgressMap(prev =>
+      areProgressMapsEqual(prev, progressMap) ? prev : progressMap,
+    );
+  }, [routeParams.link, episodeList, activeSeason?.directLinks, getProgressPercent]);
+
+  useEffect(() => {
+    refreshProgressData();
+  }, [refreshProgressData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProgressData();
+      return () => {};
+    }, [refreshProgressData]),
+  );
+
   // Memoized external player handler
   const handleExternalPlayer = useCallback(
-    async (link: string, type: string) => {
+    async (link: string, streamType: string) => {
       setVlcLoading(true);
       setIsLoadingStreams(true);
 
       try {
-        const streams = await fetchStreams(link, type, providerValue);
+        const streams = await fetchStreams(link, streamType, providerValue);
 
         if (!streams || streams.length === 0) {
           ToastAndroid.show(t('No stream available'), ToastAndroid.SHORT);
@@ -299,11 +616,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const playHandler = useCallback(
     async ({
       linkIndex,
-      type,
+      type: contentType,
       primaryTitle,
       secondaryTitle,
       seasonTitle,
       episodeData,
+      seasonEpisodesLink,
     }: PlayHandlerProps) => {
       addItem({
         id: routeParams.link,
@@ -343,16 +661,17 @@ const SeasonList: React.FC<SeasonListProps> = ({
           );
           return;
         }
-        handleExternalPlayer(link, type);
+        handleExternalPlayer(link, contentType);
         return;
       }
 
       navigation.navigate('Player', {
         linkIndex,
         episodeList: episodeData,
-        type: type,
+        type: contentType,
         primaryTitle: primaryTitle,
         secondaryTitle: seasonTitle,
+        seasonEpisodesLink: seasonEpisodesLink,
         poster: poster,
         providerValue: providerValue,
         infoUrl: routeParams.link,
@@ -371,14 +690,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
   // Memoized long press handler
   const onLongPressHandler = useCallback(
-    (active: boolean, link: string, type?: string) => {
+    (active: boolean, link: string, streamType?: string) => {
       if (settingsStorage.isHapticFeedbackEnabled()) {
         RNReactNativeHapticFeedback.trigger('effectTick', {
           enableVibrateFallback: true,
           ignoreAndroidSystemSettings: false,
         });
       }
-      setStickyMenu({active: active, link: link, type: type});
+      setStickyMenu({active: active, link: link, type: streamType});
     },
     [],
   );
@@ -419,9 +738,260 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
   }, [stickyMenu.link, stickyMenu.type, handleExternalPlayer]);
 
+  const getPlayableList = useCallback(() => {
+    if (sortedEpisodes.length > 0) {
+      return sortedEpisodes;
+    }
+    if (sortedDirectLinks.length > 0) {
+      return sortedDirectLinks;
+    }
+    return [];
+  }, [sortedEpisodes, sortedDirectLinks]);
+
+  const resolveEpisodeIndex = useCallback(
+    (list: PlayableItem[], target: PendingPlay) => {
+      if (target.episodeLink) {
+        const byLink = list.findIndex(item => item.link === target.episodeLink);
+        if (byLink >= 0) {
+          return byLink;
+        }
+      }
+
+      if (target.episodeTitle) {
+        const normalizedTitle = normalizeTitle(target.episodeTitle);
+        if (normalizedTitle) {
+          const byTitle = list.findIndex(
+            item => normalizeTitle(item.title) === normalizedTitle,
+          );
+          if (byTitle >= 0) {
+            return byTitle;
+          }
+        }
+      }
+
+      if (target.episodeNumber != null) {
+        const byNumber = list.findIndex(
+          item => getEpisodeNumber(item.title) === target.episodeNumber,
+        );
+        if (byNumber >= 0) {
+          return byNumber;
+        }
+      }
+
+      return -1;
+    },
+    [],
+  );
+
+  const prefetchEpisodesForLink = useCallback(
+    async (episodesLink?: string) => {
+      if (!episodesLink || cacheStorage.getString(episodesLink)) {
+        return;
+      }
+
+      const hasEpisodesModule =
+        extensionManager.getProviderModules(providerValue)?.modules.episodes;
+      if (!hasEpisodesModule) {
+        return;
+      }
+
+      try {
+        const episodes = await providerManager.getEpisodes({
+          url: episodesLink,
+          providerValue,
+        });
+
+        if (episodes && episodes.length > 0) {
+          cacheStorage.setString(episodesLink, JSON.stringify(episodes));
+        }
+      } catch (error) {
+        console.error('Error prefetching episodes:', error);
+      }
+    },
+    [providerValue],
+  );
+
+  useEffect(() => {
+    if (!resumeProgress || LinkList.length === 0) {
+      return;
+    }
+
+    if (resumeProgress.seasonEpisodesLink) {
+      if (resumeProgress.seasonEpisodesLink === activeSeason?.episodesLink) {
+        return;
+      }
+      prefetchEpisodesForLink(resumeProgress.seasonEpisodesLink);
+      return;
+    }
+
+    const targetNumber = resumeProgress.episodeTitle
+      ? getEpisodeNumber(resumeProgress.episodeTitle)
+      : 1;
+    if (!targetNumber) {
+      return;
+    }
+
+    const targetSeason = findSeasonForEpisodeNumber(LinkList, targetNumber);
+    if (!targetSeason?.episodesLink) {
+      return;
+    }
+
+    if (targetSeason.episodesLink === activeSeason?.episodesLink) {
+      return;
+    }
+
+    prefetchEpisodesForLink(targetSeason.episodesLink);
+  }, [
+    LinkList,
+    resumeProgress,
+    activeSeason?.episodesLink,
+    prefetchEpisodesForLink,
+  ]);
+
+  useEffect(() => {
+    if (!pendingPlay || episodeLoading) {
+      return;
+    }
+
+    if (
+      pendingPlay.seasonEpisodesLink &&
+      pendingPlay.seasonEpisodesLink !== activeSeason?.episodesLink
+    ) {
+      return;
+    }
+
+    const resumeList = getPlayableList();
+    if (!resumeList || resumeList.length === 0) {
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
+      setPendingPlay(null);
+      return;
+    }
+
+    const resumeIndex = resolveEpisodeIndex(resumeList, pendingPlay);
+    if (resumeIndex < 0) {
+      ToastAndroid.show(t('Episode not available'), ToastAndroid.SHORT);
+      setPendingPlay(null);
+      return;
+    }
+
+    const resumeItem = resumeList[resumeIndex];
+    playHandler({
+      linkIndex: resumeIndex,
+      type: type,
+      primaryTitle: metaTitle,
+      secondaryTitle: resumeItem.title,
+      seasonTitle: activeSeason?.title || '',
+      episodeData: resumeList,
+    });
+    setPendingPlay(null);
+  }, [
+    pendingPlay,
+    episodeLoading,
+    activeSeason?.episodesLink,
+    activeSeason?.title,
+    getPlayableList,
+    resolveEpisodeIndex,
+    playHandler,
+    type,
+    metaTitle,
+  ]);
+
+  const handleResume = useCallback(() => {
+    const isResume = !!resumeProgress;
+    const targetEpisodeNumber = isResume
+      ? getEpisodeNumber(resumeProgress?.episodeTitle)
+      : 1;
+
+    const target: PendingPlay = {
+      isResume,
+      episodeNumber: targetEpisodeNumber,
+      episodeTitle: resumeProgress?.episodeTitle,
+      episodeLink: resumeProgress?.episodeLink,
+    };
+
+    let targetSeason: Link | undefined;
+
+    if (isResume) {
+      if (resumeProgress?.seasonEpisodesLink) {
+        targetSeason = LinkList.find(
+          item => item.episodesLink === resumeProgress.seasonEpisodesLink,
+        );
+      }
+
+      if (!targetSeason && resumeProgress?.seasonTitle) {
+        const normalizedSeason = normalizeTitle(resumeProgress.seasonTitle);
+        if (normalizedSeason) {
+          targetSeason = LinkList.find(
+            item => normalizeTitle(item.title) === normalizedSeason,
+          );
+        }
+      }
+
+      if (!targetSeason && targetEpisodeNumber != null) {
+        targetSeason = findSeasonForEpisodeNumber(
+          LinkList,
+          targetEpisodeNumber,
+        );
+      }
+    } else if (LinkList.length > 0) {
+      targetSeason = LinkList[0];
+    }
+
+    if (targetSeason && !isSameSeason(activeSeason, targetSeason)) {
+      setPendingPlay({
+        ...target,
+        seasonEpisodesLink: targetSeason.episodesLink,
+      });
+      handleSeasonChange(targetSeason);
+      return;
+    }
+
+    const resumeList = getPlayableList();
+    if (!resumeList || resumeList.length === 0) {
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
+      return;
+    }
+
+    const resumeIndex = resolveEpisodeIndex(resumeList, target);
+    if (resumeIndex < 0) {
+      if (isResume) {
+        ToastAndroid.show(t('Episode not available'), ToastAndroid.SHORT);
+        return;
+      }
+      ToastAndroid.show(t('No episodes available'), ToastAndroid.SHORT);
+      return;
+    }
+
+    const resumeItem = resumeList[resumeIndex];
+
+    playHandler({
+      linkIndex: resumeIndex,
+      type: type,
+      primaryTitle: metaTitle,
+      secondaryTitle: resumeItem.title,
+      seasonTitle: activeSeason?.title || '',
+      episodeData: resumeList,
+    });
+  }, [
+    resumeProgress,
+    LinkList,
+    getPlayableList,
+    resolveEpisodeIndex,
+    playHandler,
+    type,
+    metaTitle,
+    activeSeason,
+    handleSeasonChange,
+    isSameSeason,
+  ]);
+
   // Memoized episode render item
   const renderEpisodeItem = useCallback(
     ({item, index}: {item: EpisodeLink; index: number}) => {
+      if (!item || !item.link || !item.title) {
+        console.warn('Invalid episode item at index', index, item);
+        return null;
+      }
       const episodeTitle = item.titleKey
         ? t(item.titleKey, item.titleParams)
         : item.title;
@@ -441,25 +1011,44 @@ const SeasonList: React.FC<SeasonListProps> = ({
               onPress={() =>
                 playHandler({
                   linkIndex: index,
-                  type: 'series',
+                  type: type,
                   primaryTitle: metaTitle,
                   secondaryTitle: item.title,
-                  seasonTitle: activeSeason.title,
+                  seasonTitle: activeSeason?.title || '',
                   episodeData: filteredAndSortedEpisodes,
+                  seasonEpisodesLink: activeSeason?.episodesLink,
                 })
               }
-              onLongPress={() => onLongPressHandler(true, item.link, 'series')}>
+              onLongPress={() =>
+                onLongPressHandler(true, item.link, item?.type || 'series')
+              }>
               <Ionicons name="play-circle" size={28} color={primary} />
               <Text className="text-white">
                 {episodeTitle.length > 30
                   ? episodeTitle.slice(0, 30) + '...'
                   : episodeTitle}
               </Text>
+              {episodeProgressMap[item.link] ? (
+                <View
+                  className="absolute bottom-0 left-0 right-0 h-1"
+                  style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      height: '100%',
+                      width: `${episodeProgressMap[item.link]}%`,
+                      backgroundColor: primary,
+                    }}
+                  />
+                </View>
+              ) : null}
             </TouchableOpacity>
             <Downloader
               providerValue={providerValue}
               link={item.link}
-              type="series"
+              type={type}
               title={
                 metaTitle.length > 30
                   ? metaTitle.slice(0, 30) + '... ' + item.title
@@ -481,10 +1070,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
       titleAlignment,
       playHandler,
       metaTitle,
-      activeSeason.title,
+      activeSeason?.title,
+      activeSeason?.episodesLink,
       filteredAndSortedEpisodes,
       onLongPressHandler,
       primary,
+      episodeProgressMap,
+      type,
       providerValue,
       t,
     ],
@@ -493,6 +1085,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
   // Memoized direct link render item
   const renderDirectLinkItem = useCallback(
     ({item, index}: {item: any; index: number}) => {
+      if (!item || !item.link || !item.title) {
+        console.warn('Invalid direct link item at index', index, item);
+        return null;
+      }
       const directTitle = item.titleKey
         ? t(item.titleKey, item.titleParams)
         : item.title;
@@ -512,11 +1108,12 @@ const SeasonList: React.FC<SeasonListProps> = ({
               onPress={() =>
                 playHandler({
                   linkIndex: index,
-                  type: item.type || 'series',
+                  type: type,
                   primaryTitle: metaTitle,
                   secondaryTitle: item.title,
-                  seasonTitle: activeSeason.title,
+                  seasonTitle: activeSeason?.title || '',
                   episodeData: filteredAndSortedDirectLinks,
+                  seasonEpisodesLink: activeSeason?.episodesLink,
                 })
               }
               onLongPress={() => onLongPressHandler(true, item.link, 'series')}>
@@ -529,11 +1126,27 @@ const SeasonList: React.FC<SeasonListProps> = ({
                     : directTitle
                   : t('Play')}
               </Text>
+              {episodeProgressMap[item.link] ? (
+                <View
+                  className="absolute bottom-0 left-0 right-0 h-1"
+                  style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                  <View
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      height: '100%',
+                      width: `${episodeProgressMap[item.link]}%`,
+                      backgroundColor: primary,
+                    }}
+                  />
+                </View>
+              ) : null}
             </TouchableOpacity>
             <Downloader
               providerValue={providerValue}
               link={item.link}
-              type={item.type || 'series'}
+              type={type}
               title={
                 metaTitle.length > 30
                   ? metaTitle.slice(0, 30) + '... ' + item.title
@@ -555,11 +1168,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
       titleAlignment,
       playHandler,
       metaTitle,
-      activeSeason.title,
+      activeSeason?.title,
+      activeSeason?.episodesLink,
       activeSeason?.directLinks,
       filteredAndSortedDirectLinks,
       onLongPressHandler,
       primary,
+      episodeProgressMap,
+      type,
       providerValue,
       t,
     ],
@@ -741,7 +1357,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
       {/* Search and Sort Controls */}
       {(filteredAndSortedEpisodes.length > 8 ||
-        filteredAndSortedDirectLinks.length > 8) && (
+        filteredAndSortedDirectLinks.length > 8 ||
+        searchText.trim().length > 0) && (
         <View className="flex-row justify-between items-center mt-2">
           <TextInput
             placeholder={t('Search...')}
@@ -760,6 +1377,40 @@ const SeasonList: React.FC<SeasonListProps> = ({
           </TouchableOpacity>
         </View>
       )}
+
+      {(resumeProgress?.currentTime != null ||
+        filteredAndSortedEpisodes.length > 0 ||
+        filteredAndSortedDirectLinks.length > 0) ? (
+        <View className="mt-3 mb-2">
+          <TouchableOpacity
+            onPress={handleResume}
+            className="bg-tertiary/60 rounded-md px-3 py-2 flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <MaterialCommunityIcons
+                name="play-circle"
+                size={20}
+                color={primary}
+              />
+              <Text className="text-white font-semibold">
+                {resumeProgress?.currentTime ? t('Resume') : t('Play')}
+              </Text>
+              {resumeProgress?.episodeTitle &&
+              getEpisodeLabel(resumeProgress.episodeTitle) ? (
+                <Text className="text-white/80 text-xs">
+                  {`- ${getEpisodeLabel(resumeProgress.episodeTitle)}`}
+                </Text>
+              ) : (
+                <Text className="text-white/80 text-xs">
+                  {`- ${t('Ep. {{number}}', {number: 1})}`}
+                </Text>
+              )}
+            </View>
+            <Text className="text-white/80 text-xs">
+              {formatResumeTime(resumeProgress?.currentTime ?? 0)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {/* Episode/Direct Links List */}
       <View className="flex-row flex-wrap justify-center gap-x-2 gap-y-2">
