@@ -222,6 +222,8 @@
   "read more": "read more",
   "Studio: {{name}}": "Studio: {{name}}",
   "Genres: {{list}}": "Genres: {{list}}",
+  "Country: {{name}}": "Country: {{name}}",
+  "Director: {{name}}": "Director: {{name}}",
   "Related": "Related",
   "No related items available.": "No related items available.",
   "No more episodes": "No more episodes",
