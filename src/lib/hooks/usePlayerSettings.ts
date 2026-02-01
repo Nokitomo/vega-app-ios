@@ -97,6 +97,7 @@ export const usePlayerProgress = ({
             episodeTitle: activeEpisode?.title || routeParams?.secondaryTitle || '',
             episodeLink: activeEpisode?.link || '',
             seasonTitle: routeParams?.secondaryTitle || '',
+            seasonEpisodesLink: routeParams?.seasonEpisodesLink || '',
             updatedAt: Date.now(),
           };
 
