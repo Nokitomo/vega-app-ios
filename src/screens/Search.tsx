@@ -229,6 +229,7 @@ const Search = () => {
                     placeholderTextColor="#666"
                     value={searchText}
                     onChangeText={setSearchText}
+                    onPressIn={() => setNavBarSuspended(true)}
                     onFocus={() => {
                       setNavBarSuspended(true);
                       setIsFocused(true);
