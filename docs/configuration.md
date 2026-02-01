@@ -4,7 +4,7 @@
 File: app.config.js
 - newArchEnabled: false (disabilitato per stabilita).
 - android.package: com.vega
-- plugins: custom Android (android-native-config, with-android-notification-icons, with-android-release-gradle, with-android-signing, with-android-okhttp), react-native-video, react-native-edge-to-edge, react-native-bootsplash, expo-build-properties.
+- plugins: custom Android (android-native-config, with-android-notification-icons, with-android-release-gradle, with-android-signing, with-android-okhttp), react-native-video, react-native-edge-to-edge, react-native-bootsplash, expo-build-properties, expo-dev-client.
 - firebase: @react-native-firebase/app e crashlytics sono opzionali. In Gradle i plugin Firebase sono commentati per default; per abilitarli serve decommentare i classpath in `android/build.gradle`, gli apply plugin in `android/app/build.gradle` e aggiungere i file `google-services.json`/`GoogleService-Info.plist`.
 - android: minSdkVersion 24, edgeToEdgeEnabled true, supportsPictureInPicture true, launchMode singleTask, queries per http/https/vlc.
 
@@ -14,7 +14,7 @@ File: app.config.js
 ## Metro
 File: metro.config.js
 - usa expo/metro-config
-- minifier con drop_console e opzioni unsafe.
+- integra NativeWind via withNativeWind con input `src/global.css`.
 
 ## Babel
 File: babel.config.js
