@@ -1020,7 +1020,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 })
               }
               onLongPress={() =>
-                onLongPressHandler(true, item.link, item?.type || 'series')
+                onLongPressHandler(true, item.link, 'series')
               }>
               <Ionicons name="play-circle" size={28} color={primary} />
               <Text className="text-white">
