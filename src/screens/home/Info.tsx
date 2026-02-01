@@ -183,6 +183,15 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       return key ? t(key) : tag;
     });
   }, [info?.tags, info?.tagKeys, t]);
+  const localizedGenres = useMemo(() => {
+    if (!info?.genres || info.genres.length === 0) {
+      return [];
+    }
+    return info.genres.map(genre => {
+      const key = info.tagKeys?.[genre];
+      return key ? t(key) : genre;
+    });
+  }, [info?.genres, info?.tagKeys, t]);
   const infoStack = route.params?.infoStack ?? [];
   const showInfoBack = infoStack.length > 0;
 
@@ -583,7 +592,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       {info?.genres && info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
                           {t('Genres: {{list}}', {
-                            list: info.genres.join(' · '),
+                            list: localizedGenres.join(' · '),
                           })}
                         </Text>
                       ) : null}

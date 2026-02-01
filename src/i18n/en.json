@@ -333,5 +333,12 @@
   "Spring": "Spring",
   "Summer": "Summer",
   "Autumn": "Autumn",
-  "Episodes {{start}}-{{end}}": "Episodes {{start}}-{{end}}"
+  "Episodes {{start}}-{{end}}": "Episodes {{start}}-{{end}}",
+  "Season {{number}}": "Season {{number}}",
+  "Action": "Action",
+  "Animation": "Animation",
+  "Comedy": "Comedy",
+  "Drama": "Drama",
+  "Science Fiction": "Science Fiction",
+  "Thriller": "Thriller"
 }
