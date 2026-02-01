@@ -199,7 +199,11 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer}: HeroProps) => {
         )}
 
         {!searchActive && (
-          <Pressable onPress={() => setSearchActive(true)}>
+          <Pressable
+            onPress={() => {
+              setNavBarSuspended(true);
+              setSearchActive(true);
+            }}>
             <Feather name="search" size={24} color="white" />
           </Pressable>
         )}
