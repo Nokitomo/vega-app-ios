@@ -674,7 +674,6 @@ const AppContent = () => {
             onReady={async () => {
               // Hide bootsplash
               await BootSplash.hide({fade: true});
-              applyAndroidNavBarState();
               applyOrientationForRoute(
                 navigationRef.getCurrentRoute()?.name,
               );
@@ -695,7 +694,6 @@ const AppContent = () => {
               }
             }}
             onStateChange={async state => {
-              applyAndroidNavBarState();
               applyOrientationForRoute(
                 navigationRef.getCurrentRoute()?.name,
               );
