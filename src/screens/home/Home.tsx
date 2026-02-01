@@ -6,7 +6,7 @@ import {
   Text,
 } from 'react-native';
 import Slider from '../../components/Slider';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import HeroOptimized from '../../components/Hero';
 import {cacheStorage, mainStorage} from '../../lib/storage';
 import useContentStore from '../../lib/zustand/contentStore';
@@ -14,12 +14,13 @@ import useHeroStore from '../../lib/zustand/herostore';
 import {
   useHomePageData,
   getRandomHeroPost,
+  clearHeroCache,
 } from '../../lib/hooks/useHomePageData';
 import useThemeStore from '../../lib/zustand/themeStore';
 import ProviderDrawer from '../../components/ProviderDrawer';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '../../App';
-import DrawerLayout from 'react-native-gesture-handler/DrawerLayout';
+import {Drawer} from 'react-native-drawer-layout';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import ContinueWatching from '../../components/ContinueWatching';
 import {providerManager} from '../../lib/services/ProviderManager';
@@ -34,8 +35,7 @@ const Home = ({}: Props) => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
-  const drawer = useRef<DrawerLayout>(null);
-  const [isDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
 
   // Memoize static values
@@ -79,8 +79,8 @@ const Home = ({}: Props) => {
     if (!homeData || homeData.length === 0) {
       return null;
     }
-    return getRandomHeroPost(homeData);
-  }, [homeData]);
+    return getRandomHeroPost(homeData, provider?.value);
+  }, [homeData, provider?.value]);
 
   // Update hero only when hero post actually changes
   React.useEffect(() => {
@@ -121,13 +121,17 @@ const Home = ({}: Props) => {
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
     try {
+      if (provider?.value) {
+        clearHeroCache(provider.value);
+        cacheStorage.delete(`heroCache:${provider.value}`);
+      }
       await refetch();
     } catch (refreshError) {
       console.error('Error refreshing home data:', refreshError);
     } finally {
       setRefreshNonce(value => value + 1);
     }
-  }, [refetch]);
+  }, [provider?.value, refetch]);
 
   // Memoized loading skeleton
   const loadingSliders = useMemo(() => {
@@ -196,17 +200,19 @@ const Home = ({}: Props) => {
     <QueryErrorBoundary>
       <GestureHandlerRootView style={{flex: 1}}>
         <SafeAreaView className="bg-black flex-1">
-          <DrawerLayout
+          <Drawer
+            open={isDrawerOpen}
+            onOpen={() => setIsDrawerOpen(true)}
+            onClose={() => setIsDrawerOpen(false)}
             drawerPosition="left"
-            drawerWidth={200}
-            drawerLockMode={disableDrawer ? 'locked-closed' : 'unlocked'}
             drawerType="front"
-            edgeWidth={70}
-            useNativeAnimations={false}
-            ref={drawer}
-            drawerBackgroundColor="transparent"
-            renderNavigationView={() =>
-              !disableDrawer && <ProviderDrawer drawerRef={drawer} />
+            drawerStyle={{width: 200, backgroundColor: 'transparent'}}
+            swipeEdgeWidth={disableDrawer ? 0 : 70}
+            swipeEnabled={!disableDrawer}
+            renderDrawerContent={() =>
+              !disableDrawer ? (
+                <ProviderDrawer onClose={() => setIsDrawerOpen(false)} />
+              ) : null
             }>
             <StatusBar
               style="auto"
@@ -230,7 +236,10 @@ const Home = ({}: Props) => {
                   onRefresh={handleRefresh}
                 />
               }>
-              <HeroOptimized drawerRef={drawer} isDrawerOpen={isDrawerOpen} />
+              <HeroOptimized
+                isDrawerOpen={isDrawerOpen}
+                onOpenDrawer={() => setIsDrawerOpen(true)}
+              />
 
               <ContinueWatching />
 
@@ -241,7 +250,7 @@ const Home = ({}: Props) => {
 
               <View className="h-16" />
             </ScrollView>
-          </DrawerLayout>
+          </Drawer>
         </SafeAreaView>
       </GestureHandlerRootView>
     </QueryErrorBoundary>

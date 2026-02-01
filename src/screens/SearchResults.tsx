@@ -59,12 +59,12 @@ const SearchResults = ({route}: Props): React.ReactElement => {
 
   const updateSearchData = useCallback((newData: SearchPageData) => {
     searchDataRef.current = [...searchDataRef.current, newData];
-    setSearchData(prev => [...prev, newData]);
+    setSearchData(searchDataRef.current);
   }, []);
 
   const updateEmptyResults = useCallback((newData: SearchPageData) => {
     emptyResultsRef.current = [...emptyResultsRef.current, newData];
-    setEmptyResults(prev => [...prev, newData]);
+    setEmptyResults(emptyResultsRef.current);
   }, []);
 
   const updateLoading = useCallback(

@@ -55,8 +55,17 @@ export const useHomePageData = ({
   });
 };
 
-// Memoized hero selection with stable reference
-export const getRandomHeroPost = (homeData: HomePageData[]) => {
+// Store hero selection per provider to prevent re-randomization on tab switch
+const heroSelectionCache = new Map<
+  string,
+  {postIndex: number; categoryIndex: number}
+>();
+
+// Memoized hero selection with stable reference - uses cached index to prevent re-randomization
+export const getRandomHeroPost = (
+  homeData: HomePageData[],
+  providerValue?: string,
+) => {
   if (!homeData || homeData.length === 0) {
     return null;
   }
@@ -66,8 +75,29 @@ export const getRandomHeroPost = (homeData: HomePageData[]) => {
     return null;
   }
 
+  const cacheKey = providerValue || 'default';
+  const cached = heroSelectionCache.get(cacheKey);
+
+  // If we have a cached index and it's still valid for this data, use it
+  if (cached && cached.postIndex < lastCategory.Posts.length) {
+    return lastCategory.Posts[cached.postIndex];
+  }
+
   const randomIndex = Math.floor(Math.random() * lastCategory.Posts.length);
+  heroSelectionCache.set(cacheKey, {
+    postIndex: randomIndex,
+    categoryIndex: homeData.length - 1,
+  });
   return lastCategory.Posts[randomIndex];
+};
+
+// Function to clear hero cache when explicitly refreshing
+export const clearHeroCache = (providerValue?: string) => {
+  if (providerValue) {
+    heroSelectionCache.delete(providerValue);
+  } else {
+    heroSelectionCache.clear();
+  }
 };
 
 // New hook for hero metadata with React Query

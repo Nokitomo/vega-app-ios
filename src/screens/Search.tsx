@@ -1,5 +1,5 @@
 import {View, Text, FlatList} from 'react-native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, memo} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {SearchStackParamList} from '../App';
@@ -21,6 +21,93 @@ import {useTranslation} from 'react-i18next';
 
 const MAX_VISIBLE_RESULTS = 15; // Limit number of animated items to prevent excessive callbacks
 const MAX_HISTORY_ITEMS = 30; // Maximum number of history items to store
+
+type TranslateFn = (
+  key: string,
+  options?: Record<string, string | number>,
+) => string;
+
+// Memoized search result item to prevent unnecessary re-renders
+const SearchResultItem = memo(
+  ({
+    item,
+    onPress,
+    t,
+  }: {
+    item: OMDBResult;
+    onPress: (title: string) => void;
+    t: TranslateFn;
+  }) => {
+    const handlePress = useCallback(() => {
+      onPress(item.Title);
+    }, [item.Title, onPress]);
+
+    return (
+      <View className="px-4">
+        <TouchableOpacity
+          className="py-3 border-b border-white/10"
+          onPress={handlePress}>
+          <View className="flex-row items-center">
+            <MaterialIcons
+              name="search"
+              size={20}
+              color="#666"
+              style={{marginRight: 12}}
+            />
+            <View>
+              <Text className="text-white text-base">{item.Title}</Text>
+              <Text className="text-white/50 text-xs">
+                {item.Type === 'series' ? t('TV Show') : t('Movie')} •{' '}
+                {item.Year}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  },
+);
+
+// Memoized history item component
+const HistoryItem = memo(
+  ({
+    search,
+    onPress,
+    onRemove,
+    primary,
+  }: {
+    search: string;
+    onPress: (text: string) => void;
+    onRemove: (text: string) => void;
+    primary: string;
+  }) => {
+    const handlePress = useCallback(() => {
+      onPress(search);
+    }, [search, onPress]);
+
+    const handleRemove = useCallback(() => {
+      onRemove(search);
+    }, [search, onRemove]);
+
+    return (
+      <View className="bg-[#141414] rounded-lg p-3 mb-2 flex-row justify-between items-center border border-white/5">
+        <TouchableOpacity
+          onPress={handlePress}
+          className="flex-row flex-1 items-center space-x-2">
+          <View className="bg-white/10 rounded-full p-1.5">
+            <Ionicons name="time-outline" size={16} color={primary} />
+          </View>
+          <Text className="text-white text-sm ml-2">{search}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleRemove}
+          className="bg-white/5 rounded-full p-1.5">
+          <Feather name="x" size={14} color="#999" />
+        </TouchableOpacity>
+      </View>
+    );
+  },
+);
 
 const Search = () => {
   const {primary} = useThemeStore(state => state);
@@ -69,35 +156,48 @@ const Search = () => {
     };
   }, [searchText, debouncedSearch]);
 
-  const handleSearch = (text: string) => {
-    if (text.trim()) {
-      // Save to search history
-      const prevSearches = MMKV.getArray<string>('searchHistory') || [];
-      if (!prevSearches.includes(text.trim())) {
-        const newSearches = [text.trim(), ...prevSearches].slice(
-          0,
-          MAX_HISTORY_ITEMS,
-        );
-        MMKV.setArray('searchHistory', newSearches);
-        setSearchHistory(newSearches);
+  const handleSearch = useCallback(
+    (text: string) => {
+      if (text.trim()) {
+        // Save to search history
+        const prevSearches = MMKV.getArray<string>('searchHistory') || [];
+        if (!prevSearches.includes(text.trim())) {
+          const newSearches = [text.trim(), ...prevSearches].slice(
+            0,
+            MAX_HISTORY_ITEMS,
+          );
+          MMKV.setArray('searchHistory', newSearches);
+          setSearchHistory(newSearches);
+        }
+
+        navigation.navigate('SearchResults', {
+          filter: text.trim(),
+        });
       }
+    },
+    [navigation],
+  );
 
-      navigation.navigate('SearchResults', {
-        filter: text.trim(),
-      });
-    }
-  };
+  const handleResultPress = useCallback(
+    (title: string) => {
+      handleSearch(title);
+    },
+    [handleSearch],
+  );
 
-  const removeHistoryItem = (search: string) => {
-    const newSearches = searchHistory.filter(item => item !== search);
-    MMKV.setArray('searchHistory', newSearches);
-    setSearchHistory(newSearches);
-  };
+  const removeHistoryItem = useCallback(
+    (search: string) => {
+      const newSearches = searchHistory.filter(item => item !== search);
+      MMKV.setArray('searchHistory', newSearches);
+      setSearchHistory(newSearches);
+    },
+    [searchHistory],
+  );
 
-  const clearHistory = () => {
+  const clearHistory = useCallback(() => {
     MMKV.setArray('searchHistory', []);
     setSearchHistory([]);
-  };
+  }, []);
 
   // Conditionally render animations based on state
   const AnimatedContainer = Animated.View;
@@ -163,43 +263,11 @@ const Search = () => {
             data={searchResults}
             keyExtractor={item => item.imdbID.toString()}
             renderItem={({item}) => (
-              <View className="px-4">
-                <TouchableOpacity
-                  className="py-3 border-b border-white/10"
-                  onPress={() => {
-                    const searchTitle = item.Title;
-                    // Save to search history
-                    const prevSearches =
-                      MMKV.getArray<string>('searchHistory') || [];
-                    if (searchTitle && !prevSearches.includes(searchTitle)) {
-                      const newSearches = [searchTitle, ...prevSearches].slice(
-                        0,
-                        MAX_HISTORY_ITEMS,
-                      );
-                      MMKV.setArray('searchHistory', newSearches);
-                      setSearchHistory(newSearches);
-                    }
-                    navigation.navigate('SearchResults', {
-                      filter: searchTitle,
-                    });
-                  }}>
-                  <View className="flex-row items-center">
-                    <MaterialIcons
-                      name="search"
-                      size={20}
-                      color="#666"
-                      style={{marginRight: 12}}
-                    />
-                    <View>
-                      <Text className="text-white text-base">{item.Title}</Text>
-                      <Text className="text-white/50 text-xs">
-                        {item.Type === 'series' ? t('TV Show') : t('Movie')} •{' '}
-                        {item.Year}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </View>
+              <SearchResultItem
+                item={item}
+                onPress={handleResultPress}
+                t={t}
+              />
             )}
             contentContainerStyle={{paddingTop: 4}}
             showsVerticalScrollIndicator={false}
@@ -228,21 +296,12 @@ const Search = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{paddingBottom: 20}}
               renderItem={({item: search}) => (
-                <View className="bg-[#141414] rounded-lg p-3 mb-2 flex-row justify-between items-center border border-white/5">
-                  <TouchableOpacity
-                    onPress={() => handleSearch(search)}
-                    className="flex-row flex-1 items-center space-x-2">
-                    <View className="bg-white/10 rounded-full p-1.5">
-                      <Ionicons name="time-outline" size={16} color={primary} />
-                    </View>
-                    <Text className="text-white text-sm ml-2">{search}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => removeHistoryItem(search)}
-                    className="bg-white/5 rounded-full p-1.5">
-                    <Feather name="x" size={14} color="#999" />
-                  </TouchableOpacity>
-                </View>
+                <HistoryItem
+                  search={search}
+                  onPress={handleSearch}
+                  onRemove={removeHistoryItem}
+                  primary={primary}
+                />
               )}
             />
           </AnimatedContainer>

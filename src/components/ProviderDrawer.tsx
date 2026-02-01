@@ -2,16 +2,11 @@ import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import React from 'react';
 import useContentStore from '../lib/zustand/contentStore';
 import useThemeStore from '../lib/zustand/themeStore';
-import {DrawerLayout} from 'react-native-gesture-handler';
 import {BlurView} from 'expo-blur';
 import {MaterialIcons} from '@expo/vector-icons';
 import {useTranslation} from 'react-i18next';
 
-const ProviderDrawer = ({
-  drawerRef,
-}: {
-  drawerRef: React.RefObject<DrawerLayout>;
-}) => {
+const ProviderDrawer = ({onClose}: {onClose: () => void}) => {
   const {t} = useTranslation();
   const {provider, setProvider, installedProviders} = useContentStore(
     state => state,
@@ -40,7 +35,7 @@ const ProviderDrawer = ({
             key={item.value}
             onPress={() => {
               setProvider(item);
-              drawerRef.current?.closeDrawer();
+              onClose();
             }}
             className={`flex-row items-center justify-between p-4 my-1 rounded-lg ${
               provider.value === item.value ? 'bg-white/10' : 'bg-transparent'
