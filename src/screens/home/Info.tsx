@@ -121,8 +121,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
 
   // Memoized computed values
   const synopsis = useMemo(() => {
+    if (providerValue === 'altadefinizionez') {
+      return info?.synopsis || meta?.description || t('No synopsis available');
+    }
     return meta?.description || info?.synopsis || t('No synopsis available');
-  }, [meta?.description, info?.synopsis, t]);
+  }, [providerValue, meta?.description, info?.synopsis, t]);
 
   const displayTitle = useMemo(() => {
     if (meta?.name) {
