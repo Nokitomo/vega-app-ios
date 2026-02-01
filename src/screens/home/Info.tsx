@@ -170,12 +170,21 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [meta?.poster, route.params.poster, info?.image]);
 
   const backgroundImage = useMemo(() => {
+    if (meta?.background) {
+      return meta.background;
+    }
+    if (providerValue === 'altadefinizionez' && !hasImdbMeta) {
+      return (
+        info?.background ||
+        info?.image ||
+        'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
+      );
+    }
     return (
-      meta?.background ||
       info?.image ||
       'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
     );
-  }, [meta?.background, info?.image]);
+  }, [meta?.background, providerValue, hasImdbMeta, info?.background, info?.image]);
 
   const currentInfoEntry = useMemo(
     () => ({
