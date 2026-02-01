@@ -36,8 +36,8 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Al momento queste chiavi sono usate solo da AnimeUnity e dai provider futuri.
 
 ## Priorita metadati (sinossi)
-- Quando sono presenti metadati esterni (es. Stremio), la UI può preferire la sinossi del provider per preservare la lingua originale.
-- Per AltadefinizioneZ la sinossi del provider ha priorita rispetto a quella esterna.
+- Quando sono presenti metadati esterni (es. Stremio), la UI usa quelli esterni.
+- Per AltadefinizioneZ la sinossi e i metadati del provider sono usati solo se i metadati esterni sono assenti.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
 
 ## ProviderManager
