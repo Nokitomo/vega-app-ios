@@ -125,8 +125,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [meta?.description, info?.synopsis, t]);
 
   const displayTitle = useMemo(() => {
-    return meta?.name || info?.title;
-  }, [meta?.name, info?.title]);
+    if (meta?.name) {
+      return meta.name;
+    }
+    if (info?.titleKey) {
+      return t(info.titleKey, info.titleParams);
+    }
+    return info?.title;
+  }, [meta?.name, info?.title, info?.titleKey, info?.titleParams, t]);
 
   const posterImage = useMemo(() => {
     return (
