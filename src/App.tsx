@@ -331,9 +331,6 @@ const AppContent = () => {
     });
     const keyboardShowSub = Keyboard.addListener('keyboardDidShow', () => {
       keyboardVisibleRef.current = true;
-      if (Platform.OS === 'android') {
-        NavigationBar.setVisibilityAsync('visible').catch(() => {});
-      }
     });
     const keyboardHideSub = Keyboard.addListener('keyboardDidHide', () => {
       keyboardVisibleRef.current = false;
