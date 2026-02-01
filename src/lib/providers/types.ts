@@ -56,6 +56,10 @@ export interface Info {
   poster?: string;
   synopsis: string;
   imdbId: string;
+  year?: string | number;
+  runtime?: string;
+  country?: string;
+  director?: string;
   type: string;
   tags?: string[];
   tagKeys?: Record<string, string>;
