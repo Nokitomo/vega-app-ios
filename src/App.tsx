@@ -65,6 +65,7 @@ import Orientation from 'react-native-orientation-locker';
 import useSearchCacheStore from './lib/zustand/searchCacheStore';
 import useUiSettingsStore from './lib/zustand/uiSettingsStore';
 import {useTranslation} from 'react-i18next';
+import {isNavBarSuspended} from './lib/services/NavBarState';
 // Lazy-load Firebase modules so app runs without google-services files
 const getAnalytics = (): any | null => {
   try {
@@ -244,6 +245,9 @@ const AppContent = () => {
 
   const applyAndroidNavBarState = useCallback(() => {
     if (Platform.OS !== 'android') {
+      return;
+    }
+    if (isNavBarSuspended()) {
       return;
     }
     const focusedInput =
