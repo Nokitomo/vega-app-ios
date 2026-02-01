@@ -35,6 +35,10 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - L'app usa le chiavi se presenti, altrimenti mostra il testo originale.
 - Al momento queste chiavi sono usate solo da AnimeUnity e dai provider futuri.
 
+## Priorita metadati (sinossi)
+- Quando sono presenti metadati esterni (es. Stremio), la UI può preferire la sinossi del provider per preservare la lingua originale.
+- Per AltadefinizioneZ la sinossi del provider ha priorita rispetto a quella esterna.
+
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
 - Esegue i moduli in un contesto isolato (new Function).
