@@ -1003,7 +1003,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       return (
         <View
           key={item.link + index}
-          className={`w-full my-2 justify-center items-center gap-2 flex-row my-1
+          className={`w-full my-1 justify-center items-center gap-2 flex-row
           ${
             isCompleted(item.link) || stickyMenu.link === item.link
               ? 'opacity-60'
@@ -1097,7 +1097,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       return (
         <View
           key={item.link + index}
-          className={`w-full my-2 justify-center items-center my-2 gap-2 flex-row
+          className={`w-full my-2 justify-center items-center gap-2 flex-row
           ${
             isCompleted(item.link) || stickyMenu.link === item.link
               ? 'opacity-60'
