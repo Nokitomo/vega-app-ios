@@ -31,7 +31,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Alcuni campi possono includere chiavi i18n opzionali per tradurre etichette in app.
 - `catalog.js`: `titleKey`/`titleParams` per i titoli delle sezioni.
 - `posts`: `episodeLabelKey`/`episodeLabelParams` (con fallback su `episodeLabel`).
-- `meta` e `episodes`: `titleKey`/`titleParams` per stagioni/episodi, `tagKeys` per tradurre tag.
+- `meta` e `episodes`: `titleKey`/`titleParams` per titoli (stagioni/episodi e fallback titolo), `tagKeys` per tradurre tag.
 - L'app usa le chiavi se presenti, altrimenti mostra il testo originale.
 - Al momento queste chiavi sono usate solo da AnimeUnity e dai provider futuri.
 
