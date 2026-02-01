@@ -14,4 +14,7 @@ export const PASTEBIN_PROVIDERS: Record<string, PastebinProviderConfig> = {
   guardaserietv: {
     match: /(?:^|\.)guardaserietv\./i,
   },
+  altadefinizionez: {
+    match: /(?:^|\.)altadefinizionez\./i,
+  },
 };
