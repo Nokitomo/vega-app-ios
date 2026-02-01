@@ -129,6 +129,27 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
       return key ? t(key) : tag;
     });
   }, [heroData, t]);
+  const displayTitle = React.useMemo(() => {
+    if (!heroData) {
+      return '';
+    }
+    if (heroData.name) {
+      return heroData.name;
+    }
+    const titleKey = (heroData as {
+      titleKey?: string;
+      titleParams?: Record<string, string | number>;
+    }).titleKey;
+    if (titleKey) {
+      return t(
+        titleKey,
+        (heroData as {
+          titleParams?: Record<string, string | number>;
+        }).titleParams,
+      );
+    }
+    return heroData.title || '';
+  }, [heroData, t]);
 
   if (error) {
     console.error('Hero metadata error:', error);
@@ -209,7 +230,7 @@ const Hero = memo(({isDrawerOpen, drawerRef}: HeroProps) => {
               />
             ) : (
               <Text className="text-white text-center text-2xl font-bold">
-                {heroData.name || heroData.title}
+                {displayTitle}
               </Text>
             )}
 
