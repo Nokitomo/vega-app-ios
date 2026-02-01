@@ -21,23 +21,20 @@ Nota: serve il dev client; non usare Expo Go per funzioni native.
 npx expo run:android --device "Medium_phone_API_35"
 ```
 Nota: non usare l'emulatore Pixel_6_Pro_API_35.
-Nota: il wrapper Gradle usa 8.13; se vedi errori di versione minima, verifica `android/gradle/wrapper/gradle-wrapper.properties`.
+Nota: il wrapper Gradle usa 8.14.3; se vedi errori di versione minima, verifica `android/gradle/wrapper/gradle-wrapper.properties`.
 Nota: la New Architecture e' disattivata.
 
 ## Prebuild (rigenera android/ios)
+Attenzione: non eseguire `npx expo prebuild` per Android (sovrascrive customizzazioni in `android/`).
+Per iOS, usarlo solo se strettamente necessario e concordato:
 ```
-npx expo prebuild -p android --clean
+npx expo prebuild -p ios --clean
 ```
-Nota: il progetto contiene customizzazioni in android/ e ios/ (vedi plugins/).
+Nota: il progetto contiene customizzazioni native; evitare prebuild se non richiesto.
 
 ## Avvio iOS (dev client)
 ```
 npx expo run:ios
-```
-
-## Prebuild iOS (rigenera ios/)
-```
-npx expo prebuild -p ios --clean
 ```
 
 ## Build produzione
