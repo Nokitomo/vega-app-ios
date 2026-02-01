@@ -41,6 +41,7 @@ import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
 import SkeletonLoader from './Skeleton';
 import {useTranslation} from 'react-i18next';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface SeasonListProps {
   LinkList: Link[];
@@ -205,6 +206,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
 }) => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
+  const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {addItem} = useWatchHistoryStore(state => state);
@@ -1535,7 +1537,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
         <Pressable
           className="flex-1 justify-end items-center"
           onPress={() => setStickyMenu({active: false})}>
-          <View className="w-full h-14 bg-quaternary flex-row justify-evenly items-center pt-2">
+          <View
+            className="w-full bg-quaternary flex-row justify-evenly items-center pt-2"
+            style={{paddingBottom: Math.max(insets.bottom, 8), height: 56 + Math.max(insets.bottom, 8)}}>
             {isCompleted(stickyMenu.link || '') ? (
               <TouchableOpacity
                 className="flex-row justify-center items-center gap-2 p-2"
