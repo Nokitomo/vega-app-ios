@@ -10,13 +10,13 @@ type UiSettingsState = {
 
 const useUiSettingsStore = create<UiSettingsState>(set => ({
   showTabBarLabels: settingsStorage.showTabBarLabels(),
-  showRecentlyWatched: settingsStorage.getBool('showRecentlyWatched', true),
+  showRecentlyWatched: settingsStorage.showRecentlyWatched(),
   setShowTabBarLabels: value => {
     settingsStorage.setShowTabBarLabels(value);
     set({showTabBarLabels: value});
   },
   setShowRecentlyWatched: value => {
-    settingsStorage.setBool('showRecentlyWatched', value);
+    settingsStorage.setShowRecentlyWatched(value);
     set({showRecentlyWatched: value});
   },
 }));
