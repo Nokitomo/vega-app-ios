@@ -1215,9 +1215,11 @@ const SeasonList: React.FC<SeasonListProps> = ({
           <Dropdown
             selectedTextStyle={{
               color: primary,
-              overflow: 'hidden',
-              height: 20,
               fontWeight: 'bold',
+              fontSize: 14,
+              lineHeight: 18,
+              textAlignVertical: 'center',
+              includeFontPadding: false,
             }}
             labelField={'displayTitle'}
             valueField={
@@ -1233,6 +1235,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
               paddingHorizontal: 12,
               borderRadius: 8,
               backgroundColor: 'black',
+              minHeight: 40,
+              justifyContent: 'center',
+              paddingVertical: 8,
             }}
             containerStyle={{
               overflow: 'hidden',
@@ -1294,9 +1299,11 @@ const SeasonList: React.FC<SeasonListProps> = ({
         <Dropdown
           selectedTextStyle={{
             color: primary,
-            overflow: 'hidden',
-            height: 20,
             fontWeight: 'bold',
+            fontSize: 14,
+            lineHeight: 18,
+            textAlignVertical: 'center',
+            includeFontPadding: false,
           }}
           labelField={'displayTitle'}
           valueField={
@@ -1313,6 +1320,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
             borderRadius: 8,
             backgroundColor: 'black',
             paddingVertical: 8,
+            minHeight: 40,
+            justifyContent: 'center',
           }}
           containerStyle={{
             overflow: 'hidden',
