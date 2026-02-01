@@ -30,6 +30,7 @@ import useThemeStore from './lib/zustand/themeStore';
 import {
   AppState,
   Dimensions,
+  Keyboard,
   LogBox,
   PixelRatio,
   Platform,
@@ -215,6 +216,9 @@ const AppContent = () => {
     clearCache: state.clearCache,
   }));
   const hasFirebase = Boolean(Constants?.expoConfig?.extra?.hasFirebase);
+  const edgeToEdgeFlag = Constants?.expoConfig?.android?.edgeToEdgeEnabled;
+  const isEdgeToEdgeEnabled =
+    typeof edgeToEdgeFlag === 'boolean' ? edgeToEdgeFlag : true;
 
   const showTabBarLables = useUiSettingsStore(
     state => state.showTabBarLabels,
@@ -235,16 +239,22 @@ const AppContent = () => {
   );
   const searchTabRef = useRef<string | undefined>(undefined);
   const searchLeftAtRef = useRef<number | null>(null);
+  const keyboardVisibleRef = useRef(false);
 
   const applyAndroidNavBarState = useCallback(() => {
     if (Platform.OS !== 'android') {
       return;
     }
+    if (keyboardVisibleRef.current) {
+      return;
+    }
     try {
       NavigationBar.setVisibilityAsync('hidden').catch(() => {});
-      NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => {});
+      if (!isEdgeToEdgeEnabled) {
+        NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => {});
+      }
     } catch {}
-  }, []);
+  }, [isEdgeToEdgeEnabled]);
 
   const getActiveTabName = useCallback((state: any) => {
     const tabRoute = state?.routes?.find(
@@ -310,6 +320,13 @@ const AppContent = () => {
         applyAndroidNavBarState();
       }
     });
+    const keyboardShowSub = Keyboard.addListener('keyboardDidShow', () => {
+      keyboardVisibleRef.current = true;
+    });
+    const keyboardHideSub = Keyboard.addListener('keyboardDidHide', () => {
+      keyboardVisibleRef.current = false;
+      applyAndroidNavBarState();
+    });
 
     // Apply telemetry preference before using analytics
     const optIn = settingsStorage.isTelemetryOptIn();
@@ -359,6 +376,8 @@ const AppContent = () => {
       notificationService.actionHandler({type, detail});
     });
     return () => {
+      keyboardShowSub.remove();
+      keyboardHideSub.remove();
       appStateSub.remove();
       unsubscribe();
     };
