@@ -126,11 +126,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [providerValue, hasImdbMeta],
   );
   const synopsis = useMemo(() => {
-    if (providerValue === 'altadefinizionez' && hasImdbMeta) {
-      return meta?.description || t('No synopsis available');
+    if (providerValue === 'altadefinizionez') {
+      return info?.synopsis || meta?.description || t('No synopsis available');
     }
     return meta?.description || info?.synopsis || t('No synopsis available');
-  }, [providerValue, hasImdbMeta, meta?.description, info?.synopsis, t]);
+  }, [providerValue, meta?.description, info?.synopsis, t]);
 
   const badgeYear = useMemo(() => {
     if (meta?.year) {
