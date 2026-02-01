@@ -26,3 +26,4 @@ Manager specifici:
 ## Principi
 - Stato volatile in Zustand, persistenza tramite MMKV.
 - Le chiavi di storage sono centralizzate negli enum delle classi.
+- La progressione episodi salva anche `seasonEpisodesLink` per riprendere la stagione corretta.
