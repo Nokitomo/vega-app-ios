@@ -38,6 +38,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 ## Priorita metadati (sinossi)
 - Quando sono presenti metadati esterni (es. Stremio), la UI può preferire la sinossi del provider per preservare la lingua originale.
 - Per AltadefinizioneZ la sinossi del provider ha priorita rispetto a quella esterna.
+- In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
 
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
