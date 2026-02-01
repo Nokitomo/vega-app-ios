@@ -20,13 +20,21 @@ import 'react-native-gesture-handler';
 import WebView from './screens/WebView';
 import SearchResults from './screens/SearchResults';
 import * as SystemUI from 'expo-system-ui';
+import * as NavigationBar from 'expo-navigation-bar';
 // import DisableProviders from './screens/settings/DisableProviders';
 import About, {checkForUpdate} from './screens/settings/About';
 import BootSplash from 'react-native-bootsplash';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 import Preferences from './screens/settings/Preference';
 import useThemeStore from './lib/zustand/themeStore';
-import {Dimensions, LogBox, PixelRatio, ViewStyle} from 'react-native';
+import {
+  AppState,
+  Dimensions,
+  LogBox,
+  PixelRatio,
+  Platform,
+  ViewStyle,
+} from 'react-native';
 import {EpisodeLink} from './lib/providers/types';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import TabBarBackgound from './components/TabBarBackgound';
@@ -228,6 +236,16 @@ const AppContent = () => {
   const searchTabRef = useRef<string | undefined>(undefined);
   const searchLeftAtRef = useRef<number | null>(null);
 
+  const applyAndroidNavBarState = useCallback(() => {
+    if (Platform.OS !== 'android') {
+      return;
+    }
+    try {
+      NavigationBar.setVisibilityAsync('hidden').catch(() => {});
+      NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => {});
+    } catch {}
+  }, []);
+
   const getActiveTabName = useCallback((state: any) => {
     const tabRoute = state?.routes?.find(
       (route: {name?: string}) => route.name === 'TabStack',
@@ -286,6 +304,13 @@ const AppContent = () => {
   );
 
   useEffect(() => {
+    applyAndroidNavBarState();
+    const appStateSub = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        applyAndroidNavBarState();
+      }
+    });
+
     // Apply telemetry preference before using analytics
     const optIn = settingsStorage.isTelemetryOptIn();
     if (hasFirebase) {
@@ -334,6 +359,7 @@ const AppContent = () => {
       notificationService.actionHandler({type, detail});
     });
     return () => {
+      appStateSub.remove();
       unsubscribe();
     };
   }, []);
@@ -624,6 +650,7 @@ const AppContent = () => {
             onReady={async () => {
               // Hide bootsplash
               await BootSplash.hide({fade: true});
+              applyAndroidNavBarState();
               applyOrientationForRoute(
                 navigationRef.getCurrentRoute()?.name,
               );
@@ -644,6 +671,7 @@ const AppContent = () => {
               }
             }}
             onStateChange={async state => {
+              applyAndroidNavBarState();
               applyOrientationForRoute(
                 navigationRef.getCurrentRoute()?.name,
               );
