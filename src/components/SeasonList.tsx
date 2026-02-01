@@ -67,6 +67,7 @@ interface PlayHandlerProps {
   secondaryTitle?: string;
   seasonTitle: string;
   episodeData: EpisodeLink[] | Link['directLinks'];
+  seasonEpisodesLink?: string;
 }
 
 interface StickyMenuState {
@@ -80,6 +81,8 @@ interface ResumeProgress {
   duration?: number;
   episodeTitle?: string;
   episodeLink?: string;
+  seasonTitle?: string;
+  seasonEpisodesLink?: string;
 }
 
 interface PendingPlay {
@@ -123,7 +126,9 @@ const areResumeProgressEqual = (
     left.currentTime === right.currentTime &&
     left.duration === right.duration &&
     left.episodeTitle === right.episodeTitle &&
-    left.episodeLink === right.episodeLink
+    left.episodeLink === right.episodeLink &&
+    left.seasonTitle === right.seasonTitle &&
+    left.seasonEpisodesLink === right.seasonEpisodesLink
   );
 };
 
@@ -506,6 +511,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
             duration: parsed.duration,
             episodeTitle: parsed.episodeTitle,
             episodeLink: parsed.episodeLink,
+            seasonTitle: parsed.seasonTitle || undefined,
+            seasonEpisodesLink: parsed.seasonEpisodesLink || undefined,
           };
         } else {
           nextResume = null;
@@ -618,6 +625,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       secondaryTitle,
       seasonTitle,
       episodeData,
+      seasonEpisodesLink,
     }: PlayHandlerProps) => {
       addItem({
         id: routeParams.link,
@@ -667,6 +675,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         type: contentType,
         primaryTitle: primaryTitle,
         secondaryTitle: seasonTitle,
+        seasonEpisodesLink: seasonEpisodesLink,
         poster: poster,
         providerValue: providerValue,
         infoUrl: routeParams.link,
@@ -807,10 +816,22 @@ const SeasonList: React.FC<SeasonListProps> = ({
   );
 
   useEffect(() => {
-    const targetNumber = resumeProgress?.episodeTitle
+    if (!resumeProgress || LinkList.length === 0) {
+      return;
+    }
+
+    if (resumeProgress.seasonEpisodesLink) {
+      if (resumeProgress.seasonEpisodesLink === activeSeason?.episodesLink) {
+        return;
+      }
+      prefetchEpisodesForLink(resumeProgress.seasonEpisodesLink);
+      return;
+    }
+
+    const targetNumber = resumeProgress.episodeTitle
       ? getEpisodeNumber(resumeProgress.episodeTitle)
       : 1;
-    if (!targetNumber || LinkList.length === 0) {
+    if (!targetNumber) {
       return;
     }
 
@@ -826,7 +847,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     prefetchEpisodesForLink(targetSeason.episodesLink);
   }, [
     LinkList,
-    resumeProgress?.episodeTitle,
+    resumeProgress,
     activeSeason?.episodesLink,
     prefetchEpisodesForLink,
   ]);
@@ -892,22 +913,41 @@ const SeasonList: React.FC<SeasonListProps> = ({
       episodeLink: resumeProgress?.episodeLink,
     };
 
-    if (targetEpisodeNumber != null) {
-      const targetSeason = findSeasonForEpisodeNumber(
-        LinkList,
-        targetEpisodeNumber,
-      );
-      if (
-        targetSeason?.episodesLink &&
-        targetSeason.episodesLink !== activeSeason?.episodesLink
-      ) {
-        setPendingPlay({
-          ...target,
-          seasonEpisodesLink: targetSeason.episodesLink,
-        });
-        handleSeasonChange(targetSeason);
-        return;
+    let targetSeason: Link | undefined;
+
+    if (isResume) {
+      if (resumeProgress?.seasonEpisodesLink) {
+        targetSeason = LinkList.find(
+          item => item.episodesLink === resumeProgress.seasonEpisodesLink,
+        );
       }
+
+      if (!targetSeason && resumeProgress?.seasonTitle) {
+        const normalizedSeason = normalizeTitle(resumeProgress.seasonTitle);
+        if (normalizedSeason) {
+          targetSeason = LinkList.find(
+            item => normalizeTitle(item.title) === normalizedSeason,
+          );
+        }
+      }
+
+      if (!targetSeason && targetEpisodeNumber != null) {
+        targetSeason = findSeasonForEpisodeNumber(
+          LinkList,
+          targetEpisodeNumber,
+        );
+      }
+    } else if (LinkList.length > 0) {
+      targetSeason = LinkList[0];
+    }
+
+    if (targetSeason && !isSameSeason(activeSeason, targetSeason)) {
+      setPendingPlay({
+        ...target,
+        seasonEpisodesLink: targetSeason.episodesLink,
+      });
+      handleSeasonChange(targetSeason);
+      return;
     }
 
     const resumeList = getPlayableList();
@@ -944,9 +984,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
     playHandler,
     type,
     metaTitle,
-    activeSeason?.title,
-    activeSeason?.episodesLink,
+    activeSeason,
     handleSeasonChange,
+    isSameSeason,
   ]);
 
   // Memoized episode render item
@@ -981,6 +1021,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   secondaryTitle: item.title,
                   seasonTitle: activeSeason?.title || '',
                   episodeData: filteredAndSortedEpisodes,
+                  seasonEpisodesLink: activeSeason?.episodesLink,
                 })
               }
               onLongPress={() => onLongPressHandler(true, item.link, 'series')}>
@@ -1033,6 +1074,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       playHandler,
       metaTitle,
       activeSeason?.title,
+      activeSeason?.episodesLink,
       filteredAndSortedEpisodes,
       onLongPressHandler,
       primary,
@@ -1073,6 +1115,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   secondaryTitle: item.title,
                   seasonTitle: activeSeason?.title || '',
                   episodeData: filteredAndSortedDirectLinks,
+                  seasonEpisodesLink: activeSeason?.episodesLink,
                 })
               }
               onLongPress={() =>
@@ -1130,6 +1173,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       playHandler,
       metaTitle,
       activeSeason?.title,
+      activeSeason?.episodesLink,
       activeSeason?.directLinks,
       filteredAndSortedDirectLinks,
       onLongPressHandler,
