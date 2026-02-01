@@ -20,7 +20,6 @@ import 'react-native-gesture-handler';
 import WebView from './screens/WebView';
 import SearchResults from './screens/SearchResults';
 import * as SystemUI from 'expo-system-ui';
-import * as NavigationBar from 'expo-navigation-bar';
 // import DisableProviders from './screens/settings/DisableProviders';
 import About, {checkForUpdate} from './screens/settings/About';
 import BootSplash from 'react-native-bootsplash';
@@ -28,13 +27,9 @@ import {enableFreeze, enableScreens} from 'react-native-screens';
 import Preferences from './screens/settings/Preference';
 import useThemeStore from './lib/zustand/themeStore';
 import {
-  AppState,
   Dimensions,
-  Keyboard,
   LogBox,
   PixelRatio,
-  Platform,
-  TextInput,
   ViewStyle,
 } from 'react-native';
 import {EpisodeLink} from './lib/providers/types';
@@ -65,7 +60,6 @@ import Orientation from 'react-native-orientation-locker';
 import useSearchCacheStore from './lib/zustand/searchCacheStore';
 import useUiSettingsStore from './lib/zustand/uiSettingsStore';
 import {useTranslation} from 'react-i18next';
-import {isNavBarSuspended} from './lib/services/NavBarState';
 // Lazy-load Firebase modules so app runs without google-services files
 const getAnalytics = (): any | null => {
   try {
@@ -218,10 +212,6 @@ const AppContent = () => {
     clearCache: state.clearCache,
   }));
   const hasFirebase = Boolean(Constants?.expoConfig?.extra?.hasFirebase);
-  const edgeToEdgeFlag = Constants?.expoConfig?.android?.edgeToEdgeEnabled;
-  const isEdgeToEdgeEnabled =
-    typeof edgeToEdgeFlag === 'boolean' ? edgeToEdgeFlag : true;
-
   const showTabBarLables = useUiSettingsStore(
     state => state.showTabBarLabels,
   );
@@ -241,30 +231,6 @@ const AppContent = () => {
   );
   const searchTabRef = useRef<string | undefined>(undefined);
   const searchLeftAtRef = useRef<number | null>(null);
-  const keyboardVisibleRef = useRef(false);
-
-  const applyAndroidNavBarState = useCallback(() => {
-    if (Platform.OS !== 'android') {
-      return;
-    }
-    if (isNavBarSuspended()) {
-      return;
-    }
-    const focusedInput =
-      typeof TextInput.State?.currentlyFocusedInput === 'function'
-        ? TextInput.State.currentlyFocusedInput()
-        : TextInput.State?.currentlyFocusedField?.();
-    if (keyboardVisibleRef.current || focusedInput) {
-      return;
-    }
-    try {
-      NavigationBar.setVisibilityAsync('hidden').catch(() => {});
-      if (!isEdgeToEdgeEnabled) {
-        NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => {});
-      }
-    } catch {}
-  }, [isEdgeToEdgeEnabled]);
-
   const getActiveTabName = useCallback((state: any) => {
     const tabRoute = state?.routes?.find(
       (route: {name?: string}) => route.name === 'TabStack',
@@ -323,20 +289,6 @@ const AppContent = () => {
   );
 
   useEffect(() => {
-    applyAndroidNavBarState();
-    const appStateSub = AppState.addEventListener('change', state => {
-      if (state === 'active') {
-        applyAndroidNavBarState();
-      }
-    });
-    const keyboardShowSub = Keyboard.addListener('keyboardDidShow', () => {
-      keyboardVisibleRef.current = true;
-    });
-    const keyboardHideSub = Keyboard.addListener('keyboardDidHide', () => {
-      keyboardVisibleRef.current = false;
-      applyAndroidNavBarState();
-    });
-
     // Apply telemetry preference before using analytics
     const optIn = settingsStorage.isTelemetryOptIn();
     if (hasFirebase) {
@@ -385,9 +337,6 @@ const AppContent = () => {
       notificationService.actionHandler({type, detail});
     });
     return () => {
-      keyboardShowSub.remove();
-      keyboardHideSub.remove();
-      appStateSub.remove();
       unsubscribe();
     };
   }, []);
