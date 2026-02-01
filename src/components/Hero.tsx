@@ -21,7 +21,6 @@ import {Feather} from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {useHeroMetadata} from '../lib/hooks/useHomePageData';
 import {useTranslation} from 'react-i18next';
-import {setNavBarSuspended} from '../lib/services/NavBarState';
 
 interface HeroProps {
   isDrawerOpen: boolean;
@@ -179,11 +178,7 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer}: HeroProps) => {
             entering={FadeIn.duration(300)}
             className="w-full items-center justify-center">
             <TextInput
-              onBlur={() => {
-                setNavBarSuspended(false);
-                setSearchActive(false);
-              }}
-              onFocus={() => setNavBarSuspended(true)}
+              onBlur={() => setSearchActive(false)}
               autoFocus={true}
               onSubmitEditing={e => handleSearchSubmit(e.nativeEvent.text)}
               placeholder={t('Search in {{provider}}', {
@@ -199,11 +194,7 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer}: HeroProps) => {
         )}
 
         {!searchActive && (
-          <Pressable
-            onPress={() => {
-              setNavBarSuspended(true);
-              setSearchActive(true);
-            }}>
+          <Pressable onPress={() => setSearchActive(true)}>
             <Feather name="search" size={24} color="white" />
           </Pressable>
         )}
