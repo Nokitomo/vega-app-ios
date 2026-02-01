@@ -120,20 +120,33 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [route.params.link, removeItem]);
 
   // Memoized computed values
+  const hasImdbMeta = useMemo(() => !!meta?.name, [meta?.name]);
+  const allowProviderMetadata = useMemo(
+    () => providerValue !== 'altadefinizionez' || !hasImdbMeta,
+    [providerValue, hasImdbMeta],
+  );
   const synopsis = useMemo(() => {
-    if (providerValue === 'altadefinizionez') {
-      return info?.synopsis || meta?.description || t('No synopsis available');
+    if (providerValue === 'altadefinizionez' && hasImdbMeta) {
+      return meta?.description || t('No synopsis available');
     }
     return meta?.description || info?.synopsis || t('No synopsis available');
-  }, [providerValue, meta?.description, info?.synopsis, t]);
+  }, [providerValue, hasImdbMeta, meta?.description, info?.synopsis, t]);
 
-  const badgeYear = useMemo(
-    () => meta?.year || info?.year,
-    [meta?.year, info?.year],
-  );
-  const badgeRuntime = useMemo(
-    () => meta?.runtime || info?.runtime,
-    [meta?.runtime, info?.runtime],
+  const badgeYear = useMemo(() => {
+    if (meta?.year) {
+      return meta.year;
+    }
+    return allowProviderMetadata ? info?.year : undefined;
+  }, [meta?.year, allowProviderMetadata, info?.year]);
+  const badgeRuntime = useMemo(() => {
+    if (meta?.runtime) {
+      return meta.runtime;
+    }
+    return allowProviderMetadata ? info?.runtime : undefined;
+  }, [meta?.runtime, allowProviderMetadata, info?.runtime]);
+  const displayRating = useMemo(
+    () => meta?.imdbRating || (allowProviderMetadata ? info?.rating : undefined),
+    [meta?.imdbRating, allowProviderMetadata, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
 
@@ -188,23 +201,23 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
 
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
   const displayTags = useMemo(() => {
-    if (!info?.tags || info.tags.length === 0) {
+    if (!allowProviderMetadata || !info?.tags || info.tags.length === 0) {
       return [];
     }
     return info.tags.slice(0, 3).map(tag => {
       const key = info.tagKeys?.[tag];
       return key ? t(key) : tag;
     });
-  }, [info?.tags, info?.tagKeys, t]);
+  }, [allowProviderMetadata, info?.tags, info?.tagKeys, t]);
   const localizedGenres = useMemo(() => {
-    if (!info?.genres || info.genres.length === 0) {
+    if (!allowProviderMetadata || !info?.genres || info.genres.length === 0) {
       return [];
     }
     return info.genres.map(genre => {
       const key = info.tagKeys?.[genre];
       return key ? t(key) : genre;
     });
-  }, [info?.genres, info?.tagKeys, t]);
+  }, [allowProviderMetadata, info?.genres, info?.tagKeys, t]);
   const badgeGenres = useMemo(() => {
     if (meta?.genres && meta.genres.length > 0) {
       return meta.genres.slice(0, 2);
@@ -214,12 +227,28 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     }
     return [];
   }, [meta?.genres, localizedGenres]);
+  const metaCast = useMemo(() => meta?.cast ?? [], [meta?.cast]);
+  const providerCast = useMemo(
+    () => (allowProviderMetadata ? info?.cast ?? [] : []),
+    [allowProviderMetadata, info?.cast],
+  );
+  const hasCast = useMemo(
+    () => metaCast.length > 0 || providerCast.length > 0,
+    [metaCast, providerCast],
+  );
   const showInfoDetails = useMemo(
     () =>
-      !!info?.studio ||
-      (info?.genres && info.genres.length > 0) ||
+      (allowProviderMetadata && !!info?.studio) ||
+      (allowProviderMetadata && info?.genres && info.genres.length > 0) ||
       (showProviderFallback && (!!info?.country || !!info?.director)),
-    [info?.studio, info?.genres, showProviderFallback, info?.country, info?.director],
+    [
+      allowProviderMetadata,
+      info?.studio,
+      info?.genres,
+      showProviderFallback,
+      info?.country,
+      info?.director,
+    ],
   );
   const infoStack = route.params?.infoStack ?? [];
   const showInfoBack = infoStack.length > 0;
@@ -387,9 +416,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                       </Text>
                     )}
                     {/* rating */}
-                    {(meta?.imdbRating || info?.rating) && (
+                    {displayRating && (
                       <Text className="text-white text-2xl font-semibold">
-                        {meta?.imdbRating || info?.rating}
+                        {displayRating}
                         <Text className="text-white text-lg">/10</Text>
                       </Text>
                     )}
@@ -444,15 +473,27 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     </View>
                   )}
                   {/* cast  */}
-                  {(meta?.cast?.length! > 0 || info?.cast?.length! > 0) && (
+                  {hasCast && (
                     <View className="mb-2 w-full flex-row items-start gap-2">
                       <Text className="text-white text-lg font-semibold pt-[0.9px]">
                         {t('Cast')}
                       </Text>
                       <View className="flex-row gap-1 flex-wrap">
-                        {meta?.cast
-                          ?.slice(0, 3)
-                          .map((actor: string, index: number) => (
+                        {metaCast.slice(0, 3).map((actor, index) => (
+                          <Text
+                            key={actor}
+                            numberOfLines={1}
+                            className={`text-xs bg-tertiary p-1 px-2 rounded-md ${
+                              index % 3 === 0
+                                ? 'text-red-500'
+                                : index % 3 === 1
+                                  ? 'text-blue-500'
+                                  : 'text-green-500'
+                            }`}>
+                            {actor}
+                          </Text>
+                        ))}
+                        {providerCast.slice(0, 3).map((actor, index) => (
                             <Text
                               key={actor}
                               numberOfLines={1}
@@ -465,22 +506,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                               }`}>
                               {actor}
                             </Text>
-                          ))}
-                        {info?.cast
-                          ?.slice(0, 3)
-                          .map((actor: string, index: number) => (
-                            <Text
-                              key={actor}
-                              className={`text-xs bg-tertiary p-1 px-2 rounded-md ${
-                                index % 3 === 0
-                                  ? 'text-red-500'
-                                  : index % 3 === 1
-                                    ? 'text-blue-500'
-                                    : 'text-green-500'
-                              }`}>
-                              {actor}
-                            </Text>
-                          ))}
+                        ))}
                       </View>
                     </View>
                   )}
@@ -613,12 +639,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   </SkeletonLoader>
                   {showInfoDetails ? (
                     <View className="mt-2">
-                      {info?.studio ? (
+                      {allowProviderMetadata && info?.studio ? (
                         <Text className="text-gray-400 text-xs">
                           {t('Studio: {{name}}', {name: info.studio})}
                         </Text>
                       ) : null}
-                      {info?.genres && info.genres.length > 0 ? (
+                      {allowProviderMetadata &&
+                      info?.genres &&
+                      info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
                           {t('Genres: {{list}}', {
                             list: localizedGenres.join(' · '),
