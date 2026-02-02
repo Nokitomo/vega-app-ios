@@ -419,7 +419,10 @@ const Player = ({route}: Props): React.JSX.Element => {
         exitFullScreen();
       }
 
-      return () => {};
+      return () => {
+        // Ensure the system UI is restored when leaving the player
+        exitFullScreen();
+      };
     }, [isFullScreen]),
   );
 
@@ -607,6 +610,13 @@ const Player = ({route}: Props): React.JSX.Element => {
       exitFullScreen();
     }
   }, [isFullScreen]);
+
+  useEffect(() => {
+    return () => {
+      // Safety net: restore navigation bar on unmount
+      exitFullScreen();
+    };
+  }, []);
 
   // Memoized video player props
   const videoPlayerProps = useMemo(
