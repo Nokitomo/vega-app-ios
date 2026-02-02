@@ -40,7 +40,9 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
-- Per AltadefinizioneZ, quando mancano metadati esterni, lo sfondo in Info usa il background del provider (hero) se disponibile.
+- Per AltadefinizioneZ, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
+- Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
+- Se l'immagine dell'hero fallisce, il titolo viene scartato e si seleziona un altro hero casuale.
 
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
