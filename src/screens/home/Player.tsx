@@ -225,6 +225,32 @@ const Player = ({route}: Props): React.JSX.Element => {
     () => settingsStorage.showMediaControls(),
     [],
   );
+  const mergedTextTracks = useMemo(() => {
+    const normalizedInternal = (textTracks || []).map((track, idx) => ({
+      ...track,
+      index: typeof track.index === 'number' ? track.index : idx,
+      source: 'internal' as const,
+    }));
+    const maxIndex = normalizedInternal.reduce(
+      (max, track) => Math.max(max, track.index),
+      -1,
+    );
+    const normalizedExternal = (externalSubs || []).map((track, idx) => ({
+      ...track,
+      index: maxIndex + 1 + idx,
+      source: 'external' as const,
+    }));
+    return [...normalizedInternal, ...normalizedExternal];
+  }, [textTracks, externalSubs]);
+  const selectedSubtitleLabel = useMemo(() => {
+    if (selectedTextTrackIndex === 1000) {
+      return t('None');
+    }
+    const selectedTrack = mergedTextTracks.find(
+      track => track.index === selectedTextTrackIndex,
+    );
+    return selectedTrack?.language || t('None');
+  }, [mergedTextTracks, selectedTextTrackIndex, t]);
 
   // Memoized watched duration
   const watchedDuration = useMemo(() => {
@@ -855,10 +881,8 @@ const Player = ({route}: Props): React.JSX.Element => {
               size={24}
               color="white"
             />
-            <Text className="text-xs capitalize text-white opacity-70">
-              {selectedTextTrackIndex === 1000
-                ? t('None')
-                : textTracks[selectedTextTrackIndex]?.language}
+          <Text className="text-xs capitalize text-white opacity-70">
+              {selectedSubtitleLabel}
             </Text>
           </TouchableOpacity>
 
@@ -1025,7 +1049,7 @@ const Player = ({route}: Props): React.JSX.Element => {
             {activeTab === 'subtitle' && (
               <FlashList
                 estimatedItemSize={70}
-                data={textTracks}
+                data={mergedTextTracks}
                 ListHeaderComponent={
                   <View>
                     <Text className="text-lg font-bold text-center text-white">
@@ -1101,10 +1125,19 @@ const Player = ({route}: Props): React.JSX.Element => {
                   <TouchableOpacity
                     className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-2"
                     onPress={() => {
-                      setSelectedTextTrack({
-                        type: SelectedTrackType.INDEX,
-                        value: track.index,
-                      });
+                      if (track.source === 'external') {
+                        const titleValue =
+                          track.title || track.uri || track.language || '';
+                        setSelectedTextTrack({
+                          type: SelectedTrackType.TITLE,
+                          value: titleValue,
+                        });
+                      } else {
+                        setSelectedTextTrack({
+                          type: SelectedTrackType.INDEX,
+                          value: track.index,
+                        });
+                      }
                       setSelectedTextTrackIndex(track.index);
                       cacheStorage.setString(
                         'lastTextTrack',
