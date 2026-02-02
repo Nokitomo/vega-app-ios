@@ -29,6 +29,7 @@ const SUBTITLE_CACHE_DIR = FileSystem.cacheDirectory
 
 const ensureSubtitleCacheDir = async (): Promise<string | null> => {
   if (!SUBTITLE_CACHE_DIR) {
+    console.log('[subs] cache directory not available');
     return null;
   }
   const info = await FileSystem.getInfoAsync(SUBTITLE_CACHE_DIR);
@@ -36,6 +37,9 @@ const ensureSubtitleCacheDir = async (): Promise<string | null> => {
     await FileSystem.makeDirectoryAsync(SUBTITLE_CACHE_DIR, {
       intermediates: true,
     });
+    console.log('[subs] created cache directory', SUBTITLE_CACHE_DIR);
+  } else {
+    console.log('[subs] cache directory exists', SUBTITLE_CACHE_DIR);
   }
   return SUBTITLE_CACHE_DIR;
 };
@@ -84,10 +88,19 @@ const resolveSubtitleTrack = async (
   cacheDir: string | null,
 ): Promise<SubtitleTrack> => {
   const uri = typeof track.uri === 'string' ? track.uri.trim() : '';
+  console.log('[subs] track input', {
+    title: track.title,
+    language: track.language,
+    type: track.type,
+    uri,
+    hasHeaders: !!track.headers,
+  });
   if (!uri || !isRemoteSubtitleUri(uri)) {
+    console.log('[subs] non-remote subtitle uri, skip download', uri);
     return {...track, headers: undefined};
   }
   if (!cacheDir) {
+    console.log('[subs] no cache directory, using remote uri', uri);
     return {...track, headers: undefined};
   }
 
@@ -95,12 +108,24 @@ const resolveSubtitleTrack = async (
   const fileName = `${hashString(uri)}.${extension}`;
   const fileUri = `${cacheDir}${fileName}`;
   const headers = normalizeSubtitleHeaders(track.headers);
+  console.log('[subs] resolved cache target', {fileUri, extension});
 
   try {
     const info = await FileSystem.getInfoAsync(fileUri);
+    console.log('[subs] cache info', {exists: info.exists, size: info.size});
     if (!info.exists || !info.size) {
+      console.log('[subs] downloading subtitle', {
+        from: uri,
+        to: fileUri,
+        hasHeaders: !!headers,
+      });
       await FileSystem.downloadAsync(uri, fileUri, {
         headers,
+      });
+      const downloadedInfo = await FileSystem.getInfoAsync(fileUri);
+      console.log('[subs] download result', {
+        exists: downloadedInfo.exists,
+        size: downloadedInfo.size,
       });
     }
     return {
@@ -109,6 +134,10 @@ const resolveSubtitleTrack = async (
       headers: undefined,
     };
   } catch (error) {
+    console.log('[subs] download failed', {
+      uri,
+      message: error instanceof Error ? error.message : String(error),
+    });
     return {...track, headers: undefined};
   }
 };
@@ -117,8 +146,10 @@ const resolveExternalSubtitles = async (
   tracks: SubtitleTrack[],
 ): Promise<SubtitleTrack[]> => {
   if (!tracks || tracks.length === 0) {
+    console.log('[subs] no external subtitles to resolve');
     return [];
   }
+  console.log('[subs] resolving external subtitles', {count: tracks.length});
   const cacheDir = await ensureSubtitleCacheDir();
   const resolvedCache = new Map<string, Promise<SubtitleTrack>>();
 
@@ -132,6 +163,9 @@ const resolveExternalSubtitles = async (
   };
 
   const resolved = await Promise.all(tracks.map(resolveWithCache));
+  console.log('[subs] resolved external subtitles', {
+    count: resolved.length,
+  });
   return resolved.map(track => ({
     title: track.title,
     language: track.language,
@@ -258,6 +292,10 @@ export const useStream = ({
               });
             });
           }
+        });
+        console.log('[subs] extracted subtitles from streams', {
+          streams: streamData.length,
+          subtitles: subs.length,
         });
 
         const resolvedSubs = await resolveExternalSubtitles(subs);
