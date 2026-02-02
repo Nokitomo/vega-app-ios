@@ -299,6 +299,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
       </View>
       <View
         className="justify-center flex-row w-full"
+        style={{flex: 1}}
         onLayout={event =>
           setGridContainerWidth(event.nativeEvent.layout.width)
         }>
@@ -404,6 +405,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
             numColumns={viewType === 1 ? 3 : 1}
             key={`view-type-${viewType}`}
             contentContainerStyle={{paddingBottom: 80}}
+            style={{flex: 1, width: '100%'}}
             keyExtractor={(item, i) => `${item.title}-${i}`}
             renderItem={({item}) => (
               <TouchableOpacity
