@@ -242,6 +242,44 @@ const Player = ({route}: Props): React.JSX.Element => {
     }));
     return [...normalizedInternal, ...normalizedExternal];
   }, [textTracks, externalSubs]);
+  const buildSelectedTextTrack = useCallback((track: any): SelectedTrack => {
+    if (!track) {
+      return {type: SelectedTrackType.DISABLED};
+    }
+    const language =
+      typeof track.language === 'string' ? track.language : '';
+    const title = typeof track.title === 'string' ? track.title : '';
+    const uri = typeof track.uri === 'string' ? track.uri : '';
+
+    if (track.source === 'external') {
+      if (title) {
+        return {type: SelectedTrackType.TITLE, value: title};
+      }
+      if (language) {
+        return {type: SelectedTrackType.LANGUAGE, value: language};
+      }
+      if (uri) {
+        return {type: SelectedTrackType.TITLE, value: uri};
+      }
+    }
+
+    if (typeof track.index === 'number') {
+      return {
+        type: SelectedTrackType.INDEX,
+        value: String(track.index),
+      };
+    }
+    if (language) {
+      return {type: SelectedTrackType.LANGUAGE, value: language};
+    }
+    if (title) {
+      return {type: SelectedTrackType.TITLE, value: title};
+    }
+    if (uri) {
+      return {type: SelectedTrackType.TITLE, value: uri};
+    }
+    return {type: SelectedTrackType.DISABLED};
+  }, []);
   const selectedSubtitleLabel = useMemo(() => {
     if (selectedTextTrackIndex === 1000) {
       return t('None');
@@ -249,7 +287,12 @@ const Player = ({route}: Props): React.JSX.Element => {
     const selectedTrack = mergedTextTracks.find(
       track => track.index === selectedTextTrackIndex,
     );
-    return selectedTrack?.language || t('None');
+    return (
+      selectedTrack?.language ||
+      selectedTrack?.title ||
+      selectedTrack?.uri ||
+      t('None')
+    );
   }, [mergedTextTracks, selectedTextTrackIndex, t]);
 
   // Memoized watched duration
@@ -1125,19 +1168,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                   <TouchableOpacity
                     className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-2"
                     onPress={() => {
-                      if (track.source === 'external') {
-                        const titleValue =
-                          track.title || track.uri || track.language || '';
-                        setSelectedTextTrack({
-                          type: SelectedTrackType.TITLE,
-                          value: titleValue,
-                        });
-                      } else {
-                        setSelectedTextTrack({
-                          type: SelectedTrackType.INDEX,
-                          value: track.index,
-                        });
-                      }
+                      setSelectedTextTrack(buildSelectedTextTrack(track));
                       setSelectedTextTrackIndex(track.index);
                       cacheStorage.setString(
                         'lastTextTrack',
