@@ -26,6 +26,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 ## Contratto filtri (UI)
 - `catalog.js` puo esportare `archiveFilters` con metadati (order, status, type, season, years, dubbed, genres).
 - `genres` espone scorciatoie per filtri di archive (usabili come sezioni o menu).
+- AltadefinizioneZ include il filtro `trending` per la sezione "Titoli del momento" in home.
 
 ## i18n dai provider (AnimeUnity)
 - Alcuni campi possono includere chiavi i18n opzionali per tradurre etichette in app.
