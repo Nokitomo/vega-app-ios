@@ -43,6 +43,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per AltadefinizioneZ, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
 - Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
 - Se l'immagine dell'hero fallisce, il titolo viene scartato e si seleziona un altro hero casuale.
+- Se i metadati esterni falliscono ma il provider risponde correttamente, la scheda Info resta disponibile usando i dati del provider.
 
 ## ProviderManager
 File: src/lib/services/ProviderManager.ts
