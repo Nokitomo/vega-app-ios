@@ -1,5 +1,5 @@
 import Animated, {FadeIn} from 'react-native-reanimated';
-import React, {memo, useState, useCallback} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {
   Keyboard,
   Pressable,
@@ -25,10 +25,15 @@ import {useTranslation} from 'react-i18next';
 interface HeroProps {
   isDrawerOpen: boolean;
   onOpenDrawer: () => void;
+  onImageError?: (link?: string) => void;
 }
 
-const Hero = memo(({isDrawerOpen, onOpenDrawer}: HeroProps) => {
+const PLACEHOLDER_IMAGE =
+  'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega';
+
+const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
   const [searchActive, setSearchActive] = useState(false);
+  const [imageFallback, setImageFallback] = useState<string | null>(null);
   const {t} = useTranslation();
   const {provider} = useContentStore(state => state);
   const {hero} = useHeroStore(state => state);
@@ -94,27 +99,53 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer}: HeroProps) => {
     }
   }, [navigation, hero?.link, provider.value, heroData]);
 
+  const heroFallbackImage = hero?.image || '';
+  const lastErrorLinkRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setImageFallback(null);
+    lastErrorLinkRef.current = null;
+  }, [hero?.link]);
+
+  // Memoized image source
+  const currentImageUri = React.useMemo(() => {
+    if (!heroData) {
+      return PLACEHOLDER_IMAGE;
+    }
+    return (
+      imageFallback ||
+      heroData.background ||
+      heroData.image ||
+      heroData.poster ||
+      PLACEHOLDER_IMAGE
+    );
+  }, [heroData, imageFallback]);
+  const imageSource = React.useMemo(
+    () => ({uri: currentImageUri}),
+    [currentImageUri],
+  );
+
   const handleImageError = useCallback(() => {
     // Handle image error silently - React Query will manage retries
     console.warn('Hero image failed to load');
-  }, []);
-
-  // Memoized image source
-  const imageSource = React.useMemo(() => {
-    const fallbackImage =
-      'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega';
-    if (!heroData) {
-      return {uri: fallbackImage};
+    if (
+      !imageFallback &&
+      heroFallbackImage &&
+      heroFallbackImage !== currentImageUri
+    ) {
+      setImageFallback(heroFallbackImage);
     }
-
-    return {
-      uri:
-        heroData.background ||
-        heroData.image ||
-        heroData.poster ||
-        fallbackImage,
-    };
-  }, [heroData]);
+    if (onImageError && hero?.link && lastErrorLinkRef.current !== hero.link) {
+      lastErrorLinkRef.current = hero.link;
+      onImageError(hero.link);
+    }
+  }, [
+    imageFallback,
+    heroFallbackImage,
+    currentImageUri,
+    onImageError,
+    hero?.link,
+  ]);
 
   // Memoized genres
   const displayGenres = React.useMemo(() => {
