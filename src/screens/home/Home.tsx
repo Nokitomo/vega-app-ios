@@ -6,7 +6,7 @@ import {
   Text,
 } from 'react-native';
 import Slider from '../../components/Slider';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import HeroOptimized from '../../components/Hero';
 import {cacheStorage, mainStorage} from '../../lib/storage';
 import useContentStore from '../../lib/zustand/contentStore';
@@ -35,6 +35,7 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 const HERO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const HERO_HISTORY_LIMIT = 5;
 const HERO_MAX_ATTEMPTS = 3;
+const HERO_IMAGE_RETRY_LIMIT = 3;
 
 const ARCHIVE_HERO_PROVIDERS = new Set(['animeunity', 'altadefinizionez']);
 
@@ -122,6 +123,8 @@ const Home = ({}: Props) => {
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [heroRetryNonce, setHeroRetryNonce] = useState(0);
+  const heroImageErrorCountRef = useRef(0);
 
   // Memoize static values
   const disableDrawer = useMemo(
@@ -165,9 +168,32 @@ const Home = ({}: Props) => {
       return null;
     }
     return getRandomHeroPost(homeData, provider?.value);
-  }, [homeData, provider?.value]);
+  }, [homeData, provider?.value, heroRetryNonce]);
 
   // Update hero only when hero post actually changes
+  React.useEffect(() => {
+    heroImageErrorCountRef.current = 0;
+  }, [provider?.value]);
+
+  const handleHeroImageError = useCallback(
+    (failedLink?: string) => {
+      if (!provider?.value) {
+        return;
+      }
+      if (heroImageErrorCountRef.current >= HERO_IMAGE_RETRY_LIMIT) {
+        return;
+      }
+      heroImageErrorCountRef.current += 1;
+      clearHeroCache(provider.value);
+      cacheStorage.delete(`heroCache:${provider.value}`);
+      if (failedLink && ARCHIVE_HERO_PROVIDERS.has(provider.value)) {
+        writeHeroHistory(provider.value, failedLink);
+      }
+      setHeroRetryNonce(value => value + 1);
+    },
+    [provider?.value],
+  );
+
   React.useEffect(() => {
     let isActive = true;
     const controller = new AbortController();
@@ -247,7 +273,7 @@ const Home = ({}: Props) => {
       isActive = false;
       controller.abort();
     };
-  }, [heroPost, provider?.value, setHero, heroCacheTtlMs]);
+  }, [heroPost, provider?.value, setHero, heroCacheTtlMs, heroRetryNonce]);
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
@@ -370,6 +396,7 @@ const Home = ({}: Props) => {
               <HeroOptimized
                 isDrawerOpen={isDrawerOpen}
                 onOpenDrawer={() => setIsDrawerOpen(true)}
+                onImageError={handleHeroImageError}
               />
 
               <ContinueWatching />
