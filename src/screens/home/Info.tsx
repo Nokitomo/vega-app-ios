@@ -10,7 +10,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
@@ -33,6 +33,8 @@ import {useTranslation} from 'react-i18next';
 // import {BlurView} from 'expo-blur';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Info'>;
+const PLACEHOLDER_IMAGE =
+  'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega';
 export default function Info({route, navigation}: Props): React.JSX.Element {
   const searchNavigation =
     useNavigation<NativeStackNavigationProp<TabStackParamList>>();
@@ -59,6 +61,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const [readMore, setReadMore] = useState(false);
   const [menuPosition, setMenuPosition] = useState({top: -1000, right: 0});
   const [backgroundColor, setBackgroundColor] = useState('transparent');
+  const [backgroundFallback, setBackgroundFallback] = useState<string | null>(
+    null,
+  );
+  const [backgroundErrorCount, setBackgroundErrorCount] = useState(0);
   const [logoError, setLogoError] = useState(false);
   const [infoView, setInfoView] = useState<'episodes' | 'related'>('episodes');
 
@@ -165,7 +171,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       meta?.poster ||
       route.params.poster ||
       info?.image ||
-      'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
+      PLACEHOLDER_IMAGE
     );
   }, [meta?.poster, route.params.poster, info?.image]);
 
@@ -177,14 +183,52 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       return (
         info?.background ||
         info?.image ||
-        'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
+        PLACEHOLDER_IMAGE
       );
     }
     return (
       info?.image ||
-      'https://placehold.jp/24/363636/ffffff/500x500.png?text=Vega'
+      PLACEHOLDER_IMAGE
     );
   }, [meta?.background, providerValue, hasImdbMeta, info?.background, info?.image]);
+  const providerBackgroundFallback = useMemo(
+    () => info?.background || info?.image || PLACEHOLDER_IMAGE,
+    [info?.background, info?.image],
+  );
+  const resolvedBackgroundImage = backgroundFallback || backgroundImage;
+
+  useEffect(() => {
+    setBackgroundFallback(null);
+    setBackgroundErrorCount(0);
+  }, [backgroundImage, providerBackgroundFallback, route.params.link]);
+
+  const handleBackgroundError = useCallback(
+    (event: any) => {
+      console.warn('Background image failed to load:', event);
+      if (
+        backgroundErrorCount === 0 &&
+        providerBackgroundFallback &&
+        providerBackgroundFallback !== backgroundImage
+      ) {
+        setBackgroundFallback(providerBackgroundFallback);
+        setBackgroundErrorCount(1);
+        return;
+      }
+      if (
+        backgroundErrorCount === 1 &&
+        resolvedBackgroundImage !== PLACEHOLDER_IMAGE
+      ) {
+        setBackgroundFallback(PLACEHOLDER_IMAGE);
+        setBackgroundErrorCount(2);
+      }
+    },
+    [
+      backgroundErrorCount,
+      providerBackgroundFallback,
+      backgroundImage,
+      resolvedBackgroundImage,
+    ],
+  );
 
   const currentInfoEntry = useMemo(
     () => ({
@@ -373,11 +417,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
           <View className="absolute w-full h-[256px]">
             <SkeletonLoader show={infoLoading} height={256} width={'100%'}>
               <Image
-                source={{uri: backgroundImage}}
+                source={{uri: resolvedBackgroundImage}}
                 className=" h-[256] w-full"
-                onError={e => {
-                  console.warn('Background image failed to load:', e);
-                }}
+                onError={handleBackgroundError}
               />
             </SkeletonLoader>
           </View>
