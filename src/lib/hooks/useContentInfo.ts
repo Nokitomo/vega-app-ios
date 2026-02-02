@@ -119,7 +119,7 @@ export const useContentDetails = (link: string, providerValue: string) => {
     info,
     meta,
     isLoading: infoLoading || metaLoading,
-    error: infoError || metaError,
+    error: infoError || (!info ? metaError : undefined),
     refetch: async () => {
       await Promise.all([refetchInfo(), refetchMeta()]);
     },
