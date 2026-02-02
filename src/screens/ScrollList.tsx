@@ -272,7 +272,7 @@ const ScrollList = ({route}: Props): React.ReactElement => {
   };
 
   return (
-    <View className="h-full w-full bg-black items-center p-4">
+    <View className="h-full w-full bg-black items-center p-4" style={{flex: 1}}>
       <View className="w-full px-4 font-semibold my-6 flex-row justify-between items-center">
         <View className="flex-row items-center gap-2">
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -405,7 +405,6 @@ const ScrollList = ({route}: Props): React.ReactElement => {
             numColumns={viewType === 1 ? 3 : 1}
             key={`view-type-${viewType}`}
             contentContainerStyle={{paddingBottom: 80}}
-            style={{flex: 1, width: '100%'}}
             keyExtractor={(item, i) => `${item.title}-${i}`}
             renderItem={({item}) => (
               <TouchableOpacity
