@@ -1,6 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import {useState, useEffect} from 'react';
 import {ToastAndroid} from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 import {providerManager} from '../services/ProviderManager';
 import {settingsStorage} from '../storage';
 import {ifExists} from '../file/ifExists';
@@ -13,6 +14,131 @@ interface UseStreamOptions {
   provider: string;
   enabled?: boolean;
 }
+
+type SubtitleTrack = {
+  title?: string;
+  language?: string;
+  type?: string;
+  uri?: string;
+  headers?: Record<string, string>;
+};
+
+const SUBTITLE_CACHE_DIR = FileSystem.cacheDirectory
+  ? `${FileSystem.cacheDirectory}subtitles/`
+  : null;
+
+const ensureSubtitleCacheDir = async (): Promise<string | null> => {
+  if (!SUBTITLE_CACHE_DIR) {
+    return null;
+  }
+  const info = await FileSystem.getInfoAsync(SUBTITLE_CACHE_DIR);
+  if (!info.exists) {
+    await FileSystem.makeDirectoryAsync(SUBTITLE_CACHE_DIR, {
+      intermediates: true,
+    });
+  }
+  return SUBTITLE_CACHE_DIR;
+};
+
+const isRemoteSubtitleUri = (uri: string): boolean => {
+  return /^https?:\/\//i.test(uri);
+};
+
+const extractSubtitleExtension = (uri: string): string => {
+  const clean = uri.split('?')[0]?.split('#')[0] || '';
+  const match = clean.match(/\.(vtt|srt|ttml)$/i);
+  if (match) {
+    return match[1].toLowerCase();
+  }
+  return 'vtt';
+};
+
+const hashString = (value: string): string => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) % 4294967296;
+  }
+  return Math.abs(hash).toString(16);
+};
+
+const normalizeSubtitleHeaders = (
+  headers?: Record<string, string>,
+): Record<string, string> | undefined => {
+  if (!headers || typeof headers !== 'object') {
+    return undefined;
+  }
+  const entries = Object.entries(headers).filter(
+    ([key, value]) => key && value != null && value !== '',
+  );
+  if (entries.length === 0) {
+    return undefined;
+  }
+  return entries.reduce<Record<string, string>>((acc, [key, value]) => {
+    acc[key] = String(value);
+    return acc;
+  }, {});
+};
+
+const resolveSubtitleTrack = async (
+  track: SubtitleTrack,
+  cacheDir: string | null,
+): Promise<SubtitleTrack> => {
+  const uri = typeof track.uri === 'string' ? track.uri.trim() : '';
+  if (!uri || !isRemoteSubtitleUri(uri)) {
+    return {...track, headers: undefined};
+  }
+  if (!cacheDir) {
+    return {...track, headers: undefined};
+  }
+
+  const extension = extractSubtitleExtension(uri);
+  const fileName = `${hashString(uri)}.${extension}`;
+  const fileUri = `${cacheDir}${fileName}`;
+  const headers = normalizeSubtitleHeaders(track.headers);
+
+  try {
+    const info = await FileSystem.getInfoAsync(fileUri);
+    if (!info.exists || !info.size) {
+      await FileSystem.downloadAsync(uri, fileUri, {
+        headers,
+      });
+    }
+    return {
+      ...track,
+      uri: fileUri,
+      headers: undefined,
+    };
+  } catch (error) {
+    return {...track, headers: undefined};
+  }
+};
+
+const resolveExternalSubtitles = async (
+  tracks: SubtitleTrack[],
+): Promise<SubtitleTrack[]> => {
+  if (!tracks || tracks.length === 0) {
+    return [];
+  }
+  const cacheDir = await ensureSubtitleCacheDir();
+  const resolvedCache = new Map<string, Promise<SubtitleTrack>>();
+
+  const resolveWithCache = (track: SubtitleTrack): Promise<SubtitleTrack> => {
+    const uri = typeof track.uri === 'string' ? track.uri.trim() : '';
+    const key = uri ? `uri:${uri}` : `track:${Math.random()}`;
+    if (!resolvedCache.has(key)) {
+      resolvedCache.set(key, resolveSubtitleTrack(track, cacheDir));
+    }
+    return resolvedCache.get(key) as Promise<SubtitleTrack>;
+  };
+
+  const resolved = await Promise.all(tracks.map(resolveWithCache));
+  return resolved.map(track => ({
+    title: track.title,
+    language: track.language,
+    type: track.type,
+    uri: track.uri,
+  }));
+};
 
 export const useStream = ({
   activeEpisode,
@@ -112,18 +238,49 @@ export const useStream = ({
 
   // Update selected stream when data changes
   useEffect(() => {
-    if (streamData && streamData.length > 0) {
-      setSelectedStream(streamData[0]);
+    let isActive = true;
 
-      // Extract external subtitles
-      const subs: any[] = [];
-      streamData.forEach(track => {
-        if (track?.subtitles?.length && track.subtitles.length > 0) {
-          subs.push(...track.subtitles);
+    const updateStreams = async () => {
+      if (streamData && streamData.length > 0) {
+        setSelectedStream(streamData[0]);
+
+        // Extract external subtitles (preserve stream headers for protected files)
+        const subs: SubtitleTrack[] = [];
+        streamData.forEach(stream => {
+          if (stream?.subtitles?.length && stream.subtitles.length > 0) {
+            stream.subtitles.forEach(track => {
+              subs.push({
+                ...track,
+                headers:
+                  stream.headers && typeof stream.headers === 'object'
+                    ? stream.headers
+                    : undefined,
+              });
+            });
+          }
+        });
+
+        const resolvedSubs = await resolveExternalSubtitles(subs);
+        if (isActive) {
+          setExternalSubs(resolvedSubs);
         }
-      });
-      setExternalSubs(subs);
-    }
+        return;
+      }
+
+      if (isActive) {
+        setExternalSubs([]);
+      }
+    };
+
+    updateStreams().catch(() => {
+      if (isActive) {
+        setExternalSubs([]);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
   }, [streamData]);
 
   // Handle errors
