@@ -9,6 +9,7 @@ import useWatchListStore from '../lib/zustand/watchListStore';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {StatusBar} from 'expo-status-bar';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../lib/utils/helpers';
 
 const WatchList = () => {
   const {primary} = useThemeStore(state => state);
@@ -60,6 +61,15 @@ const WatchList = () => {
           }}
           source={{uri: item.poster}}
         />
+        {hasItaBadge(item.title) ? (
+          <View
+            className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+            style={{backgroundColor: primary}}>
+            <Text className="text-black text-[10px] font-semibold">
+              {t('ITA')}
+            </Text>
+          </View>
+        ) : null}
         <Text
           className="text-white text-xs truncate text-center mt-1"
           style={{maxWidth: itemWidth}}
