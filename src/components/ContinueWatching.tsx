@@ -18,6 +18,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import useUiSettingsStore from '../lib/zustand/uiSettingsStore';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../lib/utils/helpers';
 
 const ContinueWatching = () => {
   const {primary} = useThemeStore(state => state);
@@ -44,7 +45,6 @@ const ContinueWatching = () => {
     }
     return t('Ep. {{number}}', {number: match[0]});
   };
-  const hasItaBadge = (title?: string) => /\(\s*ita\s*\)/i.test(title || '');
 
   // Filter out duplicates and get the most recent items
   const recentItems = React.useMemo(() => {
