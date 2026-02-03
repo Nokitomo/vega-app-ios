@@ -121,6 +121,10 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         : post.episodeLabel,
     [t],
   );
+  const hasItaBadge = useCallback(
+    (title?: string) => /\(\s*ita\s*\)/i.test(title || ''),
+    [],
+  );
   const gridColumns = 3;
   const gridFallbackHorizontalPadding = 32;
   const gridMaxItemWidth = 100;
@@ -362,6 +366,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                                 </View>
                               ) : null;
                             })()}
+                            {hasItaBadge(item.title) ? (
+                              <View
+                                className="absolute top-1 left-1 rounded-full px-2 py-0.5"
+                                style={{backgroundColor: primary}}>
+                                <Text className="text-black text-[10px] font-semibold">
+                                  {t('ITA')}
+                                </Text>
+                              </View>
+                            ) : null}
                           </View>
                           <Text
                             className="text-white text-center truncate text-xs"
@@ -449,6 +462,15 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                       </View>
                     ) : null;
                   })()}
+                  {hasItaBadge(item.title) ? (
+                    <View
+                      className="absolute top-1 left-1 rounded-full px-2 py-0.5"
+                      style={{backgroundColor: primary}}>
+                      <Text className="text-black text-[10px] font-semibold">
+                        {t('ITA')}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
                 <Text
                   className={
