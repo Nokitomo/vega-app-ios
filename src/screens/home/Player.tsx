@@ -85,6 +85,7 @@ const Player = ({route}: Props): React.JSX.Element => {
   // Player ref
   const playerRef: React.RefObject<VideoRef> = useRef(null);
   const hasSetInitialTracksRef = useRef(false);
+  const loadedDurationRef = useRef(0);
   const streamRetryRef = useRef({
     retryKey: '',
     count: 0,
@@ -583,6 +584,10 @@ const Player = ({route}: Props): React.JSX.Element => {
     }
   }, [externalSubs, hasExpectedExternalSubs, triggerSubtitleReload]);
 
+  useEffect(() => {
+    loadedDurationRef.current = 0;
+  }, [activeEpisode?.link]);
+
   // Reset track selections when stream changes
   useEffect(() => {
     setSelectedAudioTrackIndex(0);
@@ -835,7 +840,12 @@ const Player = ({route}: Props): React.JSX.Element => {
         },
       },
       onProgress: handleProgress,
-      onLoad: () => {
+      onLoad: (data: any) => {
+        const duration =
+          typeof data?.duration === 'number' ? data.duration : 0;
+        if (Number.isFinite(duration) && duration > 0) {
+          loadedDurationRef.current = duration;
+        }
         const seekTarget =
           subtitleReloadSeekRef.current != null
             ? subtitleReloadSeekRef.current
@@ -930,6 +940,23 @@ const Player = ({route}: Props): React.JSX.Element => {
       processVideoTracks,
     ],
   );
+
+  const currentPosition = Number.isFinite(videoPositionRef.current.position)
+    ? videoPositionRef.current.position
+    : 0;
+  const effectiveDuration = Math.max(
+    Number.isFinite(videoPositionRef.current.duration)
+      ? videoPositionRef.current.duration
+      : 0,
+    Number.isFinite(loadedDurationRef.current) ? loadedDurationRef.current : 0,
+  );
+  const hasNextEpisode =
+    route.params?.episodeList?.indexOf(activeEpisode) <
+    route.params?.episodeList?.length - 1;
+  const shouldShowNext =
+    hasNextEpisode &&
+    effectiveDuration > 0 &&
+    currentPosition / effectiveDuration > 0.8;
 
   // Show loading state
   if (isPreparingPlayer) {
@@ -1139,18 +1166,14 @@ const Player = ({route}: Props): React.JSX.Element => {
           </TouchableOpacity>
 
           {/* Next episode button */}
-          {route.params?.episodeList?.indexOf(activeEpisode) <
-            route.params?.episodeList?.length - 1 &&
-            videoPositionRef.current.position /
-              videoPositionRef.current.duration >
-              0.8 && (
-              <TouchableOpacity
-                className="flex-row items-center opacity-60"
-                onPress={handleNextEpisode}>
-                <Text className="text-white text-base">{t('Next')}</Text>
-                <MaterialIcons name="skip-next" size={28} color="white" />
-              </TouchableOpacity>
-            )}
+          {shouldShowNext && (
+            <TouchableOpacity
+              className="flex-row items-center opacity-60"
+              onPress={handleNextEpisode}>
+              <Text className="text-white text-base">{t('Next')}</Text>
+              <MaterialIcons name="skip-next" size={28} color="white" />
+            </TouchableOpacity>
+          )}
         </Animated.View>
       )}
 
