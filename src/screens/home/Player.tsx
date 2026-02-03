@@ -22,6 +22,7 @@ import {cacheStorage, settingsStorage} from '../../lib/storage';
 import VideoPlayer from '@8man/react-native-media-console';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import {BlurView} from 'expo-blur';
 import {
   VideoRef,
   SelectedVideoTrack,
@@ -449,6 +450,17 @@ const Player = ({route}: Props): React.JSX.Element => {
     route.params?.type,
     t,
   ]);
+
+  const nextButtonOpacity = useSharedValue(showControls ? 1 : 0.5);
+  useEffect(() => {
+    nextButtonOpacity.value = withTiming(showControls ? 1 : 0.5, {
+      duration: 200,
+    });
+  }, [showControls, nextButtonOpacity]);
+
+  const nextButtonStyle = useAnimatedStyle(() => ({
+    opacity: nextButtonOpacity.value,
+  }));
 
   const extractHttpStatus = useCallback((errorEvent: any) => {
     const stackTrace = errorEvent?.error?.errorStackTrace || '';
@@ -1253,17 +1265,37 @@ const Player = ({route}: Props): React.JSX.Element => {
       )}
 
       {/* Next episode button */}
-      {!isPlayerLocked && showControls && shouldShowNext && (
+      {!isPlayerLocked && shouldShowNext && (
         <Animated.View
-          style={[controlsStyle]}
+          style={[nextButtonStyle]}
           className="absolute bottom-24 right-5 z-50">
           <TouchableOpacity
-            className="flex-row items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2"
+            activeOpacity={0.85}
+            className="rounded-full overflow-hidden"
             onPress={handleNextEpisode}>
-            <Text className="text-white text-sm font-semibold uppercase">
-              {t('Next')}
-            </Text>
-            <MaterialIcons name="skip-next" size={22} color="white" />
+            <BlurView
+              intensity={showControls ? 35 : 15}
+              tint="dark"
+              experimentalBlurMethod="dimezisBlurView"
+              style={{
+                borderWidth: 1,
+                borderColor: showControls
+                  ? 'rgba(255,255,255,0.25)'
+                  : 'rgba(255,255,255,0.12)',
+              }}
+              className="flex-row items-center gap-2 px-4 py-2">
+              <Text
+                style={{opacity: showControls ? 1 : 0.7}}
+                className="text-white text-sm font-semibold uppercase">
+                {t('Next')}
+              </Text>
+              <MaterialIcons
+                name="skip-next"
+                size={22}
+                color="white"
+                style={{opacity: showControls ? 1 : 0.7}}
+              />
+            </BlurView>
           </TouchableOpacity>
         </Animated.View>
       )}
