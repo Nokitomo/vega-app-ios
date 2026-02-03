@@ -41,6 +41,7 @@ import {FlashList} from '@shopify/flash-list';
 import SearchSubtitles from '../../components/SearchSubtitles';
 import useWatchHistoryStore from '../../lib/zustand/watchHistrory';
 import {useStream, useVideoSettings} from '../../lib/hooks/useStream';
+import {useContentInfo} from '../../lib/hooks/useContentInfo';
 import {
   usePlayerProgress,
   usePlayerSettings,
@@ -74,6 +75,102 @@ const exitFullScreen = () => {
 
 const STREAM_RETRY_COOLDOWN_MS = 3000;
 const SUBTITLE_GATE_TIMEOUT_MS = 1500;
+const ANISKIP_BASE_URL = 'https://api.aniskip.com/v2/skip-times';
+const ANISKIP_TYPES = ['op', 'mixed-op'];
+const SKIP_INTRO_TIMEOUT_MS = 8000;
+const SKIP_INTRO_LEAD_SECONDS = 1.5;
+
+type SkipIntroInterval = {
+  startTime: number;
+  endTime: number;
+};
+
+type AniSkipResult = {
+  interval?: {
+    startTime?: number;
+    endTime?: number;
+  };
+  skipType?: string;
+};
+
+const parseEpisodeNumberFromTitle = (title?: string): number | undefined => {
+  if (!title) {
+    return undefined;
+  }
+  const match = title.match(/(\d+(?:\.\d+)?)/);
+  if (!match) {
+    return undefined;
+  }
+  const parsed = Number.parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const buildAniSkipUrl = (
+  malId: number,
+  episodeNumber: number,
+  episodeLength: number,
+): string => {
+  const typesQuery = ANISKIP_TYPES.map(type => `types=${type}`).join('&');
+  const length = Math.max(0, Math.round(episodeLength));
+  return `${ANISKIP_BASE_URL}/${malId}/${episodeNumber}?${typesQuery}&episodeLength=${length}`;
+};
+
+const pickIntroInterval = (
+  results: AniSkipResult[],
+  episodeDuration: number,
+): SkipIntroInterval | null => {
+  const normalized = results
+    .map(result => ({
+      skipType: result.skipType || '',
+      startTime:
+        typeof result.interval?.startTime === 'number'
+          ? result.interval.startTime
+          : Number.NaN,
+      endTime:
+        typeof result.interval?.endTime === 'number'
+          ? result.interval.endTime
+          : Number.NaN,
+    }))
+    .filter(
+      item =>
+        Number.isFinite(item.startTime) &&
+        Number.isFinite(item.endTime) &&
+        item.endTime > item.startTime,
+    );
+
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  const preferred = normalized.filter(item => item.skipType === 'op');
+  const candidates =
+    preferred.length > 0
+      ? preferred
+      : normalized.filter(item => item.skipType === 'mixed-op');
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const sorted = [...candidates].sort((a, b) => {
+    if (a.startTime !== b.startTime) {
+      return a.startTime - b.startTime;
+    }
+    return b.endTime - a.endTime;
+  });
+  const chosen = sorted[0];
+  const endTime =
+    episodeDuration > 0
+      ? Math.min(chosen.endTime, episodeDuration)
+      : chosen.endTime;
+  if (endTime <= chosen.startTime) {
+    return null;
+  }
+
+  return {
+    startTime: Math.max(0, chosen.startTime),
+    endTime,
+  };
+};
 
 const Player = ({route}: Props): React.JSX.Element => {
   const {primary} = useThemeStore(state => state);
@@ -210,6 +307,15 @@ const Player = ({route}: Props): React.JSX.Element => {
     updatePlaybackInfo,
   });
 
+  const providerValue = route.params?.providerValue || provider.value || '';
+  const infoLinkForSkip =
+    providerValue === 'animeunity' ? route.params?.infoUrl || '' : '';
+  const {data: skipInfo} = useContentInfo(infoLinkForSkip, providerValue);
+
+  const [skipIntroInterval, setSkipIntroInterval] =
+    useState<SkipIntroInterval | null>(null);
+  const [episodeDuration, setEpisodeDuration] = useState(0);
+  const skipIntroAbortRef = useRef<AbortController | null>(null);
   const [subtitleGatePassed, setSubtitleGatePassed] = useState(true);
   const [videoReloadNonce, setVideoReloadNonce] = useState(0);
   const subtitleGateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -306,6 +412,10 @@ const Player = ({route}: Props): React.JSX.Element => {
       t('None')
     );
   }, [mergedTextTracks, selectedTextTrackIndex, t]);
+  const skipMalId = useMemo(() => {
+    const raw = skipInfo?.extra?.ids?.malId;
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined;
+  }, [skipInfo?.extra?.ids?.malId]);
 
   // Memoized watched duration
   const watchedDuration = useMemo(() => {
@@ -451,6 +561,15 @@ const Player = ({route}: Props): React.JSX.Element => {
     t,
   ]);
 
+  const handleSkipIntro = useCallback(() => {
+    if (!skipIntroInterval) {
+      return;
+    }
+    playerRef?.current?.seek(skipIntroInterval.endTime);
+    setShowControls(true);
+  }, [skipIntroInterval, setShowControls]);
+
+
   const nextButtonOpacity = useSharedValue(showControls ? 1 : 0.5);
   useEffect(() => {
     nextButtonOpacity.value = withTiming(showControls ? 1 : 0.5, {
@@ -461,6 +580,109 @@ const Player = ({route}: Props): React.JSX.Element => {
   const nextButtonStyle = useAnimatedStyle(() => ({
     opacity: nextButtonOpacity.value,
   }));
+  const overlayButtonContainerStyle = useMemo(
+    () => ({
+      borderWidth: 1,
+      borderColor: showControls
+        ? 'rgba(255,255,255,0.25)'
+        : 'rgba(255,255,255,0.2)',
+      shadowColor: '#000',
+      shadowOpacity: showControls ? 0.2 : 0.35,
+      shadowRadius: showControls ? 4 : 6,
+      shadowOffset: {width: 0, height: 2},
+      elevation: showControls ? 3 : 5,
+    }),
+    [showControls],
+  );
+  const overlayBlurIntensity = showControls ? 12 : 6;
+  const overlayBackgroundColor = showControls
+    ? 'rgba(0,0,0,0.35)'
+    : 'rgba(0,0,0,0.65)';
+  const overlayTextOpacity = showControls ? 1 : 0.9;
+
+  useEffect(() => {
+    if (skipIntroAbortRef.current) {
+      skipIntroAbortRef.current.abort();
+      skipIntroAbortRef.current = null;
+    }
+
+    if (providerValue !== 'animeunity') {
+      setSkipIntroInterval(null);
+      return;
+    }
+    if (!skipMalId || !episodeNumber || episodeDuration <= 0) {
+      setSkipIntroInterval(null);
+      return;
+    }
+
+    const duration = Math.round(episodeDuration);
+    const cacheKey = `aniskip:v2:${skipMalId}:${episodeNumber}:${duration}`;
+    const cached = cacheStorage.getString(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const interval = parsed?.interval;
+        if (
+          interval &&
+          Number.isFinite(interval.startTime) &&
+          Number.isFinite(interval.endTime) &&
+          interval.endTime > interval.startTime
+        ) {
+          setSkipIntroInterval(interval);
+          return;
+        }
+        if (parsed?.interval === null) {
+          setSkipIntroInterval(null);
+          return;
+        }
+      } catch (error) {
+        cacheStorage.delete(cacheKey);
+      }
+    }
+
+    setSkipIntroInterval(null);
+
+    const controller = new AbortController();
+    skipIntroAbortRef.current = controller;
+    const timeoutId = setTimeout(() => controller.abort(), SKIP_INTRO_TIMEOUT_MS);
+
+    const fetchSkip = async () => {
+      try {
+        const url = buildAniSkipUrl(skipMalId, episodeNumber, duration);
+        const response = await fetch(url, {signal: controller.signal});
+        if (!response.ok) {
+          throw new Error(`AniSkip HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        if (!data?.found || !Array.isArray(data?.results)) {
+          cacheStorage.setString(cacheKey, JSON.stringify({interval: null}));
+          return;
+        }
+        const interval = pickIntroInterval(data.results, duration);
+        cacheStorage.setString(
+          cacheKey,
+          JSON.stringify({interval: interval || null}),
+        );
+        if (interval) {
+          setSkipIntroInterval(interval);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        console.warn('AniSkip request failed', error);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    fetchSkip();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [episodeDuration, episodeNumber, providerValue, skipMalId]);
 
   const extractHttpStatus = useCallback((errorEvent: any) => {
     const stackTrace = errorEvent?.error?.errorStackTrace || '';
@@ -650,6 +872,11 @@ const Player = ({route}: Props): React.JSX.Element => {
       }
     };
   }, [activeEpisode?.link, hasExpectedExternalSubs, selectedStream?.link]);
+
+  useEffect(() => {
+    setEpisodeDuration(0);
+    setSkipIntroInterval(null);
+  }, [activeEpisode?.link]);
 
   useEffect(() => {
     if (!hasExpectedExternalSubs || !externalSubs) {
@@ -933,6 +1160,7 @@ const Player = ({route}: Props): React.JSX.Element => {
           typeof data?.duration === 'number' ? data.duration : 0;
         if (Number.isFinite(duration) && duration > 0) {
           loadedDurationRef.current = duration;
+          setEpisodeDuration(prev => (prev === duration ? prev : duration));
         }
         const seekTarget =
           subtitleReloadSeekRef.current != null
@@ -1042,6 +1270,12 @@ const Player = ({route}: Props): React.JSX.Element => {
   const currentEpisodeIndex = episodeList.findIndex(
     item => item?.link === activeEpisode?.link,
   );
+  const episodeNumberFromTitle = parseEpisodeNumberFromTitle(
+    activeEpisode?.title,
+  );
+  const fallbackEpisodeNumber =
+    currentEpisodeIndex >= 0 ? currentEpisodeIndex + 1 : undefined;
+  const episodeNumber = episodeNumberFromTitle ?? fallbackEpisodeNumber;
   const hasNextEpisodeInSeason =
     currentEpisodeIndex >= 0 && currentEpisodeIndex < episodeList.length - 1;
   const hasNextEpisode =
@@ -1053,6 +1287,11 @@ const Player = ({route}: Props): React.JSX.Element => {
       : 0;
   const shouldShowNext =
     hasNextEpisode && effectiveDuration > 0 && remainingSeconds <= 90;
+  const shouldShowSkipIntro =
+    !!skipIntroInterval &&
+    currentPosition >=
+      Math.max(0, skipIntroInterval.startTime - SKIP_INTRO_LEAD_SECONDS) &&
+    currentPosition < skipIntroInterval.endTime;
 
   // Show loading state
   if (isPreparingPlayer) {
@@ -1264,6 +1503,41 @@ const Player = ({route}: Props): React.JSX.Element => {
         </Animated.View>
       )}
 
+      {/* Skip intro button */}
+      {!isPlayerLocked && shouldShowSkipIntro && (
+        <Animated.View
+          style={[nextButtonStyle]}
+          className="absolute bottom-24 right-5 z-50">
+          <TouchableOpacity
+            activeOpacity={0.85}
+            className="rounded-full"
+            onPress={handleSkipIntro}>
+            <View style={overlayButtonContainerStyle} className="rounded-full overflow-hidden">
+              <BlurView
+                intensity={overlayBlurIntensity}
+                tint="dark"
+                experimentalBlurMethod="dimezisBlurView"
+                style={{
+                  backgroundColor: overlayBackgroundColor,
+                }}
+                className="flex-row items-center gap-2 px-4 py-2">
+                <Text
+                  style={{opacity: overlayTextOpacity}}
+                  className="text-white text-sm font-semibold uppercase">
+                  {t('Skip Intro')}
+                </Text>
+                <MaterialIcons
+                  name="skip-next"
+                  size={22}
+                  color="white"
+                  style={{opacity: overlayTextOpacity}}
+                />
+              </BlurView>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
       {/* Next episode button */}
       {!isPlayerLocked && shouldShowNext && (
         <Animated.View
@@ -1274,30 +1548,18 @@ const Player = ({route}: Props): React.JSX.Element => {
             className="rounded-full"
             onPress={handleNextEpisode}>
             <View
-              style={{
-                borderWidth: 1,
-                borderColor: showControls
-                  ? 'rgba(255,255,255,0.25)'
-                  : 'rgba(255,255,255,0.2)',
-                shadowColor: '#000',
-                shadowOpacity: showControls ? 0.2 : 0.35,
-                shadowRadius: showControls ? 4 : 6,
-                shadowOffset: {width: 0, height: 2},
-                elevation: showControls ? 3 : 5,
-              }}
+              style={overlayButtonContainerStyle}
               className="rounded-full overflow-hidden">
               <BlurView
-                intensity={showControls ? 12 : 6}
+                intensity={overlayBlurIntensity}
                 tint="dark"
                 experimentalBlurMethod="dimezisBlurView"
                 style={{
-                  backgroundColor: showControls
-                    ? 'rgba(0,0,0,0.35)'
-                    : 'rgba(0,0,0,0.65)',
+                  backgroundColor: overlayBackgroundColor,
                 }}
                 className="flex-row items-center gap-2 px-4 py-2">
                 <Text
-                  style={{opacity: showControls ? 1 : 0.9}}
+                  style={{opacity: overlayTextOpacity}}
                   className="text-white text-sm font-semibold uppercase">
                   {t('Next')}
                 </Text>
@@ -1305,7 +1567,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                   name="skip-next"
                   size={22}
                   color="white"
-                  style={{opacity: showControls ? 1 : 0.9}}
+                  style={{opacity: overlayTextOpacity}}
                 />
               </BlurView>
             </View>
