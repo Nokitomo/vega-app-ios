@@ -1249,15 +1249,22 @@ const Player = ({route}: Props): React.JSX.Element => {
             </Text>
           </TouchableOpacity>
 
-          {/* Next episode button */}
-          {shouldShowNext && (
-            <TouchableOpacity
-              className="flex-row items-center opacity-60"
-              onPress={handleNextEpisode}>
-              <Text className="text-white text-base">{t('Next')}</Text>
-              <MaterialIcons name="skip-next" size={28} color="white" />
-            </TouchableOpacity>
-          )}
+        </Animated.View>
+      )}
+
+      {/* Next episode button */}
+      {!isPlayerLocked && showControls && shouldShowNext && (
+        <Animated.View
+          style={[controlsStyle]}
+          className="absolute bottom-20 right-5 z-50">
+          <TouchableOpacity
+            className="flex-row items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2"
+            onPress={handleNextEpisode}>
+            <Text className="text-white text-sm font-semibold uppercase">
+              {t('Next')}
+            </Text>
+            <MaterialIcons name="skip-next" size={22} color="white" />
+          </TouchableOpacity>
         </Animated.View>
       )}
 
