@@ -1278,16 +1278,26 @@ const Player = ({route}: Props): React.JSX.Element => {
                 borderWidth: 1,
                 borderColor: showControls
                   ? 'rgba(255,255,255,0.25)'
-                  : 'rgba(255,255,255,0.12)',
+                  : 'rgba(255,255,255,0.2)',
+                shadowColor: '#000',
+                shadowOpacity: showControls ? 0.2 : 0.35,
+                shadowRadius: showControls ? 4 : 6,
+                shadowOffset: {width: 0, height: 2},
+                elevation: showControls ? 3 : 5,
               }}
               className="rounded-full overflow-hidden">
               <BlurView
-                intensity={showControls ? 20 : 8}
+                intensity={showControls ? 12 : 6}
                 tint="dark"
                 experimentalBlurMethod="dimezisBlurView"
+                style={{
+                  backgroundColor: showControls
+                    ? 'rgba(0,0,0,0.35)'
+                    : 'rgba(0,0,0,0.65)',
+                }}
                 className="flex-row items-center gap-2 px-4 py-2">
                 <Text
-                  style={{opacity: showControls ? 1 : 0.85}}
+                  style={{opacity: showControls ? 1 : 0.9}}
                   className="text-white text-sm font-semibold uppercase">
                   {t('Next')}
                 </Text>
@@ -1295,7 +1305,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                   name="skip-next"
                   size={22}
                   color="white"
-                  style={{opacity: showControls ? 1 : 0.85}}
+                  style={{opacity: showControls ? 1 : 0.9}}
                 />
               </BlurView>
             </View>
