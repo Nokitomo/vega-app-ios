@@ -99,6 +99,20 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       event.nativeEvent.contentOffset.y > 150 ? 'black' : 'transparent',
     );
   }, []);
+  const providerTitle = useMemo(() => {
+    if (info?.titleKey) {
+      return t(info.titleKey, info.titleParams);
+    }
+    return info?.title;
+  }, [info?.titleKey, info?.titleParams, info?.title, t]);
+  const forceProviderTitle = useMemo(
+    () => providerValue === 'animeunity',
+    [providerValue],
+  );
+  const libraryTitle = useMemo(
+    () => (forceProviderTitle ? providerTitle : meta?.name || providerTitle),
+    [forceProviderTitle, meta?.name, providerTitle],
+  );
   // Optimized library management
   const addLibrary = useCallback(() => {
     ReactNativeHapticFeedback.trigger('effectClick', {
@@ -106,13 +120,13 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       ignoreAndroidSystemSettings: false,
     });
     addItem({
-      title: meta?.name || info?.title,
+      title: libraryTitle,
       poster: meta?.poster || route.params.poster || info?.image,
       link: route.params.link,
       provider: providerValue,
     });
     setInLibrary(true);
-  }, [meta, info, route.params, providerValue, addItem]);
+  }, [libraryTitle, meta, info, route.params, providerValue, addItem]);
 
   const removeLibrary = useCallback(() => {
     if (settingsStorage.isHapticFeedbackEnabled()) {
@@ -225,14 +239,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
 
   const displayTitle = useMemo(() => {
-    if (meta?.name) {
-      return meta.name;
+    if (forceProviderTitle) {
+      return providerTitle;
     }
-    if (info?.titleKey) {
-      return t(info.titleKey, info.titleParams);
-    }
-    return info?.title;
-  }, [meta?.name, info?.title, info?.titleKey, info?.titleParams, t]);
+    return meta?.name || providerTitle;
+  }, [forceProviderTitle, meta?.name, providerTitle]);
 
   const posterImage = useMemo(() => {
     return (
