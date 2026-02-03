@@ -22,6 +22,7 @@ const WatchHistory = ({navigation}: Props) => {
   const {t} = useTranslation();
   const {history, clearHistory} = useWatchHistoryStore(state => state);
   const [progressData, setProgressData] = useState<Record<string, number>>({});
+  const hasItaBadge = (title?: string) => /\(\s*ita\s*\)/i.test(title || '');
 
   // Filter out duplicates by link, keeping only the most recent entry
   const uniqueHistory = React.useMemo(() => {
@@ -184,6 +185,7 @@ const WatchHistory = ({navigation}: Props) => {
         renderItem={({item}) => {
           // Get the progress for this item
           const progress = progressData[item.link] || 0;
+          const showItaBadge = hasItaBadge(item.title);
 
           return (
             <View className="flex-1 m-1">
@@ -195,6 +197,15 @@ const WatchHistory = ({navigation}: Props) => {
                     source={{uri: item.image}}
                     className="w-full aspect-[2/3] rounded-lg"
                   />
+                  {showItaBadge ? (
+                    <View
+                      className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+                      style={{backgroundColor: primary, zIndex: 15}}>
+                      <Text className="text-black text-[10px] font-semibold">
+                        {t('ITA')}
+                      </Text>
+                    </View>
+                  ) : null}
 
                   {/* Enhanced Progress Bar */}
                   <View
