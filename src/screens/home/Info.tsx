@@ -137,10 +137,6 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       (!!info?.extra?.ids?.malId || !!info?.extra?.ids?.anilistId),
     [providerValue, info?.extra?.ids?.malId, info?.extra?.ids?.anilistId],
   );
-  const allowProviderFallback = useMemo(
-    () => allowProviderMetadata && !hasAnimeExternalIds,
-    [allowProviderMetadata, hasAnimeExternalIds],
-  );
   const allowProviderStudio = useMemo(() => {
     if (!allowProviderMetadata || !info?.studio) {
       return false;
@@ -155,6 +151,46 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     providerValue,
     hasAnimeExternalIds,
   ]);
+  const hasMetaYear = useMemo(
+    () => meta?.year != null && String(meta.year).trim() !== '',
+    [meta?.year],
+  );
+  const hasMetaRuntime = useMemo(
+    () => meta?.runtime != null && String(meta.runtime).trim() !== '',
+    [meta?.runtime],
+  );
+  const hasMetaRating = useMemo(
+    () => meta?.imdbRating != null && String(meta.imdbRating).trim() !== '',
+    [meta?.imdbRating],
+  );
+  const hasMetaGenres = useMemo(
+    () => Array.isArray(meta?.genres) && meta.genres.length > 0,
+    [meta?.genres],
+  );
+  const hasMetaCast = useMemo(
+    () => Array.isArray(meta?.cast) && meta.cast.length > 0,
+    [meta?.cast],
+  );
+  const allowProviderYear = useMemo(
+    () => allowProviderMetadata && (!hasAnimeExternalIds || !hasMetaYear),
+    [allowProviderMetadata, hasAnimeExternalIds, hasMetaYear],
+  );
+  const allowProviderRuntime = useMemo(
+    () => allowProviderMetadata && (!hasAnimeExternalIds || !hasMetaRuntime),
+    [allowProviderMetadata, hasAnimeExternalIds, hasMetaRuntime],
+  );
+  const allowProviderRating = useMemo(
+    () => allowProviderMetadata && (!hasAnimeExternalIds || !hasMetaRating),
+    [allowProviderMetadata, hasAnimeExternalIds, hasMetaRating],
+  );
+  const allowProviderGenres = useMemo(
+    () => allowProviderMetadata && (!hasAnimeExternalIds || !hasMetaGenres),
+    [allowProviderMetadata, hasAnimeExternalIds, hasMetaGenres],
+  );
+  const allowProviderCast = useMemo(
+    () => allowProviderMetadata && (!hasAnimeExternalIds || !hasMetaCast),
+    [allowProviderMetadata, hasAnimeExternalIds, hasMetaCast],
+  );
   const synopsis = useMemo(() => {
     if (providerValue === 'altadefinizionez') {
       return info?.synopsis || meta?.description || t('No synopsis available');
@@ -166,20 +202,25 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [providerValue, meta?.description, info?.synopsis, t]);
 
   const badgeYear = useMemo(() => {
-    if (meta?.year) {
+    if (hasMetaYear) {
       return meta.year;
     }
-    return allowProviderFallback ? info?.year : undefined;
-  }, [meta?.year, allowProviderFallback, info?.year]);
+    return allowProviderYear ? info?.year : undefined;
+  }, [hasMetaYear, meta?.year, allowProviderYear, info?.year]);
   const badgeRuntime = useMemo(() => {
-    if (meta?.runtime) {
+    if (hasMetaRuntime) {
       return meta.runtime;
     }
-    return allowProviderFallback ? info?.runtime : undefined;
-  }, [meta?.runtime, allowProviderFallback, info?.runtime]);
+    return allowProviderRuntime ? info?.runtime : undefined;
+  }, [hasMetaRuntime, meta?.runtime, allowProviderRuntime, info?.runtime]);
   const displayRating = useMemo(
-    () => meta?.imdbRating || (allowProviderFallback ? info?.rating : undefined),
-    [meta?.imdbRating, allowProviderFallback, info?.rating],
+    () =>
+      hasMetaRating
+        ? meta?.imdbRating
+        : allowProviderRating
+          ? info?.rating
+          : undefined,
+    [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
 
@@ -327,14 +368,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     t,
   ]);
   const localizedGenres = useMemo(() => {
-    if (!allowProviderFallback || !info?.genres || info.genres.length === 0) {
+    if (!allowProviderGenres || !info?.genres || info.genres.length === 0) {
       return [];
     }
     return info.genres.map(genre => {
       const key = info.tagKeys?.[genre];
       return key ? t(key) : genre;
     });
-  }, [allowProviderFallback, info?.genres, info?.tagKeys, t]);
+  }, [allowProviderGenres, info?.genres, info?.tagKeys, t]);
   const badgeGenres = useMemo(() => {
     if (meta?.genres && meta.genres.length > 0) {
       return meta.genres.slice(0, 2);
@@ -346,8 +387,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [meta?.genres, localizedGenres]);
   const metaCast = useMemo(() => meta?.cast ?? [], [meta?.cast]);
   const providerCast = useMemo(
-    () => (allowProviderFallback ? info?.cast ?? [] : []),
-    [allowProviderFallback, info?.cast],
+    () => (allowProviderCast ? info?.cast ?? [] : []),
+    [allowProviderCast, info?.cast],
   );
   const hasCast = useMemo(
     () => metaCast.length > 0 || providerCast.length > 0,
@@ -356,12 +397,12 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   const showInfoDetails = useMemo(
     () =>
       allowProviderStudio ||
-      (allowProviderFallback && info?.genres && info.genres.length > 0) ||
+      (allowProviderGenres && info?.genres && info.genres.length > 0) ||
       (showProviderFallback && !hasAnimeExternalIds) &&
         (!!info?.country || !!info?.director),
     [
-      allowProviderFallback,
       allowProviderStudio,
+      allowProviderGenres,
       info?.studio,
       info?.genres,
       showProviderFallback,
@@ -762,7 +803,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                           {t('Studio: {{name}}', {name: info.studio})}
                         </Text>
                       ) : null}
-                      {allowProviderFallback &&
+                      {allowProviderGenres &&
                       info?.genres &&
                       info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
