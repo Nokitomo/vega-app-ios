@@ -55,6 +55,7 @@ File: src/lib/services/ProviderManager.ts
 - Nel player, su errori HTTP 403/503, viene fatto un refetch dei link stream per rigenerare i token prima di provare altri server, con cooldown per server e riuso della cache stream su mount.
 - I messaggi utente (errori e toast relativi ai provider) sono localizzati via i18n.
 - Se i provider restituiscono `Stream.headers`, l'app li usa per scaricare i sottotitoli esterni protetti e li salva in cache locale, poi li passa al player come file locali.
+- Se sono presenti sottotitoli esterni, il player attende brevemente il loro download prima di avviare lo stream; se arrivano in ritardo, viene fatto un solo reload automatico per agganciarli.
 
 ## ProviderContext
 File: src/lib/providers/providerContext.ts
