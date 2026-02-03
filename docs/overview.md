@@ -34,6 +34,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Per AnimeUnity la sinossi in Info usa sempre quella del provider, anche se sono presenti metadata esterni.
 - Per AnimeUnity con malId/anilistId, i dettagli del provider in Info sono limitati a sinossi, stato e studio; generi/cast/anno/durata/rating usano i metadata esterni quando disponibili, con fallback al provider se mancanti.
 - Per AnimeUnity il titolo mostrato in app usa sempre quello del provider.
+- In Info, per AnimeUnity doppiati, viene mostrata la dicitura "Doppiato in italiano" sotto il titolo usando info.extra.flags.dub.
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
