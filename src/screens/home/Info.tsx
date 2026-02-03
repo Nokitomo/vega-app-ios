@@ -249,7 +249,15 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     if (providerValue !== 'animeunity') {
       return false;
     }
-    return info?.extra?.flags?.dub === true;
+    const rawDub = info?.extra?.flags?.dub;
+    if (rawDub === true || rawDub === 1) {
+      return true;
+    }
+    if (typeof rawDub === 'string') {
+      const normalized = rawDub.trim().toLowerCase();
+      return normalized === '1' || normalized === 'true';
+    }
+    return false;
   }, [providerValue, info?.extra?.flags?.dub]);
 
   const posterImage = useMemo(() => {
