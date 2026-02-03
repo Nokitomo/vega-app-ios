@@ -1271,31 +1271,34 @@ const Player = ({route}: Props): React.JSX.Element => {
           className="absolute bottom-24 right-5 z-50">
           <TouchableOpacity
             activeOpacity={0.85}
-            className="rounded-full overflow-hidden"
+            className="rounded-full"
             onPress={handleNextEpisode}>
-            <BlurView
-              intensity={showControls ? 35 : 15}
-              tint="dark"
-              experimentalBlurMethod="dimezisBlurView"
+            <View
               style={{
                 borderWidth: 1,
                 borderColor: showControls
                   ? 'rgba(255,255,255,0.25)'
                   : 'rgba(255,255,255,0.12)',
               }}
-              className="flex-row items-center gap-2 px-4 py-2">
-              <Text
-                style={{opacity: showControls ? 1 : 0.7}}
-                className="text-white text-sm font-semibold uppercase">
-                {t('Next')}
-              </Text>
-              <MaterialIcons
-                name="skip-next"
-                size={22}
-                color="white"
-                style={{opacity: showControls ? 1 : 0.7}}
-              />
-            </BlurView>
+              className="rounded-full overflow-hidden">
+              <BlurView
+                intensity={showControls ? 20 : 8}
+                tint="dark"
+                experimentalBlurMethod="dimezisBlurView"
+                className="flex-row items-center gap-2 px-4 py-2">
+                <Text
+                  style={{opacity: showControls ? 1 : 0.85}}
+                  className="text-white text-sm font-semibold uppercase">
+                  {t('Next')}
+                </Text>
+                <MaterialIcons
+                  name="skip-next"
+                  size={22}
+                  color="white"
+                  style={{opacity: showControls ? 1 : 0.85}}
+                />
+              </BlurView>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       )}
