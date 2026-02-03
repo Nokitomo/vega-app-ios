@@ -122,16 +122,25 @@ export const useContentDetails = (link: string, providerValue: string) => {
     refetch: refetchInfo,
   } = useContentInfo(link, providerValue);
 
-  // Then, get enhanced metadata if imdbId is available
+  const animeIds = info?.extra?.ids;
+  const allowExternalMeta =
+    providerValue !== 'animeunity' ||
+    !!animeIds?.malId ||
+    !!animeIds?.anilistId;
+  const externalImdbId = allowExternalMeta ? info?.imdbId || '' : '';
+  const externalType = allowExternalMeta ? info?.type || '' : '';
+  const externalAnimeIds = allowExternalMeta ? animeIds : undefined;
+
+  // Then, get enhanced metadata if external IDs are available
   const {
     data: meta,
     isLoading: metaLoading,
     error: metaError,
     refetch: refetchMeta,
   } = useEnhancedMetadata(
-    info?.imdbId || '',
-    info?.type || '',
-    info?.extra?.ids,
+    externalImdbId,
+    externalType,
+    externalAnimeIds,
   );
 
   return {
