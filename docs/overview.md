@@ -32,6 +32,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
+- Il pulsante "Next" appare quando mancano circa 90 secondi alla fine e passa al prossimo episodio; se esiste una stagione successiva apre il primo episodio.
 - Su Android e disponibile l'apertura in player esterno (es. VLC).
 - L'app resta in verticale fuori dal player; il player blocca l'orizzontale.
 
