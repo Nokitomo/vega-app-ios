@@ -44,6 +44,7 @@ const ContinueWatching = () => {
     }
     return t('Ep. {{number}}', {number: match[0]});
   };
+  const hasItaBadge = (title?: string) => /\(\s*ita\s*\)/i.test(title || '');
 
   // Filter out duplicates and get the most recent items
   const recentItems = React.useMemo(() => {
@@ -233,6 +234,7 @@ const ContinueWatching = () => {
           const episodeLabel = getEpisodeLabel(
             episodeTitleData[item.link] || item.episodeTitle,
           );
+          const showItaBadge = hasItaBadge(item.title);
 
           return (
             <TouchableOpacity
@@ -253,9 +255,20 @@ const ContinueWatching = () => {
                   className="rounded-md"
                   style={{width: 100, height: 150}}
                 />
-                {episodeLabel ? (
+                {showItaBadge ? (
                   <View
                     className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+                    style={{backgroundColor: primary}}>
+                    <Text className="text-black text-[10px] font-semibold">
+                      {t('ITA')}
+                    </Text>
+                  </View>
+                ) : null}
+                {episodeLabel ? (
+                  <View
+                    className={`absolute top-2 ${
+                      showItaBadge ? 'right-2' : 'left-2'
+                    } rounded-full px-2 py-0.5`}
                     style={{backgroundColor: primary}}>
                     <Text className="text-black text-[10px] font-semibold">
                       {episodeLabel}
