@@ -39,6 +39,8 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 ## Priorita metadati (sinossi)
 - Quando sono presenti metadati esterni (Stremio per imdbId, AniList/Jikan per malId/anilistId), la UI usa quelli esterni.
 - Se manca l'imdbId ma sono disponibili malId/anilistId, la UI prova prima AniList e poi Jikan.
+- Per AnimeUnity, se mancano malId/anilistId non viene richiesto alcun metadata esterno.
+- Per AnimeUnity la sinossi usa sempre quella del provider.
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
