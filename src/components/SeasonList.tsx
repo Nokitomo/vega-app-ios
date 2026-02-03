@@ -312,6 +312,19 @@ const SeasonList: React.FC<SeasonListProps> = ({
     },
     [],
   );
+  const activeSeasonIndex = useMemo(() => {
+    if (!LinkList || LinkList.length === 0) {
+      return -1;
+    }
+    const current = activeSeasonValue || activeSeason;
+    return LinkList.findIndex(item => isSameSeason(current, item));
+  }, [LinkList, activeSeasonValue, activeSeason, isSameSeason]);
+  const nextSeason = useMemo(() => {
+    if (activeSeasonIndex < 0 || activeSeasonIndex >= LinkList.length - 1) {
+      return undefined;
+    }
+    return LinkList[activeSeasonIndex + 1];
+  }, [LinkList, activeSeasonIndex]);
 
   // React Query for episodes
   const {
@@ -676,6 +689,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
       const externalPlayer = settingsStorage.getBool('useExternalPlayer');
       const dwFile = await ifExists(file);
+      const seasonIndex =
+        activeSeasonIndex >= 0 ? activeSeasonIndex : undefined;
 
       if (externalPlayer) {
         if (dwFile) {
@@ -702,16 +717,20 @@ const SeasonList: React.FC<SeasonListProps> = ({
         poster: poster,
         providerValue: providerValue,
         infoUrl: routeParams.link,
+        seasons: LinkList,
+        seasonIndex,
       });
     },
     [
       addItem,
+      activeSeasonIndex,
       routeParams.link,
       poster,
       providerValue,
       metaTitle,
       handleExternalPlayer,
       navigation,
+      LinkList,
     ],
   );
 
@@ -837,6 +856,13 @@ const SeasonList: React.FC<SeasonListProps> = ({
     },
     [providerValue],
   );
+
+  useEffect(() => {
+    if (!nextSeason?.episodesLink) {
+      return;
+    }
+    prefetchEpisodesForLink(nextSeason.episodesLink);
+  }, [nextSeason?.episodesLink, prefetchEpisodesForLink]);
 
   useEffect(() => {
     if (!resumeProgress || LinkList.length === 0) {
