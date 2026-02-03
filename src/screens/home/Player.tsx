@@ -1256,7 +1256,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       {!isPlayerLocked && showControls && shouldShowNext && (
         <Animated.View
           style={[controlsStyle]}
-          className="absolute bottom-20 right-5 z-50">
+          className="absolute bottom-24 right-5 z-50">
           <TouchableOpacity
             className="flex-row items-center gap-2 rounded-full border border-white/25 bg-black/70 px-4 py-2"
             onPress={handleNextEpisode}>
