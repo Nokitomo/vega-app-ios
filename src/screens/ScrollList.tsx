@@ -21,6 +21,7 @@ import useThemeStore from '../lib/zustand/themeStore';
 import {providerManager} from '../lib/services/ProviderManager';
 import ProviderImage from '../components/ProviderImage';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../lib/utils/helpers';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ScrollList'>;
 
@@ -120,10 +121,6 @@ const ScrollList = ({route}: Props): React.ReactElement => {
         ? t(post.episodeLabelKey, post.episodeLabelParams)
         : post.episodeLabel,
     [t],
-  );
-  const hasItaBadge = useCallback(
-    (title?: string) => /\(\s*ita\s*\)/i.test(title || ''),
-    [],
   );
   const gridColumns = 3;
   const gridFallbackHorizontalPadding = 32;
