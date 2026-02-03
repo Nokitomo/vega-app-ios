@@ -135,6 +135,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     if (providerValue === 'altadefinizionez') {
       return info?.synopsis || meta?.description || t('No synopsis available');
     }
+    if (providerValue === 'animeunity') {
+      return info?.synopsis || t('No synopsis available');
+    }
     return meta?.description || info?.synopsis || t('No synopsis available');
   }, [providerValue, meta?.description, info?.synopsis, t]);
 
