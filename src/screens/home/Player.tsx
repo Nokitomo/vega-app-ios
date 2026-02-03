@@ -273,18 +273,6 @@ const Player = ({route}: Props): React.JSX.Element => {
     const title = typeof track.title === 'string' ? track.title : '';
     const uri = typeof track.uri === 'string' ? track.uri : '';
 
-    if (track.source === 'external') {
-      if (title) {
-        return {type: SelectedTrackType.TITLE, value: title};
-      }
-      if (language) {
-        return {type: SelectedTrackType.LANGUAGE, value: language};
-      }
-      if (uri) {
-        return {type: SelectedTrackType.TITLE, value: uri};
-      }
-    }
-
     if (typeof track.index === 'number') {
       return {
         type: SelectedTrackType.INDEX,
@@ -864,24 +852,25 @@ const Player = ({route}: Props): React.JSX.Element => {
       },
       navigator: navigation,
       seekColor: primary,
-      showDuration: true,
-      toggleResizeModeOnFullscreen: false,
-      fullscreenOrientation: 'landscape' as const,
-      fullscreenAutorotate: true,
-      onShowControls: () => setShowControls(true),
-      onHideControls: () => setShowControls(false),
-      rewindTime: 10,
-      isFullscreen: true,
-      disableFullscreen: true,
-      disableVolume: true,
-      showHours: true,
-      progressUpdateInterval: 1000,
-      showNotificationControls: showMediaControls,
-      onError: handleVideoError,
-      resizeMode,
-      selectedAudioTrack,
-      onAudioTracks: (e: any) => processAudioTracks(e.audioTracks),
-      selectedTextTrack,
+        showDuration: true,
+        toggleResizeModeOnFullscreen: false,
+        fullscreenOrientation: 'landscape' as const,
+        fullscreenAutorotate: true,
+        onShowControls: () => setShowControls(true),
+        onHideControls: () => setShowControls(false),
+        rewindTime: 10,
+        isFullscreen: true,
+        disableFullscreen: true,
+        disableVolume: true,
+        showHours: true,
+        progressUpdateInterval: 1000,
+        showNotificationControls: showMediaControls,
+        onError: handleVideoError,
+        resizeMode,
+        selectedAudioTrack,
+        onAudioTracks: (e: any) => processAudioTracks(e.audioTracks),
+        textTracks: externalSubs,
+        selectedTextTrack,
         onTextTracks: (e: any) => {
           const tracks = e?.textTracks || [];
           console.log('[subs][player] onTextTracks', {
