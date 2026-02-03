@@ -467,6 +467,19 @@ const Player = ({route}: Props): React.JSX.Element => {
     [videoPositionRef],
   );
 
+  const triggerSubtitleSelectionReload = useCallback(
+    (reason: string) => {
+      const position = videoPositionRef.current?.position ?? 0;
+      subtitleReloadSeekRef.current = Number.isFinite(position) ? position : 0;
+      console.log('[subs][player] forcing reload after subtitle selection', {
+        reason,
+        position: subtitleReloadSeekRef.current,
+      });
+      setVideoReloadNonce(value => value + 1);
+    },
+    [videoPositionRef],
+  );
+
   // Memoized cast effect
   // useEffect(() => {
   //   if (remoteMediaClient && !Platform.isTV && selectedStream?.link) {
@@ -1302,23 +1315,24 @@ const Player = ({route}: Props): React.JSX.Element => {
                     <TouchableOpacity
                       className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-2"
                       onPress={() => {
-                        const selected = buildSelectedTextTrack(track);
-                        console.log('[subs][player] subtitle selected', {
-                          track: {
-                            index: track.index,
-                            source: track.source,
-                            language: track.language,
-                            title: track.title,
-                            type: track.type,
-                            uri: track.uri,
-                          },
-                          selected,
-                        });
-                        setSelectedTextTrack(selected);
-                        setSelectedTextTrackIndex(track.index);
-                        cacheStorage.setString(
-                          'lastTextTrack',
-                          track.language || '',
+                      const selected = buildSelectedTextTrack(track);
+                      console.log('[subs][player] subtitle selected', {
+                        track: {
+                          index: track.index,
+                          source: track.source,
+                          language: track.language,
+                          title: track.title,
+                          type: track.type,
+                          uri: track.uri,
+                        },
+                        selected,
+                      });
+                      setSelectedTextTrack(selected);
+                      triggerSubtitleSelectionReload('manual-select');
+                      setSelectedTextTrackIndex(track.index);
+                      cacheStorage.setString(
+                        'lastTextTrack',
+                        track.language || '',
                       );
                       setShowSettings(false);
                     }}>
