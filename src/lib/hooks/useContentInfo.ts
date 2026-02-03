@@ -1,8 +1,8 @@
 import {useQuery} from '@tanstack/react-query';
 import {providerManager} from '../services/ProviderManager';
 import {cacheStorage} from '../storage';
-import axios from 'axios';
 import i18n from '../../i18n';
+import {buildEnhancedMetaKey, fetchEnhancedMetadata} from '../services/enhancedMeta';
 
 // Hook for fetching content info/metadata
 export const useContentInfo = (link: string, providerValue: string) => {
@@ -49,34 +49,49 @@ export const useContentInfo = (link: string, providerValue: string) => {
 };
 
 // Hook for fetching enhanced metadata from Stremio
-export const useEnhancedMetadata = (imdbId: string, type: string) => {
+export const useEnhancedMetadata = (
+  imdbId: string,
+  type: string,
+  animeIds?: {malId?: number; anilistId?: number},
+) => {
+  const metaKey = buildEnhancedMetaKey({
+    imdbId,
+    type,
+    malId: animeIds?.malId,
+    anilistId: animeIds?.anilistId,
+  });
+
   return useQuery({
-    queryKey: ['enhancedMeta', imdbId, type],
+    queryKey: ['enhancedMeta', metaKey],
     queryFn: async () => {
-      console.log('Fetching enhanced metadata for:', imdbId);
       try {
-        // Validate imdbId and type
-        if (!imdbId || !type) {
+        if (!metaKey) {
+          return {};
+        }
+        if (imdbId && !type) {
           throw new Error(i18n.t('Invalid imdbId or type'));
         }
       } catch (error) {
         console.log('Error validating imdbId or type:', error);
         return {};
       }
-      const response = await axios.get(
-        `https://v3-cinemeta.strem.io/meta/${type}/${imdbId}.json`,
-        {timeout: 10000},
-      );
-
-      return response.data?.meta;
+      return fetchEnhancedMetadata({
+        imdbId,
+        type,
+        malId: animeIds?.malId,
+        anilistId: animeIds?.anilistId,
+      });
     },
-    enabled: !!imdbId && !!type,
+    enabled: !!metaKey,
     staleTime: 30 * 60 * 1000, // 30 minutes - metadata changes rarely
     gcTime: 2 * 60 * 60 * 1000, // 2 hours
     retry: 1, // Don't retry too much for external API
     // Use cached data as initial data
     initialData: () => {
-      const cached = cacheStorage.getString(imdbId);
+      if (!metaKey) {
+        return undefined;
+      }
+      const cached = cacheStorage.getString(metaKey);
       if (cached) {
         try {
           return JSON.parse(cached);
@@ -89,8 +104,8 @@ export const useEnhancedMetadata = (imdbId: string, type: string) => {
     // Cache successful responses
     meta: {
       onSuccess: (data: any) => {
-        if (data && imdbId) {
-          cacheStorage.setString(imdbId, JSON.stringify(data));
+        if (data && metaKey) {
+          cacheStorage.setString(metaKey, JSON.stringify(data));
         }
       },
     },
@@ -113,7 +128,11 @@ export const useContentDetails = (link: string, providerValue: string) => {
     isLoading: metaLoading,
     error: metaError,
     refetch: refetchMeta,
-  } = useEnhancedMetadata(info?.imdbId || '', info?.type || '');
+  } = useEnhancedMetadata(
+    info?.imdbId || '',
+    info?.type || '',
+    info?.extra?.ids,
+  );
 
   return {
     info,
