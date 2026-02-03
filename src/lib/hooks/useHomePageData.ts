@@ -115,6 +115,72 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
         provider: providerValue,
       });
 
+      const isMeaningfulValue = (value: unknown) => {
+        if (value == null) {
+          return false;
+        }
+        if (typeof value === 'string') {
+          return value.trim().length > 0;
+        }
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        return true;
+      };
+
+      const mergeHeroMeta = (providerInfo: any, enhancedMeta: any) => {
+        if (!enhancedMeta || Object.keys(enhancedMeta).length === 0) {
+          return providerInfo;
+        }
+
+        const merged = {...providerInfo, ...enhancedMeta};
+        const pickValue = (primary: unknown, fallback: unknown) =>
+          isMeaningfulValue(primary) ? primary : fallback;
+
+        merged.image = pickValue(enhancedMeta.image, providerInfo.image);
+        merged.poster = pickValue(
+          enhancedMeta.poster,
+          providerInfo.poster || providerInfo.image,
+        );
+        merged.background = pickValue(
+          enhancedMeta.background,
+          providerInfo.background || providerInfo.image,
+        );
+        merged.year = pickValue(enhancedMeta.year, providerInfo.year);
+        merged.runtime = pickValue(enhancedMeta.runtime, providerInfo.runtime);
+        merged.imdbRating = pickValue(
+          enhancedMeta.imdbRating,
+          providerInfo.rating,
+        );
+        merged.genres = pickValue(enhancedMeta.genres, providerInfo.genres);
+        merged.cast = pickValue(enhancedMeta.cast, providerInfo.cast);
+
+        const providerTags = Array.isArray(providerInfo?.tags)
+          ? providerInfo.tags
+          : [];
+        const enhancedTags = Array.isArray(enhancedMeta?.tags)
+          ? enhancedMeta.tags
+          : [];
+        const enhancedGenres = Array.isArray(enhancedMeta?.genres)
+          ? enhancedMeta.genres
+          : [];
+
+        if (providerTags.length > 0) {
+          merged.tags = providerTags;
+          merged.tagKeys = providerInfo.tagKeys;
+        } else if (enhancedTags.length > 0) {
+          merged.tags = enhancedTags;
+        } else if (enhancedGenres.length > 0) {
+          merged.tags = enhancedGenres;
+        }
+
+        if (!merged.tagKeys) {
+          merged.tagKeys = enhancedMeta.tagKeys || providerInfo.tagKeys;
+        }
+
+        return merged;
+      };
+
       const metaKey = buildEnhancedMetaKey({
         imdbId: info.imdbId,
         type: info.type,
@@ -131,7 +197,7 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
             anilistId: info.extra?.ids?.anilistId,
           });
           if (enhancedMeta && Object.keys(enhancedMeta).length > 0) {
-            return enhancedMeta;
+            return mergeHeroMeta(info, enhancedMeta);
           }
         } catch {
           return info;
