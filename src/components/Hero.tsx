@@ -158,12 +158,12 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
       const key = tagKeys?.[tag];
       return key ? t(key) : tag;
     });
-  }, [heroData, t]);
+  }, [heroData, provider.value, t]);
   const displayTitle = React.useMemo(() => {
     if (!heroData) {
       return '';
     }
-    if (heroData.name) {
+    if (provider.value !== 'animeunity' && heroData.name) {
       return heroData.name;
     }
     const titleKey = (heroData as {
