@@ -14,6 +14,7 @@ import {RootStackParamList} from '../../App';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import {FlashList} from '@shopify/flash-list';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../../lib/utils/helpers';
 
 // Define supported video extensions
 const VIDEO_EXTENSIONS = [
@@ -46,6 +47,7 @@ interface MediaGroup {
   episodes: DownloadedFile[];
   thumbnail?: string;
   isMovie: boolean;
+  isIta?: boolean;
 }
 
 const normalizeString = (str: string): string => {
@@ -344,6 +346,10 @@ const Downloads = () => {
           break;
         }
       }
+      group.isIta = group.episodes.some(episode => {
+        const fileName = episode.uri.split('/').pop() || '';
+        return hasItaBadge(fileName);
+      });
     });
 
     return Object.values(groups);
@@ -495,6 +501,15 @@ const Downloads = () => {
                   />
                 </View>
               )}
+              {item.isIta ? (
+                <View
+                  className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+                  style={{backgroundColor: primary}}>
+                  <Text className="text-black text-[10px] font-semibold">
+                    {t('ITA')}
+                  </Text>
+                </View>
+              ) : null}
               {isSelecting && (
                 <>
                   {isGroupSelected(item) && (
