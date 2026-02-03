@@ -245,6 +245,12 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     }
     return meta?.name || providerTitle;
   }, [forceProviderTitle, meta?.name, providerTitle]);
+  const isDubbedItalian = useMemo(() => {
+    if (providerValue !== 'animeunity') {
+      return false;
+    }
+    return info?.extra?.flags?.dub === true;
+  }, [providerValue, info?.extra?.flags?.dub]);
 
   const posterImage = useMemo(() => {
     return (
@@ -582,9 +588,16 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         style={{width: 200, height: 100, resizeMode: 'contain'}}
                       />
                     ) : (
-                      <Text className="text-white text-2xl mt-3 capitalize font-semibold w-3/4 truncate">
-                        {displayTitle}
-                      </Text>
+                      <View className="w-3/4">
+                        <Text className="text-white text-2xl mt-3 capitalize font-semibold truncate">
+                          {displayTitle}
+                        </Text>
+                        {isDubbedItalian ? (
+                          <Text className="text-gray-300 text-xs mt-1">
+                            {t('Dubbed in Italian')}
+                          </Text>
+                        ) : null}
+                      </View>
                     )}
                     {/* rating */}
                     {displayRating && (
