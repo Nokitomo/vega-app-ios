@@ -131,6 +131,16 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     () => providerValue !== 'altadefinizionez' || !hasImdbMeta,
     [providerValue, hasImdbMeta],
   );
+  const hasAnimeExternalIds = useMemo(
+    () =>
+      providerValue === 'animeunity' &&
+      (!!info?.extra?.ids?.malId || !!info?.extra?.ids?.anilistId),
+    [providerValue, info?.extra?.ids?.malId, info?.extra?.ids?.anilistId],
+  );
+  const allowProviderFallback = useMemo(
+    () => allowProviderMetadata && !hasAnimeExternalIds,
+    [allowProviderMetadata, hasAnimeExternalIds],
+  );
   const synopsis = useMemo(() => {
     if (providerValue === 'altadefinizionez') {
       return info?.synopsis || meta?.description || t('No synopsis available');
@@ -145,17 +155,17 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     if (meta?.year) {
       return meta.year;
     }
-    return allowProviderMetadata ? info?.year : undefined;
-  }, [meta?.year, allowProviderMetadata, info?.year]);
+    return allowProviderFallback ? info?.year : undefined;
+  }, [meta?.year, allowProviderFallback, info?.year]);
   const badgeRuntime = useMemo(() => {
     if (meta?.runtime) {
       return meta.runtime;
     }
-    return allowProviderMetadata ? info?.runtime : undefined;
-  }, [meta?.runtime, allowProviderMetadata, info?.runtime]);
+    return allowProviderFallback ? info?.runtime : undefined;
+  }, [meta?.runtime, allowProviderFallback, info?.runtime]);
   const displayRating = useMemo(
-    () => meta?.imdbRating || (allowProviderMetadata ? info?.rating : undefined),
-    [meta?.imdbRating, allowProviderMetadata, info?.rating],
+    () => meta?.imdbRating || (allowProviderFallback ? info?.rating : undefined),
+    [meta?.imdbRating, allowProviderFallback, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
 
@@ -256,24 +266,61 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [info?.linkList]);
 
   const relatedItems = useMemo(() => info?.related || [], [info?.related]);
+  const statusTag = useMemo(() => {
+    if (!hasAnimeExternalIds) {
+      return null;
+    }
+    const tags = info?.tags ?? [];
+    const tagKeys = info?.tagKeys ?? {};
+    const statusKeys = new Set(['Ongoing', 'Completed', 'Upcoming', 'Dropped']);
+    const matched = tags.find(tag => statusKeys.has(tagKeys[tag] || ''));
+    if (matched) {
+      return {tag: matched, key: tagKeys[matched]};
+    }
+    const rawStatus = info?.extra?.meta?.status;
+    if (rawStatus) {
+      return {tag: rawStatus, key: tagKeys[rawStatus]};
+    }
+    return null;
+  }, [
+    hasAnimeExternalIds,
+    info?.tags,
+    info?.tagKeys,
+    info?.extra?.meta?.status,
+  ]);
+
   const displayTags = useMemo(() => {
     if (!allowProviderMetadata || !info?.tags || info.tags.length === 0) {
       return [];
+    }
+    if (hasAnimeExternalIds) {
+      if (!statusTag?.tag) {
+        return [];
+      }
+      return [statusTag.key ? t(statusTag.key) : statusTag.tag];
     }
     return info.tags.slice(0, 3).map(tag => {
       const key = info.tagKeys?.[tag];
       return key ? t(key) : tag;
     });
-  }, [allowProviderMetadata, info?.tags, info?.tagKeys, t]);
+  }, [
+    allowProviderMetadata,
+    hasAnimeExternalIds,
+    info?.tags,
+    info?.tagKeys,
+    statusTag?.key,
+    statusTag?.tag,
+    t,
+  ]);
   const localizedGenres = useMemo(() => {
-    if (!allowProviderMetadata || !info?.genres || info.genres.length === 0) {
+    if (!allowProviderFallback || !info?.genres || info.genres.length === 0) {
       return [];
     }
     return info.genres.map(genre => {
       const key = info.tagKeys?.[genre];
       return key ? t(key) : genre;
     });
-  }, [allowProviderMetadata, info?.genres, info?.tagKeys, t]);
+  }, [allowProviderFallback, info?.genres, info?.tagKeys, t]);
   const badgeGenres = useMemo(() => {
     if (meta?.genres && meta.genres.length > 0) {
       return meta.genres.slice(0, 2);
@@ -285,8 +332,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [meta?.genres, localizedGenres]);
   const metaCast = useMemo(() => meta?.cast ?? [], [meta?.cast]);
   const providerCast = useMemo(
-    () => (allowProviderMetadata ? info?.cast ?? [] : []),
-    [allowProviderMetadata, info?.cast],
+    () => (allowProviderFallback ? info?.cast ?? [] : []),
+    [allowProviderFallback, info?.cast],
   );
   const hasCast = useMemo(
     () => metaCast.length > 0 || providerCast.length > 0,
@@ -294,14 +341,16 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   );
   const showInfoDetails = useMemo(
     () =>
-      (allowProviderMetadata && !!info?.studio) ||
-      (allowProviderMetadata && info?.genres && info.genres.length > 0) ||
-      (showProviderFallback && (!!info?.country || !!info?.director)),
+      (allowProviderFallback && !!info?.studio) ||
+      (allowProviderFallback && info?.genres && info.genres.length > 0) ||
+      (showProviderFallback && !hasAnimeExternalIds) &&
+        (!!info?.country || !!info?.director),
     [
-      allowProviderMetadata,
+      allowProviderFallback,
       info?.studio,
       info?.genres,
       showProviderFallback,
+      hasAnimeExternalIds,
       info?.country,
       info?.director,
     ],
@@ -693,12 +742,12 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   </SkeletonLoader>
                   {showInfoDetails ? (
                     <View className="mt-2">
-                      {allowProviderMetadata && info?.studio ? (
+                      {allowProviderFallback && info?.studio ? (
                         <Text className="text-gray-400 text-xs">
                           {t('Studio: {{name}}', {name: info.studio})}
                         </Text>
                       ) : null}
-                      {allowProviderMetadata &&
+                      {allowProviderFallback &&
                       info?.genres &&
                       info.genres.length > 0 ? (
                         <Text className="text-gray-400 text-xs mt-1">
@@ -707,12 +756,12 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                           })}
                         </Text>
                       ) : null}
-                      {showProviderFallback && info?.country ? (
+                      {showProviderFallback && !hasAnimeExternalIds && info?.country ? (
                         <Text className="text-gray-400 text-xs mt-1">
                           {t('Country: {{name}}', {name: info.country})}
                         </Text>
                       ) : null}
-                      {showProviderFallback && info?.director ? (
+                      {showProviderFallback && !hasAnimeExternalIds && info?.director ? (
                         <Text className="text-gray-400 text-xs mt-1">
                           {t('Director: {{name}}', {name: info.director})}
                         </Text>
