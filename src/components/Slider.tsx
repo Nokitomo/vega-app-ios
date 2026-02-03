@@ -63,6 +63,10 @@ const Slider = ({
     },
     [navigation, providerValue, provider?.value],
   );
+  const hasItaBadge = useCallback(
+    (rawTitle?: string) => /\(\s*ita\s*\)/i.test(rawTitle || ''),
+    [],
+  );
 
   const renderItem = useCallback(
     ({item}: {item: Post}) => (
@@ -105,6 +109,15 @@ const Slider = ({
                 </View>
               ) : null;
             })()}
+            {hasItaBadge(item.title) ? (
+              <View
+                className="absolute top-1 left-1 rounded-full px-2 py-0.5"
+                style={{backgroundColor: primary}}>
+                <Text className="text-black text-[10px] font-semibold">
+                  {t('ITA')}
+                </Text>
+              </View>
+            ) : null}
           </View>
           {/* {isSelected === item.link && (
             <View className="absolute top-0 left-0 w-full h-full bg-black/50 flex justify-center items-center z-50">
