@@ -31,7 +31,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Se il provider fornisce rating e generi, vengono mostrati; per AnimeUnity i generi compaiono sotto "Studio".
 - Se manca l'imdbId ma il provider espone malId/anilistId (es. AnimeUnity), la UI prova a recuperare metadata esterni da AniList/Jikan.
 - Per AnimeUnity la sinossi in Info usa sempre quella del provider, anche se sono presenti metadata esterni.
-- Per AnimeUnity con malId/anilistId, i dettagli del provider in Info sono limitati a sinossi e stato; lo studio resta mostrato dal provider, mentre generi e cast arrivano dai metadata esterni quando disponibili.
+- Per AnimeUnity con malId/anilistId, i dettagli del provider in Info sono limitati a sinossi, stato e studio; generi/cast/anno/durata/rating usano i metadata esterni quando disponibili, con fallback al provider se mancanti.
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
