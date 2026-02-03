@@ -15,6 +15,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import useThemeStore from '../lib/zustand/themeStore';
 import {mainStorage} from '../lib/storage';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../lib/utils/helpers';
 
 type Props = NativeStackScreenProps<WatchHistoryStackParamList, 'WatchHistory'>;
 const WatchHistory = ({navigation}: Props) => {
@@ -22,7 +23,6 @@ const WatchHistory = ({navigation}: Props) => {
   const {t} = useTranslation();
   const {history, clearHistory} = useWatchHistoryStore(state => state);
   const [progressData, setProgressData] = useState<Record<string, number>>({});
-  const hasItaBadge = (title?: string) => /\(\s*ita\s*\)/i.test(title || '');
 
   // Filter out duplicates by link, keeping only the most recent entry
   const uniqueHistory = React.useMemo(() => {
