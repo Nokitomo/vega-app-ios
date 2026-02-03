@@ -141,6 +141,20 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     () => allowProviderMetadata && !hasAnimeExternalIds,
     [allowProviderMetadata, hasAnimeExternalIds],
   );
+  const allowProviderStudio = useMemo(() => {
+    if (!allowProviderMetadata || !info?.studio) {
+      return false;
+    }
+    if (providerValue === 'animeunity') {
+      return true;
+    }
+    return !hasAnimeExternalIds;
+  }, [
+    allowProviderMetadata,
+    info?.studio,
+    providerValue,
+    hasAnimeExternalIds,
+  ]);
   const synopsis = useMemo(() => {
     if (providerValue === 'altadefinizionez') {
       return info?.synopsis || meta?.description || t('No synopsis available');
@@ -341,12 +355,13 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   );
   const showInfoDetails = useMemo(
     () =>
-      (allowProviderFallback && !!info?.studio) ||
+      allowProviderStudio ||
       (allowProviderFallback && info?.genres && info.genres.length > 0) ||
       (showProviderFallback && !hasAnimeExternalIds) &&
         (!!info?.country || !!info?.director),
     [
       allowProviderFallback,
+      allowProviderStudio,
       info?.studio,
       info?.genres,
       showProviderFallback,
@@ -742,7 +757,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                   </SkeletonLoader>
                   {showInfoDetails ? (
                     <View className="mt-2">
-                      {allowProviderFallback && info?.studio ? (
+                      {allowProviderStudio ? (
                         <Text className="text-gray-400 text-xs">
                           {t('Studio: {{name}}', {name: info.studio})}
                         </Text>
