@@ -32,7 +32,7 @@ import {
   PixelRatio,
   ViewStyle,
 } from 'react-native';
-import {EpisodeLink} from './lib/providers/types';
+import {EpisodeLink, Link} from './lib/providers/types';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import TabBarBackgound from './components/TabBarBackgound';
 import {TouchableOpacity} from 'react-native';
@@ -129,6 +129,8 @@ export type RootStackParamList = {
     providerValue?: string;
     infoUrl?: string;
     doNotTrack?: boolean;
+    seasons?: Link[];
+    seasonIndex?: number;
   };
 };
 
