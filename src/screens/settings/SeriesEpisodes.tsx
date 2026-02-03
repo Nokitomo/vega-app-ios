@@ -10,6 +10,7 @@ import {downloadsStorage, settingsStorage} from '../../lib/storage';
 import RNReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import useThemeStore from '../../lib/zustand/themeStore';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../../lib/utils/helpers';
 
 type SeriesEpisodesRouteProp = NativeStackScreenProps<
   RootStackParamList,
@@ -165,6 +166,7 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
             const fileName = item.uri.split('/').pop() || '';
             const episodeNumber = getEpisodeNumber(fileName);
             const selected = isEpisodeSelected(item.uri);
+            const showItaBadge = hasItaBadge(fileName);
 
             return (
               <TouchableOpacity
@@ -218,6 +220,15 @@ const SeriesEpisodes = ({navigation, route}: SeriesEpisodesRouteProp) => {
                   ) : (
                     <View className="w-full h-full bg-quaternary rounded-t-lg" />
                   )}
+                  {showItaBadge ? (
+                    <View
+                      className="absolute top-2 left-2 rounded-full px-2 py-0.5"
+                      style={{backgroundColor: primary}}>
+                      <Text className="text-black text-[10px] font-semibold">
+                        {t('ITA')}
+                      </Text>
+                    </View>
+                  ) : null}
                   {isSelecting && (
                     <>
                       {selected && <View className="absolute inset-0 bg-black/40" />}
