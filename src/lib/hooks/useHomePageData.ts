@@ -2,6 +2,10 @@ import {useQuery} from '@tanstack/react-query';
 import {getHomePageData, HomePageData} from '../getHomepagedata';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
+import {
+  buildEnhancedMetaKey,
+  fetchEnhancedMetadata,
+} from '../services/enhancedMeta';
 
 interface UseHomePageDataOptions {
   provider: Content['provider'];
@@ -106,23 +110,31 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
     queryKey: ['heroMetadata', heroLink, providerValue],
     queryFn: async () => {
       const {providerManager} = await import('../services/ProviderManager');
-      const {default: axios} = await import('axios');
-
       const info = await providerManager.getMetaData({
         link: heroLink,
         provider: providerValue,
       });
 
-      // Try to get enhanced metadata from Stremio if imdbId is available
-      if (info.imdbId) {
+      const metaKey = buildEnhancedMetaKey({
+        imdbId: info.imdbId,
+        type: info.type,
+        malId: info.extra?.ids?.malId,
+        anilistId: info.extra?.ids?.anilistId,
+      });
+
+      if (metaKey) {
         try {
-          const response = await axios.get(
-            `https://v3-cinemeta.strem.io/meta/${info.type}/${info.imdbId}.json`,
-            {timeout: 5000},
-          );
-          return response.data?.meta || info;
+          const enhancedMeta = await fetchEnhancedMetadata({
+            imdbId: info.imdbId,
+            type: info.type,
+            malId: info.extra?.ids?.malId,
+            anilistId: info.extra?.ids?.anilistId,
+          });
+          if (enhancedMeta && Object.keys(enhancedMeta).length > 0) {
+            return enhancedMeta;
+          }
         } catch {
-          return info; // Fallback to original info if Stremio fails
+          return info;
         }
       }
 
