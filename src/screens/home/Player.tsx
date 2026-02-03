@@ -72,6 +72,7 @@ const exitFullScreen = () => {
 };
 
 const STREAM_RETRY_COOLDOWN_MS = 3000;
+const SUBTITLE_GATE_TIMEOUT_MS = 1500;
 
 const Player = ({route}: Props): React.JSX.Element => {
   const {primary} = useThemeStore(state => state);
@@ -207,6 +208,15 @@ const Player = ({route}: Props): React.JSX.Element => {
     updatePlaybackInfo,
   });
 
+  const [subtitleGatePassed, setSubtitleGatePassed] = useState(true);
+  const [videoReloadNonce, setVideoReloadNonce] = useState(0);
+  const subtitleGateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const subtitleGateTimeoutFiredRef = useRef(false);
+  const subtitleReloadedRef = useRef(false);
+  const subtitleReloadSeekRef = useRef<number | null>(null);
+
   // Memoized values
   const playbacks = useMemo(
     () => [0.25, 0.5, 1.0, 1.25, 1.35, 1.5, 1.75, 2],
@@ -225,6 +235,18 @@ const Player = ({route}: Props): React.JSX.Element => {
     () => settingsStorage.showMediaControls(),
     [],
   );
+  const hasExpectedExternalSubs = useMemo(() => {
+    if (!streamData || streamData.length === 0) {
+      return false;
+    }
+    return streamData.some(
+      stream =>
+        Array.isArray(stream?.subtitles) && stream.subtitles.length > 0,
+    );
+  }, [streamData]);
+  const isSubtitleGatePending =
+    hasExpectedExternalSubs && !subtitleGatePassed;
+  const isPreparingPlayer = streamLoading || isSubtitleGatePending;
   const mergedTextTracks = useMemo(() => {
     const normalizedInternal = (textTracks || []).map((track, idx) => ({
       ...track,
@@ -440,6 +462,23 @@ const Player = ({route}: Props): React.JSX.Element => {
     ],
   );
 
+  const triggerSubtitleReload = useCallback(
+    (reason: string) => {
+      if (subtitleReloadedRef.current) {
+        return;
+      }
+      subtitleReloadedRef.current = true;
+      const position = videoPositionRef.current?.position ?? 0;
+      subtitleReloadSeekRef.current = Number.isFinite(position) ? position : 0;
+      console.log('[subs][player] forcing reload for late subtitles', {
+        reason,
+        position: subtitleReloadSeekRef.current,
+      });
+      setVideoReloadNonce(value => value + 1);
+    },
+    [videoPositionRef],
+  );
+
   // Memoized cast effect
   // useEffect(() => {
   //   if (remoteMediaClient && !Platform.isTV && selectedStream?.link) {
@@ -494,6 +533,54 @@ const Player = ({route}: Props): React.JSX.Element => {
       };
     }, [isFullScreen]),
   );
+
+  useEffect(() => {
+    subtitleReloadedRef.current = false;
+    subtitleGateTimeoutFiredRef.current = false;
+    if (subtitleGateTimeoutRef.current) {
+      clearTimeout(subtitleGateTimeoutRef.current);
+      subtitleGateTimeoutRef.current = null;
+    }
+
+    if (!hasExpectedExternalSubs) {
+      setSubtitleGatePassed(true);
+      return;
+    }
+
+    setSubtitleGatePassed(false);
+    subtitleGateTimeoutRef.current = setTimeout(() => {
+      subtitleGateTimeoutFiredRef.current = true;
+      setSubtitleGatePassed(true);
+    }, SUBTITLE_GATE_TIMEOUT_MS);
+
+    return () => {
+      if (subtitleGateTimeoutRef.current) {
+        clearTimeout(subtitleGateTimeoutRef.current);
+        subtitleGateTimeoutRef.current = null;
+      }
+    };
+  }, [activeEpisode?.link, hasExpectedExternalSubs, selectedStream?.link]);
+
+  useEffect(() => {
+    if (!hasExpectedExternalSubs || !externalSubs) {
+      return;
+    }
+
+    if (externalSubs.length === 0) {
+      return;
+    }
+
+    if (subtitleGateTimeoutRef.current) {
+      clearTimeout(subtitleGateTimeoutRef.current);
+      subtitleGateTimeoutRef.current = null;
+    }
+
+    setSubtitleGatePassed(true);
+
+    if (subtitleGateTimeoutFiredRef.current) {
+      triggerSubtitleReload('late-subs');
+    }
+  }, [externalSubs, hasExpectedExternalSubs, triggerSubtitleReload]);
 
   // Reset track selections when stream changes
   useEffect(() => {
@@ -637,7 +724,7 @@ const Player = ({route}: Props): React.JSX.Element => {
   // Animation effects
   useEffect(() => {
     // Loading animations
-    if (streamLoading) {
+    if (isPreparingPlayer) {
       loadingOpacity.value = withTiming(1, {duration: 800});
       loadingScale.value = withTiming(1, {duration: 800});
       loadingRotation.value = withRepeat(
@@ -650,7 +737,7 @@ const Player = ({route}: Props): React.JSX.Element => {
         -1,
       );
     }
-  }, [streamLoading]);
+  }, [isPreparingPlayer]);
 
   useEffect(() => {
     // Lock button animations
@@ -748,7 +835,14 @@ const Player = ({route}: Props): React.JSX.Element => {
       },
       onProgress: handleProgress,
       onLoad: () => {
-        playerRef?.current?.seek(watchedDuration);
+        const seekTarget =
+          subtitleReloadSeekRef.current != null
+            ? subtitleReloadSeekRef.current
+            : watchedDuration;
+        if (subtitleReloadSeekRef.current != null) {
+          subtitleReloadSeekRef.current = null;
+        }
+        playerRef?.current?.seek(seekTarget);
         playerRef?.current?.resume();
         setPlaybackRate(1.0);
       },
@@ -836,7 +930,7 @@ const Player = ({route}: Props): React.JSX.Element => {
   );
 
   // Show loading state
-  if (streamLoading) {
+  if (isPreparingPlayer) {
     return (
       <SafeAreaView
         edges={{right: 'off', top: 'off', left: 'off', bottom: 'off'}}
@@ -894,7 +988,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       <StatusBar translucent={true} hidden={true} />
 
       {/* Video Player */}
-      <VideoPlayer {...videoPlayerProps} />
+      <VideoPlayer key={videoReloadNonce} {...videoPlayerProps} />
 
       {/* Full-screen overlay to detect taps when locked */}
       {isPlayerLocked && (
@@ -906,7 +1000,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       )}
 
       {/* Lock/Unlock button */}
-      {!streamLoading && !Platform.isTV && (
+      {!isPreparingPlayer && !Platform.isTV && (
         <Animated.View
           style={[lockButtonStyle]}
           className="absolute top-5 right-5 flex-row items-center gap-2 z-50">
@@ -1069,7 +1163,7 @@ const Player = ({route}: Props): React.JSX.Element => {
       </Animated.View>
 
       {/* Settings Modal */}
-      {!streamLoading && !isPlayerLocked && showSettings && (
+      {!isPreparingPlayer && !isPlayerLocked && showSettings && (
         <Animated.View
           style={[settingsStyle]}
           className="absolute opacity-0 top-0 left-0 w-full h-full bg-black/20 justify-end items-center"
