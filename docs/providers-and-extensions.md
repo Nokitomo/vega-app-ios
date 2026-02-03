@@ -42,6 +42,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per AnimeUnity, se mancano malId/anilistId non viene richiesto alcun metadata esterno.
 - Per AnimeUnity la sinossi usa sempre quella del provider.
 - Per AnimeUnity con malId/anilistId, i metadati del provider vengono usati per sinossi, stato e studio; generi/cast/anno/durata/rating usano i metadata esterni quando disponibili, con fallback al provider se mancanti.
+- Per AnimeUnity il titolo mostrato in app usa sempre quello del provider.
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
