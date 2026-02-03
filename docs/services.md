@@ -26,3 +26,9 @@ ExtensionManager (src/lib/services/ExtensionManager.ts)
 ## OMDb
 File: src/lib/services/omdb.ts
 - Integrazione con OMDb per metadata aggiuntivi.
+
+## Metadata anime
+File: src/lib/services/animeMeta.ts
+- Integrazione con AniList (GraphQL) e fallback Jikan per metadata anime quando non c'e imdbId.
+File: src/lib/services/enhancedMeta.ts
+- Seleziona la fonte esterna (Cinemeta/Stremio o AniList/Jikan) in base agli ID disponibili.
