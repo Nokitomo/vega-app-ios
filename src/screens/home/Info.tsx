@@ -30,6 +30,7 @@ import {useContentDetails} from '../../lib/hooks/useContentInfo';
 import {QueryErrorBoundary} from '../../components/ErrorBoundary';
 import SkeletonLoader from '../../components/Skeleton';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../../lib/utils/helpers';
 // import {BlurView} from 'expo-blur';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Info'>;
@@ -917,14 +918,25 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                                     }),
                                   )
                                 }>
-                                <Image
-                                  source={{
-                                    uri:
-                                      item.image ||
-                                      'https://placehold.jp/24/363636/ffffff/100x150.png?text=Vega',
-                                  }}
-                                  style={{width: 60, height: 90}}
-                                />
+                                <View className="relative">
+                                  <Image
+                                    source={{
+                                      uri:
+                                        item.image ||
+                                        'https://placehold.jp/24/363636/ffffff/100x150.png?text=Vega',
+                                    }}
+                                    style={{width: 60, height: 90}}
+                                  />
+                                  {hasItaBadge(item.title) ? (
+                                    <View
+                                      className="absolute top-1 left-1 rounded-full px-2 py-0.5"
+                                      style={{backgroundColor: primary}}>
+                                      <Text className="text-black text-[10px] font-semibold">
+                                        {t('ITA')}
+                                      </Text>
+                                    </View>
+                                  ) : null}
+                                </View>
                                 <View className="flex-1">
                                   <Text className="text-white text-sm font-semibold">
                                     {item.title}
