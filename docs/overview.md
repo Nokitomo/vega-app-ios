@@ -11,6 +11,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Visualizza contenuti in base al provider attivo.
 - Slider per categorie e hero in evidenza.
 - Le card per episodi recenti e calendario mostrano il badge "Ep. X" quando disponibile.
+- Le card con titoli AnimeUnity che includono "(ITA)" mostrano un badge "ITA" in alto a sinistra sul poster.
 - La vista "more" del calendario usa una griglia con sezioni per giorno.
 - La vista "more" del calendario include anche la sezione "Undetermined".
 - L'hero usa una cache settimanale per ridurre refresh involontari.
@@ -32,6 +33,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Se manca l'imdbId ma il provider espone malId/anilistId (es. AnimeUnity), la UI prova a recuperare metadata esterni da AniList/Jikan.
 - Per AnimeUnity la sinossi in Info usa sempre quella del provider, anche se sono presenti metadata esterni.
 - Per AnimeUnity con malId/anilistId, i dettagli del provider in Info sono limitati a sinossi, stato e studio; generi/cast/anno/durata/rating usano i metadata esterni quando disponibili, con fallback al provider se mancanti.
+- Per AnimeUnity il titolo mostrato in app usa sempre quello del provider.
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
