@@ -360,19 +360,95 @@ const Player = ({route}: Props): React.JSX.Element => {
     [t],
   );
 
+  const normalizeEpisodeList = useCallback((list: any[]) => {
+    if (!Array.isArray(list)) {
+      return [];
+    }
+    return list.filter(item => item && item.link && item.title);
+  }, []);
+
+  const nextSeasonInfo = useMemo(() => {
+    const seasons = route.params?.seasons;
+    const seasonIndex = route.params?.seasonIndex;
+    if (!Array.isArray(seasons) || typeof seasonIndex !== 'number') {
+      return undefined;
+    }
+    const nextSeason = seasons[seasonIndex + 1];
+    if (!nextSeason) {
+      return undefined;
+    }
+
+    let episodeList: any[] = [];
+    if (
+      Array.isArray(nextSeason?.directLinks) &&
+      nextSeason.directLinks.length > 0
+    ) {
+      episodeList = normalizeEpisodeList(nextSeason.directLinks);
+    } else if (nextSeason?.episodesLink) {
+      const cached = cacheStorage.getString(nextSeason.episodesLink);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          episodeList = normalizeEpisodeList(parsed);
+        } catch (error) {
+          console.warn('Failed to parse next season cache:', error);
+        }
+      }
+    }
+
+    return {
+      season: nextSeason,
+      episodeList,
+      seasonIndex: seasonIndex + 1,
+    };
+  }, [normalizeEpisodeList, route.params?.seasonIndex, route.params?.seasons]);
+
   // Memoized next episode handler
   const handleNextEpisode = useCallback(() => {
-    const currentIndex = route.params?.episodeList?.indexOf(activeEpisode);
+    const episodeList = route.params?.episodeList || [];
+    const currentIndex = episodeList.findIndex(
+      item => item?.link === activeEpisode?.link,
+    );
     if (
-      currentIndex !== undefined &&
-      currentIndex < route.params?.episodeList?.length - 1
+      currentIndex >= 0 &&
+      currentIndex < episodeList.length - 1
     ) {
-      setActiveEpisode(route.params?.episodeList[currentIndex + 1]);
+      setActiveEpisode(episodeList[currentIndex + 1]);
       hasSetInitialTracksRef.current = false;
-    } else {
-      ToastAndroid.show(t('No more episodes'), ToastAndroid.SHORT);
+      return;
     }
-  }, [activeEpisode, route.params?.episodeList, t]);
+
+    if (nextSeasonInfo?.episodeList?.length) {
+      navigation.replace('Player', {
+        linkIndex: 0,
+        episodeList: nextSeasonInfo.episodeList,
+        type: route.params?.type,
+        primaryTitle: route.params?.primaryTitle,
+        secondaryTitle: nextSeasonInfo.season.title,
+        seasonEpisodesLink: nextSeasonInfo.season.episodesLink,
+        poster: route.params?.poster,
+        providerValue: route.params?.providerValue,
+        infoUrl: route.params?.infoUrl,
+        seasons: route.params?.seasons,
+        seasonIndex: nextSeasonInfo.seasonIndex,
+      });
+      return;
+    }
+
+    ToastAndroid.show(t('No more episodes'), ToastAndroid.SHORT);
+  }, [
+    activeEpisode?.link,
+    navigation,
+    nextSeasonInfo,
+    route.params?.episodeList,
+    route.params?.infoUrl,
+    route.params?.poster,
+    route.params?.primaryTitle,
+    route.params?.providerValue,
+    route.params?.seasons,
+    route.params?.type,
+    t,
+  ]);
 
   const extractHttpStatus = useCallback((errorEvent: any) => {
     const stackTrace = errorEvent?.error?.errorStackTrace || '';
@@ -950,13 +1026,21 @@ const Player = ({route}: Props): React.JSX.Element => {
       : 0,
     Number.isFinite(loadedDurationRef.current) ? loadedDurationRef.current : 0,
   );
+  const episodeList = route.params?.episodeList || [];
+  const currentEpisodeIndex = episodeList.findIndex(
+    item => item?.link === activeEpisode?.link,
+  );
+  const hasNextEpisodeInSeason =
+    currentEpisodeIndex >= 0 && currentEpisodeIndex < episodeList.length - 1;
   const hasNextEpisode =
-    route.params?.episodeList?.indexOf(activeEpisode) <
-    route.params?.episodeList?.length - 1;
+    hasNextEpisodeInSeason ||
+    (nextSeasonInfo?.episodeList?.length || 0) > 0;
+  const remainingSeconds =
+    effectiveDuration > 0
+      ? Math.max(0, effectiveDuration - currentPosition)
+      : 0;
   const shouldShowNext =
-    hasNextEpisode &&
-    effectiveDuration > 0 &&
-    currentPosition / effectiveDuration > 0.8;
+    hasNextEpisode && effectiveDuration > 0 && remainingSeconds <= 90;
 
   // Show loading state
   if (isPreparingPlayer) {
