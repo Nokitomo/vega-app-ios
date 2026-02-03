@@ -41,6 +41,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Se manca l'imdbId ma sono disponibili malId/anilistId, la UI prova prima AniList e poi Jikan.
 - Per AnimeUnity, se mancano malId/anilistId non viene richiesto alcun metadata esterno.
 - Per AnimeUnity la sinossi usa sempre quella del provider.
+- Per AnimeUnity con malId/anilistId, i metadati del provider vengono usati solo per lo stato dell'anime; generi, studio e cast arrivano dai metadata esterni quando disponibili.
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
