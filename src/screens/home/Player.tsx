@@ -512,6 +512,43 @@ const Player = ({route}: Props): React.JSX.Element => {
     setSearchQuery(route.params?.primaryTitle || '');
   }, [route.params?.primaryTitle]);
 
+  useEffect(() => {
+    if (!externalSubs) {
+      console.log('[subs][player] externalSubs is null/undefined');
+      return;
+    }
+    console.log('[subs][player] externalSubs updated', {
+      count: externalSubs.length,
+      tracks: externalSubs.map((track: any) => ({
+        title: track?.title,
+        language: track?.language,
+        type: track?.type,
+        uri: track?.uri,
+        hasHeaders: !!track?.headers,
+      })),
+    });
+  }, [externalSubs]);
+
+  useEffect(() => {
+    const selectedTrack = mergedTextTracks.find(
+      track => track.index === selectedTextTrackIndex,
+    );
+    console.log('[subs][player] selected text track changed', {
+      selectedTextTrackIndex,
+      selectedTextTrack,
+      selectedTrack: selectedTrack
+        ? {
+            index: selectedTrack.index,
+            source: selectedTrack.source,
+            language: selectedTrack.language,
+            title: selectedTrack.title,
+            type: selectedTrack.type,
+            uri: selectedTrack.uri,
+          }
+        : null,
+    });
+  }, [mergedTextTracks, selectedTextTrack, selectedTextTrackIndex]);
+
   // Add to watch history
   useEffect(() => {
     if (route.params?.primaryTitle && !route.params?.doNotTrack) {
@@ -751,7 +788,20 @@ const Player = ({route}: Props): React.JSX.Element => {
       selectedAudioTrack,
       onAudioTracks: (e: any) => processAudioTracks(e.audioTracks),
       selectedTextTrack,
-      onTextTracks: (e: any) => setTextTracks(e.textTracks),
+        onTextTracks: (e: any) => {
+          const tracks = e?.textTracks || [];
+          console.log('[subs][player] onTextTracks', {
+            count: tracks.length,
+            tracks: tracks.map((track: any, idx: number) => ({
+              index: track?.index ?? idx,
+              language: track?.language,
+              title: track?.title,
+              type: track?.type,
+              uri: track?.uri,
+            })),
+          });
+          setTextTracks(tracks);
+        },
       onVideoTracks: (e: any) => processVideoTracks(e.videoTracks),
       selectedVideoTrack,
       style: {flex: 1, zIndex: 100},
@@ -1101,6 +1151,7 @@ const Player = ({route}: Props): React.JSX.Element => {
                     <TouchableOpacity
                       className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-3"
                       onPress={() => {
+                        console.log('[subs][player] subtitle disabled');
                         setSelectedTextTrack({
                           type: SelectedTrackType.DISABLED,
                         });
@@ -1164,15 +1215,27 @@ const Player = ({route}: Props): React.JSX.Element => {
                     />
                   </>
                 }
-                renderItem={({item: track}) => (
-                  <TouchableOpacity
-                    className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-2"
-                    onPress={() => {
-                      setSelectedTextTrack(buildSelectedTextTrack(track));
-                      setSelectedTextTrackIndex(track.index);
-                      cacheStorage.setString(
-                        'lastTextTrack',
-                        track.language || '',
+                  renderItem={({item: track}) => (
+                    <TouchableOpacity
+                      className="flex-row gap-3 items-center rounded-md my-1 overflow-hidden ml-2"
+                      onPress={() => {
+                        const selected = buildSelectedTextTrack(track);
+                        console.log('[subs][player] subtitle selected', {
+                          track: {
+                            index: track.index,
+                            source: track.source,
+                            language: track.language,
+                            title: track.title,
+                            type: track.type,
+                            uri: track.uri,
+                          },
+                          selected,
+                        });
+                        setSelectedTextTrack(selected);
+                        setSelectedTextTrackIndex(track.index);
+                        cacheStorage.setString(
+                          'lastTextTrack',
+                          track.language || '',
                       );
                       setShowSettings(false);
                     }}>
