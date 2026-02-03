@@ -29,6 +29,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - La lista episodi mostra una barra di avanzamento per gli episodi gia iniziati.
 - Il pulsante "Riprendi/Riproduci" cambia automaticamente pagina quando il provider usa range di episodi (es. AnimeUnity).
 - Se il provider fornisce rating e generi, vengono mostrati; per AnimeUnity i generi compaiono sotto "Studio".
+- Se manca l'imdbId ma il provider espone malId/anilistId (es. AnimeUnity), la UI prova a recuperare metadata esterni da AniList/Jikan.
 
 4) Player
 - Riproduzione video con supporto a qualita, sottotitoli, controlli.
