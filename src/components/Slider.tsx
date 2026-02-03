@@ -10,6 +10,7 @@ import type {FlashListProps} from '@shopify/flash-list';
 import SkeletonLoader from './Skeleton';
 import ProviderImage from './ProviderImage';
 import {useTranslation} from 'react-i18next';
+import {hasItaBadge} from '../lib/utils/helpers';
 
 // import useWatchHistoryStore from '../lib/zustand/watchHistrory';
 import useThemeStore from '../lib/zustand/themeStore';
@@ -62,10 +63,6 @@ const Slider = ({
       });
     },
     [navigation, providerValue, provider?.value],
-  );
-  const hasItaBadge = useCallback(
-    (rawTitle?: string) => /\(\s*ita\s*\)/i.test(rawTitle || ''),
-    [],
   );
 
   const renderItem = useCallback(
