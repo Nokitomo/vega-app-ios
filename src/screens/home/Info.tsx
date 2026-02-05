@@ -143,7 +143,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   // Memoized computed values
   const hasImdbMeta = useMemo(() => !!meta?.name, [meta?.name]);
   const allowProviderMetadata = useMemo(
-    () => providerValue !== 'altadefinizionez' || !hasImdbMeta,
+    () =>
+      (providerValue !== 'altadefinizionez' &&
+        providerValue !== 'streamingunity') ||
+      !hasImdbMeta,
     [providerValue, hasImdbMeta],
   );
   const hasAnimeExternalIds = useMemo(
@@ -207,11 +210,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [allowProviderMetadata, hasAnimeExternalIds, hasMetaCast],
   );
   const synopsis = useMemo(() => {
-    if (
-      providerValue === 'altadefinizionez' ||
-      providerValue === 'streamingunity'
-    ) {
+    if (providerValue === 'altadefinizionez') {
       return info?.synopsis || meta?.description || t('No synopsis available');
+    }
+    if (providerValue === 'streamingunity') {
+      return info?.synopsis || t('No synopsis available');
     }
     if (providerValue === 'animeunity') {
       return info?.synopsis || t('No synopsis available');
