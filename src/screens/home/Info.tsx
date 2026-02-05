@@ -107,7 +107,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     return info?.title;
   }, [info?.titleKey, info?.titleParams, info?.title, t]);
   const forceProviderTitle = useMemo(
-    () => providerValue === 'animeunity',
+    () => providerValue === 'animeunity' || providerValue === 'streamingunity',
     [providerValue],
   );
   const libraryTitle = useMemo(
@@ -276,6 +276,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       PLACEHOLDER_IMAGE
     );
   }, [meta?.poster, route.params.poster, info?.image]);
+  const logoImage = meta?.logo || info?.logo;
 
   const backgroundImage = useMemo(() => {
     if (meta?.background) {
@@ -599,10 +600,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     className="absolute h-full w-full"
                   />
                   <View className="absolute bottom-0 right-0 w-screen flex-row justify-between items-baseline px-2">
-                    {(meta?.logo && !logoError) || infoLoading ? (
+                    {(logoImage && !logoError) || infoLoading ? (
                       <Image
                         onError={() => setLogoError(true)}
-                        source={{uri: meta?.logo}}
+                        source={{uri: logoImage}}
                         style={{width: 200, height: 100, resizeMode: 'contain'}}
                       />
                     ) : (
