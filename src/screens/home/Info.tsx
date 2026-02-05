@@ -210,11 +210,11 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [allowProviderMetadata, hasAnimeExternalIds, hasMetaCast],
   );
   const synopsis = useMemo(() => {
-    if (providerValue === 'altadefinizionez') {
+    if (
+      providerValue === 'altadefinizionez' ||
+      providerValue === 'streamingunity'
+    ) {
       return info?.synopsis || meta?.description || t('No synopsis available');
-    }
-    if (providerValue === 'streamingunity') {
-      return info?.synopsis || t('No synopsis available');
     }
     if (providerValue === 'animeunity') {
       return info?.synopsis || t('No synopsis available');
@@ -244,9 +244,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
-  const hideStreamingUnityDetails = providerValue === 'streamingunity';
-  const showMetaDetails = !hideStreamingUnityDetails;
-  const showGenreBadges = !hideStreamingUnityDetails;
+  const showMetaDetails = true;
+  const showGenreBadges = true;
 
   const displayTitle = useMemo(() => {
     if (forceProviderTitle) {
@@ -282,12 +281,12 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     if (meta?.background) {
       return meta.background;
     }
-    if (providerValue === 'altadefinizionez' && !hasImdbMeta) {
-      return (
-        info?.background ||
-        info?.image ||
-        PLACEHOLDER_IMAGE
-      );
+    if (
+      (providerValue === 'altadefinizionez' ||
+        providerValue === 'streamingunity') &&
+      !hasImdbMeta
+    ) {
+      return info?.background || info?.image || PLACEHOLDER_IMAGE;
     }
     return (
       info?.image ||
