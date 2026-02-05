@@ -47,7 +47,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - In Info, per AnimeUnity doppiati, viene mostrata la dicitura "Doppiato in italiano" sotto il titolo usando info.extra.flags.dub.
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per StreamingUnity la sinossi usa sempre quella del provider; se manca fa fallback ai metadati esterni.
-- Per StreamingUnity il titolo mostrato in app usa prima il logo del provider (se presente); altrimenti la traduzione italiana, poi inglese, poi lo slug normalizzato e infine il titolo originale.
+- Per StreamingUnity il titolo mostrato in app usa prima il logo del provider (se presente); altrimenti la traduzione italiana se diversa dall'originale o con caratteri latini, poi inglese con la stessa regola, poi lo slug normalizzato e infine il titolo originale.
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
 - Per StreamingUnity, quando sono presenti metadati esterni (imdbId), gli altri metadati del provider non vengono usati; fa eccezione il badge "Episodi", che usa sempre il conteggio del provider.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
