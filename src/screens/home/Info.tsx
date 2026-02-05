@@ -241,8 +241,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
-  const showMetaDetails = false;
-  const showGenreBadges = false;
+  const hideStreamingUnityDetails = providerValue === 'streamingunity';
+  const showMetaDetails = !hideStreamingUnityDetails;
+  const showGenreBadges = !hideStreamingUnityDetails;
 
   const displayTitle = useMemo(() => {
     if (forceProviderTitle) {
