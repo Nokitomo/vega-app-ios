@@ -53,6 +53,7 @@ export interface Info {
   titleParams?: I18nParams;
   title: string;
   image: string;
+  logo?: string;
   background?: string;
   poster?: string;
   synopsis: string;
