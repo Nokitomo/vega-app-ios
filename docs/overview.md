@@ -12,6 +12,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Slider per categorie e hero in evidenza.
 - Le card per episodi recenti e calendario mostrano il badge "Ep. X" quando disponibile.
 - Le card con titoli AnimeUnity che includono "(ITA)" mostrano un badge "ITA" in alto a sinistra sul poster.
+- I titoli nelle card di home/ricerca/lista possono andare su due righe con ellissi finale per ridurre il taglio aggressivo.
 - La vista "more" del calendario usa una griglia con sezioni per giorno.
 - La vista "more" del calendario include anche la sezione "Undetermined".
 - L'hero usa una cache settimanale per ridurre refresh involontari.
