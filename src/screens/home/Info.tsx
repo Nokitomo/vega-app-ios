@@ -241,6 +241,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
+  const showMetaDetails = false;
+  const showGenreBadges = false;
 
   const displayTitle = useMemo(() => {
     if (forceProviderTitle) {
@@ -425,11 +427,13 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   );
   const showInfoDetails = useMemo(
     () =>
-      allowProviderStudio ||
-      (allowProviderGenres && info?.genres && info.genres.length > 0) ||
-      (showProviderFallback && !hasAnimeExternalIds) &&
-        (!!info?.country || !!info?.director),
+      showMetaDetails &&
+      (allowProviderStudio ||
+        (allowProviderGenres && info?.genres && info.genres.length > 0) ||
+        ((showProviderFallback && !hasAnimeExternalIds) &&
+          (!!info?.country || !!info?.director))),
     [
+      showMetaDetails,
       allowProviderStudio,
       allowProviderGenres,
       info?.studio,
@@ -632,13 +636,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         {badgeRuntime}
                       </Text>
                     )}
-                    {badgeGenres.map((genre: string) => (
-                      <Text
-                        key={genre}
-                        className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        {genre}
-                      </Text>
-                    ))}
+                    {showGenreBadges &&
+                      badgeGenres.map((genre: string) => (
+                        <Text
+                          key={genre}
+                          className="text-white text-xs bg-tertiary px-2 rounded-md">
+                          {genre}
+                        </Text>
+                      ))}
                     {info?.episodesCount ? (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {t('Episodes: {{count}}', {
