@@ -207,7 +207,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [allowProviderMetadata, hasAnimeExternalIds, hasMetaCast],
   );
   const synopsis = useMemo(() => {
-    if (providerValue === 'altadefinizionez') {
+    if (
+      providerValue === 'altadefinizionez' ||
+      providerValue === 'streamingunity'
+    ) {
       return info?.synopsis || meta?.description || t('No synopsis available');
     }
     if (providerValue === 'animeunity') {
