@@ -131,8 +131,11 @@ const Slider = ({
             </View>
           )} */}
         </TouchableOpacity>
-        <Text className="text-white text-center truncate w-24 text-xs">
-          {item.title.length > 24 ? `${item.title.slice(0, 24)}...` : item.title}
+        <Text
+          className="text-white text-center w-24 text-xs"
+          numberOfLines={2}
+          ellipsizeMode="tail">
+          {item.title}
         </Text>
       </View>
     ),
