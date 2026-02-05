@@ -36,7 +36,6 @@ const Slider = ({
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [isSelected, setSelected] = useState('');
-  const titleLines = isSearch ? 2 : 3;
   // const {removeItem} = useWatchHistoryStore(state => state);
 
   const SafeFlashList = <T,>({style, ...rest}: FlashListProps<T>) => (
@@ -134,7 +133,7 @@ const Slider = ({
         </TouchableOpacity>
         <Text
           className="text-white text-center w-24 text-xs"
-          numberOfLines={titleLines}
+          numberOfLines={2}
           ellipsizeMode="tail">
           {item.title}
         </Text>
