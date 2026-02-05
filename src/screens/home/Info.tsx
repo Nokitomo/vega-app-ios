@@ -276,7 +276,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       PLACEHOLDER_IMAGE
     );
   }, [meta?.poster, route.params.poster, info?.image]);
-  const logoImage = meta?.logo || info?.logo;
+  const logoImage = info?.logo || meta?.logo;
 
   const backgroundImage = useMemo(() => {
     if (meta?.background) {
