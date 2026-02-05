@@ -48,7 +48,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
 - Per StreamingUnity la sinossi usa sempre quella del provider; i metadati esterni sono solo fallback se la sinossi del provider manca.
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
-- Nella UI, i dettagli sotto la sinossi (studio/regia/generi) sono nascosti: la logica di recupero resta invariata ma non vengono mostrati.
+- Nella UI, per StreamingUnity i dettagli sotto la sinossi (studio/regia/generi) sono nascosti: la logica di recupero resta invariata ma non vengono mostrati.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
 - Per AltadefinizioneZ, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
 - Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
