@@ -39,6 +39,11 @@ Sintomo: Metro fallisce con "Unable to resolve module node:stream" (es. da cheer
 - Verifica che `stream-browserify`, `events`, `assert`, `buffer`, `process`, `util` siano tra le dipendenze.
 - Verifica che `metro.config.js` risolva i moduli `node:` e faccia il mapping a `stream`, `events`, `assert`, `buffer`, `process`, `util`.
 
+## Metro: Unable to resolve module node:net (undici)
+Sintomo: Metro fallisce con "Unable to resolve module node:net" da `undici/...`.
+- Verifica che esista `src/shims/undici.js`.
+- Verifica che `metro.config.js` mappi `undici` allo shim.
+
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.

@@ -19,6 +19,7 @@ config.resolver = {
     events: require.resolve('events/'),
     process: require.resolve('process/browser'),
     stream: require.resolve('stream-browserify'),
+    undici: require.resolve('./src/shims/undici'),
     util: require.resolve('util/'),
   },
   resolveRequest: (context, moduleName, platform) => {
