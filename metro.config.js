@@ -13,9 +13,13 @@ const config = getDefaultConfig(__dirname);
 config.resolver = {
   ...config.resolver,
   extraNodeModules: {
+    assert: require.resolve('assert/'),
+    buffer: require.resolve('buffer/'),
     ...config.resolver?.extraNodeModules,
     events: require.resolve('events/'),
+    process: require.resolve('process/browser'),
     stream: require.resolve('stream-browserify'),
+    util: require.resolve('util/'),
   },
   resolveRequest: (context, moduleName, platform) => {
     if (moduleName.startsWith('node:')) {
