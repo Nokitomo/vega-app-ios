@@ -36,8 +36,8 @@ Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleServi
 
 ## Metro: Unable to resolve module node:stream
 Sintomo: Metro fallisce con "Unable to resolve module node:stream" (es. da cheerio).
-- Verifica che `stream-browserify` sia tra le dipendenze.
-- Verifica che `metro.config.js` risolva i moduli `node:` e faccia il mapping a `stream`.
+- Verifica che `stream-browserify` ed `events` siano tra le dipendenze.
+- Verifica che `metro.config.js` risolva i moduli `node:` e faccia il mapping a `stream` ed `events`.
 
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
