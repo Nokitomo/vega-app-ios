@@ -78,6 +78,7 @@
     "react-native-volume-manager": "^2.0.8",
     "react-native-webview": "^13.16.0",
     "react-native-worklets-core": "^1.6.2",
+    "stream-browserify": "^3.0.0",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
