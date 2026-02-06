@@ -14,6 +14,7 @@ config.resolver = {
   ...config.resolver,
   extraNodeModules: {
     ...config.resolver?.extraNodeModules,
+    events: require.resolve('events/'),
     stream: require.resolve('stream-browserify'),
   },
   resolveRequest: (context, moduleName, platform) => {
