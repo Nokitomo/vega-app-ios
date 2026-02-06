@@ -34,6 +34,11 @@ Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleServi
 - E' previsto se Firebase e attivo.
 - Il log non dovrebbe bloccare l'app.
 
+## Metro: Unable to resolve module node:stream
+Sintomo: Metro fallisce con "Unable to resolve module node:stream" (es. da cheerio).
+- Verifica che `stream-browserify` sia tra le dipendenze.
+- Verifica che `metro.config.js` risolva i moduli `node:` e faccia il mapping a `stream`.
+
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.
