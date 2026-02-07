@@ -374,11 +374,11 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                             ) : null}
                           </View>
                           <Text
-                            className="text-white text-center truncate text-xs"
-                            style={{width: gridTitleWidth}}>
-                            {item?.title?.length > 24
-                              ? item.title.slice(0, 24) + '...'
-                              : item.title}
+                            className="text-white text-center text-xs"
+                            style={{width: gridTitleWidth}}
+                            numberOfLines={2}
+                            ellipsizeMode="tail">
+                            {item?.title}
                           </Text>
                         </TouchableOpacity>
                       ))}
@@ -472,13 +472,13 @@ const ScrollList = ({route}: Props): React.ReactElement => {
                 <Text
                   className={
                     viewType === 1
-                      ? 'text-white text-center truncate text-xs'
-                      : 'text-white ml-3 truncate w-72 font-semibold text-base'
+                      ? 'text-white text-center text-xs'
+                      : 'text-white ml-3 w-72 font-semibold text-base'
                   }
-                  style={viewType === 1 ? {width: gridTitleWidth} : undefined}>
-                  {item?.title?.length > 24 && viewType === 1
-                    ? item.title.slice(0, 24) + '...'
-                    : item.title}
+                  style={viewType === 1 ? {width: gridTitleWidth} : undefined}
+                  numberOfLines={2}
+                  ellipsizeMode="tail">
+                  {item?.title}
                 </Text>
               </TouchableOpacity>
             )}

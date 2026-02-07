@@ -107,7 +107,7 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     return info?.title;
   }, [info?.titleKey, info?.titleParams, info?.title, t]);
   const forceProviderTitle = useMemo(
-    () => providerValue === 'animeunity',
+    () => providerValue === 'animeunity' || providerValue === 'streamingunity',
     [providerValue],
   );
   const libraryTitle = useMemo(
@@ -143,7 +143,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   // Memoized computed values
   const hasImdbMeta = useMemo(() => !!meta?.name, [meta?.name]);
   const allowProviderMetadata = useMemo(
-    () => providerValue !== 'altadefinizionez' || !hasImdbMeta,
+    () =>
+      (providerValue !== 'altadefinizionez' &&
+        providerValue !== 'streamingunity') ||
+      !hasImdbMeta,
     [providerValue, hasImdbMeta],
   );
   const hasAnimeExternalIds = useMemo(
@@ -207,7 +210,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [allowProviderMetadata, hasAnimeExternalIds, hasMetaCast],
   );
   const synopsis = useMemo(() => {
-    if (providerValue === 'altadefinizionez') {
+    if (
+      providerValue === 'altadefinizionez' ||
+      providerValue === 'streamingunity'
+    ) {
       return info?.synopsis || meta?.description || t('No synopsis available');
     }
     if (providerValue === 'animeunity') {
@@ -238,6 +244,8 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
+  const showMetaDetails = true;
+  const showGenreBadges = true;
 
   const displayTitle = useMemo(() => {
     if (forceProviderTitle) {
@@ -268,17 +276,18 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
       PLACEHOLDER_IMAGE
     );
   }, [meta?.poster, route.params.poster, info?.image]);
+  const logoImage = info?.logo || meta?.logo;
 
   const backgroundImage = useMemo(() => {
     if (meta?.background) {
       return meta.background;
     }
-    if (providerValue === 'altadefinizionez' && !hasImdbMeta) {
-      return (
-        info?.background ||
-        info?.image ||
-        PLACEHOLDER_IMAGE
-      );
+    if (
+      (providerValue === 'altadefinizionez' ||
+        providerValue === 'streamingunity') &&
+      !hasImdbMeta
+    ) {
+      return info?.background || info?.image || PLACEHOLDER_IMAGE;
     }
     return (
       info?.image ||
@@ -422,11 +431,13 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   );
   const showInfoDetails = useMemo(
     () =>
-      allowProviderStudio ||
-      (allowProviderGenres && info?.genres && info.genres.length > 0) ||
-      (showProviderFallback && !hasAnimeExternalIds) &&
-        (!!info?.country || !!info?.director),
+      showMetaDetails &&
+      (allowProviderStudio ||
+        (allowProviderGenres && info?.genres && info.genres.length > 0) ||
+        ((showProviderFallback && !hasAnimeExternalIds) &&
+          (!!info?.country || !!info?.director))),
     [
+      showMetaDetails,
       allowProviderStudio,
       allowProviderGenres,
       info?.studio,
@@ -589,10 +600,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                     className="absolute h-full w-full"
                   />
                   <View className="absolute bottom-0 right-0 w-screen flex-row justify-between items-baseline px-2">
-                    {(meta?.logo && !logoError) || infoLoading ? (
+                    {(logoImage && !logoError) || infoLoading ? (
                       <Image
                         onError={() => setLogoError(true)}
-                        source={{uri: meta?.logo}}
+                        source={{uri: logoImage}}
                         style={{width: 200, height: 100, resizeMode: 'contain'}}
                       />
                     ) : (
@@ -629,13 +640,14 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         {badgeRuntime}
                       </Text>
                     )}
-                    {badgeGenres.map((genre: string) => (
-                      <Text
-                        key={genre}
-                        className="text-white text-xs bg-tertiary px-2 rounded-md">
-                        {genre}
-                      </Text>
-                    ))}
+                    {showGenreBadges &&
+                      badgeGenres.map((genre: string) => (
+                        <Text
+                          key={genre}
+                          className="text-white text-xs bg-tertiary px-2 rounded-md">
+                          {genre}
+                        </Text>
+                      ))}
                     {info?.episodesCount ? (
                       <Text className="text-white text-xs bg-tertiary px-2 rounded-md">
                         {t('Episodes: {{count}}', {

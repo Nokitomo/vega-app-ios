@@ -27,6 +27,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - `catalog.js` puo esportare `archiveFilters` con metadati (order, status, type, season, years, dubbed, genres).
 - `genres` espone scorciatoie per filtri di archive (usabili come sezioni o menu).
 - AltadefinizioneZ include i filtri `catalog/all?sorting=popserie` e `catalog/all?sorting=popfilm` per le sezioni "Serie TV del momento" e "Film del momento" in home.
+- StreamingUnity usa `browse/trending`, `browse/latest`, `browse/top10` per le sezioni home e `archive` per l'archivio, con filtri `search`, `sort`, `type`, `genre[]`, `year`, `score`, `views`, `service`, `quality`, `age` (valori normalizzati dal provider).
 
 ## i18n dai provider (AnimeUnity)
 - Alcuni campi possono includere chiavi i18n opzionali per tradurre etichette in app.
@@ -45,9 +46,12 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per AnimeUnity il titolo mostrato in app usa sempre quello del provider.
 - In Info, per AnimeUnity doppiati, viene mostrata la dicitura "Doppiato in italiano" sotto il titolo usando info.extra.flags.dub.
 - Per AltadefinizioneZ la sinossi viene sempre dal provider (anche se esistono metadati esterni).
+- Per StreamingUnity la sinossi usa sempre quella del provider; se manca fa fallback ai metadati esterni.
+- Per StreamingUnity il titolo mostrato in app usa prima il logo del provider (se presente); altrimenti la traduzione italiana se diversa dall'originale o con caratteri latini, ma se coincide con l'originale e contiene CJK viene ignorata; poi inglese con la stessa regola, quindi lo slug normalizzato e infine il titolo originale.
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
+- Per StreamingUnity, quando sono presenti metadati esterni (imdbId), gli altri metadati del provider non vengono usati; fa eccezione il badge "Episodi", che usa sempre il conteggio del provider.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
-- Per AltadefinizioneZ, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
+- Per AltadefinizioneZ e StreamingUnity, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
 - Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
 - Se l'immagine dell'hero fallisce, il titolo viene scartato e si seleziona un altro hero casuale.
 - Se i metadati esterni falliscono ma il provider risponde correttamente, la scheda Info resta disponibile usando i dati del provider.

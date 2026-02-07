@@ -1,4 +1,5 @@
 const {getDefaultConfig} = require('expo/metro-config');
+const {resolve} = require('metro-resolver');
 const {withNativeWind} = require('nativewind/metro');
 /**
  * Metro configuration
@@ -8,5 +9,29 @@ const {withNativeWind} = require('nativewind/metro');
  */
 
 const config = getDefaultConfig(__dirname);
+const undiciShim = require.resolve('./src/shims/undici');
+
+config.resolver = {
+  ...config.resolver,
+  extraNodeModules: {
+    assert: require.resolve('assert/'),
+    buffer: require.resolve('buffer/'),
+    ...config.resolver?.extraNodeModules,
+    events: require.resolve('events/'),
+    process: require.resolve('process/browser'),
+    stream: require.resolve('stream-browserify'),
+    undici: undiciShim,
+    util: require.resolve('util/'),
+  },
+  resolveRequest: (context, moduleName, platform) => {
+    if (moduleName === 'undici' || moduleName.startsWith('undici/')) {
+      return resolve(context, undiciShim, platform);
+    }
+    if (moduleName.startsWith('node:')) {
+      return resolve(context, moduleName.replace(/^node:/, ''), platform);
+    }
+    return resolve(context, moduleName, platform);
+  },
+};
 
 module.exports = withNativeWind(config, {input: './src/global.css'});

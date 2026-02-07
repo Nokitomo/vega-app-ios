@@ -41,6 +41,12 @@ npx expo run:ios
 - Android: usa EAS o build gradle manuale.
 - fastlane/ contiene metadata per Play Store.
 
+## Build iOS unsigned (GitHub Actions)
+- Workflow: `.github/workflows/ios-unsigned.yml`.
+- Trigger: tag `v*` o avvio manuale.
+- Output: artifact `Vega-unsigned-ipa` e asset release `Vega-unsigned.ipa` (solo su tag).
+- Nota: l'IPA non e' firmato; serve firma per installarlo su device.
+
 ## Verifica lingua (i18n)
 - In app: Settings -> Preferences -> App Language.
 - Testare sia inglese che italiano durante QA, includendo notifiche e messaggi di errore.

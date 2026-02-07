@@ -34,6 +34,25 @@ Se i plugin Firebase sono abilitati e mancano google-services.json o GoogleServi
 - E' previsto se Firebase e attivo.
 - Il log non dovrebbe bloccare l'app.
 
+## Metro: Unable to resolve module node:stream
+Sintomo: Metro fallisce con "Unable to resolve module node:stream" (es. da cheerio).
+- Verifica che `stream-browserify`, `events`, `assert`, `buffer`, `process`, `util` siano tra le dipendenze.
+- Verifica che `metro.config.js` risolva i moduli `node:` e faccia il mapping a `stream`, `events`, `assert`, `buffer`, `process`, `util`.
+
+## Metro: Unable to resolve module node:net (undici)
+Sintomo: Metro fallisce con "Unable to resolve module node:net" da `undici/...`.
+- Verifica che esista `src/shims/undici.js`.
+- Verifica che `metro.config.js` mappi `undici` (anche import profondi `undici/...`) allo shim.
+
+## iOS: ExpoModulesCore richiede iOS 15.1
+Sintomo: build iOS fallisce con "module 'ExpoModulesCore' has a minimum deployment target of iOS 15.1".
+- Allinea `IPHONEOS_DEPLOYMENT_TARGET` a 15.1 nell'app iOS.
+
+## iOS CI: GOOGLE_APP_ID mancante (Firebase non usato)
+Sintomo: build iOS in GitHub Actions fallisce con "Could not get GOOGLE_APP_ID in Google Services file".
+- Se Firebase non e usato, disabilita l'autolinking iOS per `@react-native-firebase/*` in `react-native.config.js`.
+- In questo modo i pod Firebase non vengono installati e lo script Crashlytics non gira.
+
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.
