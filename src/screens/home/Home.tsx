@@ -265,16 +265,6 @@ const Home = ({}: Props) => {
         nextHero = heroPost;
       }
 
-      if (!nextHero && homeData.length > 0) {
-        const fallbackPool = homeData
-          .flatMap(item => item.Posts || [])
-          .filter(post => post?.link && post.link !== badHeroLink);
-        if (fallbackPool.length > 0) {
-          const index = Math.floor(Math.random() * fallbackPool.length);
-          nextHero = fallbackPool[index];
-        }
-      }
-
       if (!isActive) {
         return;
       }
@@ -291,7 +281,7 @@ const Home = ({}: Props) => {
       isActive = false;
       controller.abort();
     };
-  }, [homeData, heroPost, provider?.value, setHero, heroCacheTtlMs, heroRetryNonce]);
+  }, [heroPost, provider?.value, setHero, heroCacheTtlMs, heroRetryNonce]);
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
