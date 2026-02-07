@@ -44,6 +44,10 @@ Sintomo: Metro fallisce con "Unable to resolve module node:net" da `undici/...`.
 - Verifica che esista `src/shims/undici.js`.
 - Verifica che `metro.config.js` mappi `undici` (anche import profondi `undici/...`) allo shim.
 
+## iOS: ExpoModulesCore richiede iOS 15.1
+Sintomo: build iOS fallisce con "module 'ExpoModulesCore' has a minimum deployment target of iOS 15.1".
+- Allinea `IPHONEOS_DEPLOYMENT_TARGET` a 15.1 nell'app iOS.
+
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.
