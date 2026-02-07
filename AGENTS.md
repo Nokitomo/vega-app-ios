@@ -31,3 +31,4 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 9) Lingue supportate: inglese e italiano. Non aggiungere altre lingue senza richiesta esplicita.
 10) Ogni nuova stringa UI o messaggio utente va aggiunta in `src/i18n/en.json` e `src/i18n/it.json`. Nei componenti usare `t(...)`, nei servizi usare `i18n.t(...)`.
 11) Per testi provenienti dai provider (es. AnimeUnity) usare `titleKey`/`titleParams`, `episodeLabelKey`/`episodeLabelParams` e `tagKeys` quando presenti, mantenendo il fallback su `title`/`episodeLabel`.
+12) Workflow iOS in GitHub Actions richiede il secret `IOS_GOOGLE_SERVICE_INFO_PLIST` (base64 di `GoogleService-Info.plist`).

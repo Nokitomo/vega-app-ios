@@ -48,6 +48,11 @@ Sintomo: Metro fallisce con "Unable to resolve module node:net" da `undici/...`.
 Sintomo: build iOS fallisce con "module 'ExpoModulesCore' has a minimum deployment target of iOS 15.1".
 - Allinea `IPHONEOS_DEPLOYMENT_TARGET` a 15.1 nell'app iOS.
 
+## iOS CI: GOOGLE_APP_ID mancante
+Sintomo: build iOS in GitHub Actions fallisce con "Could not get GOOGLE_APP_ID in Google Services file".
+- Imposta il secret `IOS_GOOGLE_SERVICE_INFO_PLIST` con il base64 di `GoogleService-Info.plist`.
+- Il workflow crea `ios/GoogleService-Info.plist` durante la build.
+
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
 - Se si reinstallano i node_modules, il postinstall applica la patch.
