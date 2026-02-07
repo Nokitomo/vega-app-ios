@@ -23,6 +23,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - La schermata Search usa OMDb per suggerimenti rapidi e salva la cronologia locale.
 - Risultati raggruppati per provider.
 - La ricerca globale usa cache LRU (max 10 query): resta valida mentre la tab Search e attiva, poi scade dopo 10 minuti dall'uscita.
+- La cache della ricerca globale include un fingerprint dei provider installati (value/version/lastUpdated) e una TTL interna: se cambiano provider o versione, la stessa query viene ricalcolata evitando risultati parziali.
 
 3) Dettaglio contenuto (Info)
 - Metadati, poster, trama e accesso alle sorgenti/episodi.

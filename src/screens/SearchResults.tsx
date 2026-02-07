@@ -26,6 +26,18 @@ interface SearchPageData {
   name: string;
 }
 
+const SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const buildProvidersFingerprint = (
+  providers: Array<{value: string; version?: string; lastUpdated?: number}>,
+) =>
+  providers
+    .map(item =>
+      [item.value || '', item.version || '', item.lastUpdated || 0].join(':'),
+    )
+    .sort()
+    .join('|');
+
 const SearchResults = ({route}: Props): React.ReactElement => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
@@ -56,6 +68,14 @@ const SearchResults = ({route}: Props): React.ReactElement => {
     () => route.params.filter.trim().toLowerCase(),
     [route.params.filter],
   );
+  const providersFingerprint = useMemo(
+    () => buildProvidersFingerprint(installedProviders),
+    [installedProviders],
+  );
+  const cacheKey = useMemo(
+    () => `${normalizedFilter}::${providersFingerprint}`,
+    [normalizedFilter, providersFingerprint],
+  );
 
   const updateSearchData = useCallback((newData: SearchPageData) => {
     searchDataRef.current = [...searchDataRef.current, newData];
@@ -82,8 +102,13 @@ const SearchResults = ({route}: Props): React.ReactElement => {
   );
 
   useEffect(() => {
-    const cached = getCache(normalizedFilter);
-    if (cached) {
+    const cached = getCache(cacheKey);
+    const isCacheFresh =
+      cached &&
+      cached.providerFingerprint === providersFingerprint &&
+      Date.now() - cached.cachedAt < SEARCH_CACHE_TTL_MS;
+
+    if (isCacheFresh && cached) {
       searchDataRef.current = cached.searchData;
       emptyResultsRef.current = cached.emptyResults;
       setSearchData(cached.searchData);
@@ -179,7 +204,9 @@ const SearchResults = ({route}: Props): React.ReactElement => {
       if (signal.aborted) {
         return;
       }
-      setCache(normalizedFilter, {
+      setCache(cacheKey, {
+        providerFingerprint: providersFingerprint,
+        cachedAt: Date.now(),
         searchData: searchDataRef.current,
         emptyResults: emptyResultsRef.current,
       });
@@ -202,6 +229,8 @@ const SearchResults = ({route}: Props): React.ReactElement => {
     getCache,
     setCache,
     normalizedFilter,
+    providersFingerprint,
+    cacheKey,
   ]);
 
   const renderSlider = useCallback(
