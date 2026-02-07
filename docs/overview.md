@@ -15,7 +15,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - I titoli nelle card di home/ricerca/lista possono andare su due righe con ellissi finale per ridurre il taglio aggressivo.
 - La vista "more" del calendario usa una griglia con sezioni per giorno.
 - La vista "more" del calendario include anche la sezione "Undetermined".
-- L'hero usa una cache settimanale per ridurre refresh involontari.
+- L'hero usa una cache giornaliera (24 ore) per provider; il refresh manuale della home non invalida la selezione, che cambia solo a scadenza o se l'immagine hero risulta non valida.
 - La home usa cache e refresh per categoria (chiave provider+filter): all'avvio vengono richieste solo le categorie stale, e una categoria con dati invariati non forza l'aggiornamento delle altre.
 
 2) Ricerca

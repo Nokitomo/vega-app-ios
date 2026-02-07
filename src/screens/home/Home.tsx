@@ -38,6 +38,8 @@ const HERO_MAX_ATTEMPTS = 3;
 const HERO_IMAGE_RETRY_LIMIT = 3;
 
 const ARCHIVE_HERO_PROVIDERS = new Set(['animeunity', 'altadefinizionez']);
+const getHeroBadLinkKey = (providerValue: string) =>
+  `heroBadLink:${providerValue}`;
 
 const getArchiveHeroFilter = (providerValue: string) =>
   providerValue === 'animeunity' ? 'archive?random=true' : 'catalog/all?random=true';
@@ -183,8 +185,11 @@ const Home = ({}: Props) => {
         return;
       }
       heroImageErrorCountRef.current += 1;
+
+      if (failedLink) {
+        cacheStorage.setString(getHeroBadLinkKey(provider.value), failedLink);
+      }
       clearHeroCache(provider.value);
-      cacheStorage.delete(`heroCache:${provider.value}`);
       if (failedLink && ARCHIVE_HERO_PROVIDERS.has(provider.value)) {
         writeHeroHistory(provider.value, failedLink);
       }
@@ -222,6 +227,7 @@ const Home = ({}: Props) => {
       return;
     }
 
+    const badHeroLink = cacheStorage.getString(getHeroBadLinkKey(provider.value));
     const cacheKey = `heroCache:${provider.value}`;
     const cached = cacheStorage.getString(cacheKey);
     if (cached) {
@@ -230,7 +236,7 @@ const Home = ({}: Props) => {
         const isFresh =
           parsed?.timestamp &&
           Date.now() - parsed.timestamp < heroCacheTtlMs;
-        if (isFresh && parsed?.hero?.link) {
+        if (isFresh && parsed?.hero?.link && parsed.hero.link !== badHeroLink) {
           setHero(parsed.hero);
           return;
         }
@@ -255,8 +261,18 @@ const Home = ({}: Props) => {
         }
       }
 
-      if (!nextHero && heroPost) {
+      if (!nextHero && heroPost?.link && heroPost.link !== badHeroLink) {
         nextHero = heroPost;
+      }
+
+      if (!nextHero && homeData.length > 0) {
+        const fallbackPool = homeData
+          .flatMap(item => item.Posts || [])
+          .filter(post => post?.link && post.link !== badHeroLink);
+        if (fallbackPool.length > 0) {
+          const index = Math.floor(Math.random() * fallbackPool.length);
+          nextHero = fallbackPool[index];
+        }
       }
 
       if (!isActive) {
@@ -264,6 +280,9 @@ const Home = ({}: Props) => {
       }
 
       setHeroData(nextHero);
+      if (nextHero?.link && nextHero.link !== badHeroLink) {
+        cacheStorage.delete(getHeroBadLinkKey(provider.value));
+      }
     };
 
     resolveHero();
@@ -272,20 +291,16 @@ const Home = ({}: Props) => {
       isActive = false;
       controller.abort();
     };
-  }, [heroPost, provider?.value, setHero, heroCacheTtlMs, heroRetryNonce]);
+  }, [homeData, heroPost, provider?.value, setHero, heroCacheTtlMs, heroRetryNonce]);
 
   // Optimized refresh handler
   const handleRefresh = useCallback(async () => {
     try {
-      if (provider?.value) {
-        clearHeroCache(provider.value);
-        cacheStorage.delete(`heroCache:${provider.value}`);
-      }
       await refetch();
     } catch (refreshError) {
       console.error('Error refreshing home data:', refreshError);
     }
-  }, [provider?.value, refetch]);
+  }, [refetch]);
 
   // Memoized loading skeleton
   const loadingSliders = useMemo(() => {
