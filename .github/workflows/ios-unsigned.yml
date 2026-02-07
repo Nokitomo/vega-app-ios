@@ -31,17 +31,6 @@ jobs:
       - name: Install React Native CLI (CocoaPods autolinking)
         run: npm install --no-save --no-package-lock @react-native-community/cli
 
-      - name: Prepare GoogleService-Info.plist (iOS)
-        if: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST != '' }}
-        run: echo "${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST }}" | base64 --decode > ios/GoogleService-Info.plist
-
-      - name: Validate GoogleService-Info.plist
-        run: |
-          if [ ! -f ios/GoogleService-Info.plist ]; then
-            echo "Missing ios/GoogleService-Info.plist. Set secret IOS_GOOGLE_SERVICE_INFO_PLIST (base64)." >&2
-            exit 1
-          fi
-
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -56,7 +45,6 @@ jobs:
       - name: Build iOS (no codesign)
         run: |
           mkdir -p build/ios/archive
-          export GOOGLE_SERVICE_INFO_FILE="$PWD/ios/GoogleService-Info.plist"
           xcodebuild \
             -workspace ios/VegaMovies.xcworkspace \
             -scheme VegaMovies \
