@@ -9,6 +9,7 @@ const {withNativeWind} = require('nativewind/metro');
  */
 
 const config = getDefaultConfig(__dirname);
+const undiciShim = require.resolve('./src/shims/undici');
 
 config.resolver = {
   ...config.resolver,
@@ -19,10 +20,13 @@ config.resolver = {
     events: require.resolve('events/'),
     process: require.resolve('process/browser'),
     stream: require.resolve('stream-browserify'),
-    undici: require.resolve('./src/shims/undici'),
+    undici: undiciShim,
     util: require.resolve('util/'),
   },
   resolveRequest: (context, moduleName, platform) => {
+    if (moduleName === 'undici' || moduleName.startsWith('undici/')) {
+      return resolve(context, undiciShim, platform);
+    }
     if (moduleName.startsWith('node:')) {
       return resolve(context, moduleName.replace(/^node:/, ''), platform);
     }

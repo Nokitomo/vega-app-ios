@@ -42,7 +42,7 @@ Sintomo: Metro fallisce con "Unable to resolve module node:stream" (es. da cheer
 ## Metro: Unable to resolve module node:net (undici)
 Sintomo: Metro fallisce con "Unable to resolve module node:net" da `undici/...`.
 - Verifica che esista `src/shims/undici.js`.
-- Verifica che `metro.config.js` mappi `undici` allo shim.
+- Verifica che `metro.config.js` mappi `undici` (anche import profondi `undici/...`) allo shim.
 
 ## React Native FS / Patch-package
 - Fix applicato via patch-package: patches/@dr.pogodin+react-native-fs+2.34.0.patch
