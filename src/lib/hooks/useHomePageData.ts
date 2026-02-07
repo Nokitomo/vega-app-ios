@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import {useQueries} from '@tanstack/react-query';
+import {useQueries, useQuery} from '@tanstack/react-query';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
 import {providerManager} from '../services/ProviderManager';
