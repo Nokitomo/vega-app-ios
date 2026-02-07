@@ -32,3 +32,9 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 10) Ogni nuova stringa UI o messaggio utente va aggiunta in `src/i18n/en.json` e `src/i18n/it.json`. Nei componenti usare `t(...)`, nei servizi usare `i18n.t(...)`.
 11) Per testi provenienti dai provider (es. AnimeUnity) usare `titleKey`/`titleParams`, `episodeLabelKey`/`episodeLabelParams` e `tagKeys` quando presenti, mantenendo il fallback su `title`/`episodeLabel`.
 12) Autolinking iOS per `@react-native-firebase/*` e disabilitato in `react-native.config.js`; riattivarlo richiede configurazione Firebase e chiavi.
+13) Usare la skill `gh-fix-ci` quando una pipeline GitHub Actions e rossa o una PR e bloccata da controlli CI, prima di tentare fix manuali non strutturati.
+14) Usare la skill `security-threat-model` quando una modifica introduce o altera superfici di attacco (provider dinamici/remoti, networking, permessi, gestione token, download, esecuzione contenuti esterni).
+15) Usare la skill `security-best-practices` per modifiche a dipendenze, configurazioni sensibili, gestione segreti/chiavi, storage locale di dati sensibili e preparazione release.
+16) Usare la skill `doc` per modifiche che impattano comportamento applicativo, setup/build, CI/CD, flussi operativi o regole di progetto, aggiornando la documentazione nello stesso set di modifiche.
+17) Usare la skill `screenshot` quando una modifica cambia UI/UX in modo visibile e serve evidenza grafica per PR, verifica o documentazione.
+18) Se una skill richiesta non e disponibile o non applicabile in modo affidabile, procedere con fallback manuale esplicitando nel report finale motivazione, limiti e verifiche eseguite.
