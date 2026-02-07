@@ -122,7 +122,6 @@ const Home = ({}: Props) => {
   const {t} = useTranslation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const [heroRetryNonce, setHeroRetryNonce] = useState(0);
   const heroImageErrorCountRef = useRef(0);
 
@@ -285,8 +284,6 @@ const Home = ({}: Props) => {
       await refetch();
     } catch (refreshError) {
       console.error('Error refreshing home data:', refreshError);
-    } finally {
-      setRefreshNonce(value => value + 1);
     }
   }, [provider?.value, refetch]);
 
@@ -314,13 +311,13 @@ const Home = ({}: Props) => {
     return homeData.map(item => (
       <Slider
         isLoading={false}
-        key={`content-${item.filter}-${item.Posts.length}-${refreshNonce}`}
+        key={`content-${item.filter}`}
         title={resolveCatalogTitle(item)}
         posts={item.Posts}
         filter={item.filter}
       />
     ));
-  }, [homeData, refreshNonce, resolveCatalogTitle]);
+  }, [homeData, resolveCatalogTitle]);
 
   const scrollKey = useMemo(() => {
     return `${provider?.value ?? 'none'}:${homeData.length}:${isLoading}`;
