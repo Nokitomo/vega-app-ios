@@ -329,6 +329,9 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
         );
         merged.genres = pickValue(enhancedMeta.genres, providerInfo.genres);
         merged.cast = pickValue(enhancedMeta.cast, providerInfo.cast);
+        merged.providerLogo = providerInfo.logo;
+        merged.cinemetaLogo = enhancedMeta.logo;
+        merged.logo = pickValue(providerInfo.logo, enhancedMeta.logo);
 
         const providerTags = Array.isArray(providerInfo?.tags)
           ? providerInfo.tags

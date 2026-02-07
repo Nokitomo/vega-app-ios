@@ -34,6 +34,9 @@ const PLACEHOLDER_IMAGE =
 const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
   const [searchActive, setSearchActive] = useState(false);
   const [imageFallback, setImageFallback] = useState<string | null>(null);
+  const [logoFallbackMode, setLogoFallbackMode] = useState<
+    'provider' | 'cinemeta' | 'text'
+  >('text');
   const {t} = useTranslation();
   const {provider} = useContentStore(state => state);
   const {hero} = useHeroStore(state => state);
@@ -106,6 +109,28 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
     setImageFallback(null);
     lastErrorLinkRef.current = null;
   }, [hero?.link]);
+
+  const providerLogo = React.useMemo(() => {
+    const value = (heroData as {providerLogo?: string; logo?: string}) || {};
+    return (value.providerLogo || value.logo || '').trim();
+  }, [heroData]);
+
+  const cinemetaLogo = React.useMemo(() => {
+    const value = (heroData as {cinemetaLogo?: string}) || {};
+    return (value.cinemetaLogo || '').trim();
+  }, [heroData]);
+
+  useEffect(() => {
+    if (providerLogo) {
+      setLogoFallbackMode('provider');
+      return;
+    }
+    if (cinemetaLogo) {
+      setLogoFallbackMode('cinemeta');
+      return;
+    }
+    setLogoFallbackMode('text');
+  }, [hero?.link, providerLogo, cinemetaLogo]);
 
   // Memoized image source
   const currentImageUri = React.useMemo(() => {
@@ -181,6 +206,28 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
     return heroData.title || '';
   }, [heroData, t]);
 
+  const logoUri = React.useMemo(() => {
+    if (logoFallbackMode === 'provider') {
+      return providerLogo;
+    }
+    if (logoFallbackMode === 'cinemeta') {
+      return cinemetaLogo;
+    }
+    return '';
+  }, [logoFallbackMode, providerLogo, cinemetaLogo]);
+
+  const handleLogoError = useCallback(() => {
+    if (
+      logoFallbackMode === 'provider' &&
+      cinemetaLogo &&
+      cinemetaLogo !== providerLogo
+    ) {
+      setLogoFallbackMode('cinemeta');
+      return;
+    }
+    setLogoFallbackMode('text');
+  }, [logoFallbackMode, cinemetaLogo, providerLogo]);
+
   if (error) {
     console.error('Hero metadata error:', error);
   }
@@ -248,15 +295,15 @@ const Hero = memo(({isDrawerOpen, onOpenDrawer, onImageError}: HeroProps) => {
         {!isLoading && heroData && (
           <View className="gap-4 items-center">
             {/* Title/Logo */}
-            {heroData.logo ? (
+            {logoUri ? (
               <Image
-                source={{uri: heroData.logo}}
+                source={{uri: logoUri}}
                 style={{
                   width: 200,
                   height: 100,
                   resizeMode: 'contain',
                 }}
-                onError={() => console.warn('Logo failed to load')}
+                onError={handleLogoError}
               />
             ) : (
               <Text className="text-white text-center text-2xl font-bold">
