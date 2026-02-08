@@ -23,6 +23,7 @@ import {hasItaBadge} from '../lib/utils/helpers';
 type EpisodeMeta = {
   episodeTitle?: string;
   episodeNumber?: number;
+  seasonNumber?: number;
 };
 
 const normalizeNumericValue = (value: unknown): number | undefined => {
@@ -45,7 +46,11 @@ const ContinueWatching = () => {
   >({});
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
-  const getEpisodeLabel = ({episodeTitle, episodeNumber}: EpisodeMeta) => {
+  const getEpisodeLabel = ({
+    episodeTitle,
+    episodeNumber,
+    seasonNumber,
+  }: EpisodeMeta) => {
     const parsedEpisodeNumber =
       normalizeNumericValue(episodeNumber) ??
       (episodeTitle
@@ -53,6 +58,13 @@ const ContinueWatching = () => {
         : NaN);
     if (!Number.isFinite(parsedEpisodeNumber) || parsedEpisodeNumber <= 0) {
       return undefined;
+    }
+    const parsedSeasonNumber = normalizeNumericValue(seasonNumber);
+    if (parsedSeasonNumber && parsedSeasonNumber > 0) {
+      return t('SeasonBadge {{season}}-Ep. {{episode}}', {
+        season: parsedSeasonNumber,
+        episode: parsedEpisodeNumber,
+      });
     }
     return t('Ep. {{number}}', {number: parsedEpisodeNumber});
   };
@@ -102,6 +114,7 @@ const ContinueWatching = () => {
               episodeMetaMap[item.link] = {
                 episodeTitle: parsed.episodeTitle,
                 episodeNumber: normalizeNumericValue(parsed.episodeNumber),
+                seasonNumber: normalizeNumericValue(parsed.seasonNumber),
               };
             }
           } else if (item.currentTime && item.duration) {
@@ -246,9 +259,12 @@ const ContinueWatching = () => {
           const progress = progressData[item.link] || 0;
           const isSelected = selectedItems.has(item.link);
           const episodeLabel = getEpisodeLabel({
-            episodeTitle: episodeMetaData[item.link]?.episodeTitle || item.episodeTitle,
+            episodeTitle:
+              episodeMetaData[item.link]?.episodeTitle || item.episodeTitle,
             episodeNumber:
               episodeMetaData[item.link]?.episodeNumber ?? item.episodeNumber,
+            seasonNumber:
+              episodeMetaData[item.link]?.seasonNumber ?? item.seasonNumber,
           });
           const showItaBadge = hasItaBadge(item.title);
 
