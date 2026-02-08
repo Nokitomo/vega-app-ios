@@ -69,5 +69,6 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 ## Lingua e localizzazione (i18n)
 - Lingue supportate: inglese e italiano (selezione in Preferenze).
+- Al primo avvio, la lingua predefinita e italiano.
 - Le stringhe UI usano `react-i18next` con chiavi in `src/i18n/en.json` e `src/i18n/it.json`.
 - Per nuove funzionalita, aggiungere la chiave in entrambi i file e usare `t(...)` nei componenti o `i18n.t(...)` nei servizi.
