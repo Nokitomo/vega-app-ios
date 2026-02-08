@@ -39,6 +39,8 @@ const useWatchHistoryStore = create<History>(set => ({
         duration: item.duration,
         progress: item.currentTime,
         episodeTitle: item.episodeTitle,
+        episodeNumber: item.episodeNumber,
+        seasonNumber: item.seasonNumber,
         cachedInfoData: item.cachedInfoData,
       };
 

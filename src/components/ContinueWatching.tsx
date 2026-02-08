@@ -20,6 +20,16 @@ import useUiSettingsStore from '../lib/zustand/uiSettingsStore';
 import {useTranslation} from 'react-i18next';
 import {hasItaBadge} from '../lib/utils/helpers';
 
+type EpisodeMeta = {
+  episodeTitle?: string;
+  episodeNumber?: number;
+};
+
+const normalizeNumericValue = (value: unknown): number | undefined => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
 const ContinueWatching = () => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
@@ -30,20 +40,21 @@ const ContinueWatching = () => {
     state => state.showRecentlyWatched,
   );
   const [progressData, setProgressData] = useState<Record<string, number>>({});
-  const [episodeTitleData, setEpisodeTitleData] = useState<
-    Record<string, string>
+  const [episodeMetaData, setEpisodeMetaData] = useState<
+    Record<string, EpisodeMeta>
   >({});
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
-  const getEpisodeLabel = (episodeTitle?: string) => {
-    if (!episodeTitle) {
+  const getEpisodeLabel = ({episodeTitle, episodeNumber}: EpisodeMeta) => {
+    const parsedEpisodeNumber =
+      normalizeNumericValue(episodeNumber) ??
+      (episodeTitle
+        ? Number.parseInt(episodeTitle.match(/\d+/)?.[0] || '', 10)
+        : NaN);
+    if (!Number.isFinite(parsedEpisodeNumber) || parsedEpisodeNumber <= 0) {
       return undefined;
     }
-    const match = episodeTitle.match(/\d+/);
-    if (!match) {
-      return undefined;
-    }
-    return t('Ep. {{number}}', {number: match[0]});
+    return t('Ep. {{number}}', {number: parsedEpisodeNumber});
   };
 
   // Filter out duplicates and get the most recent items
@@ -66,7 +77,7 @@ const ContinueWatching = () => {
   useEffect(() => {
     const loadProgressData = () => {
       const progressMap: Record<string, number> = {};
-      const episodeTitleMap: Record<string, string> = {};
+      const episodeMetaMap: Record<string, EpisodeMeta> = {};
 
       recentItems.forEach(item => {
         try {
@@ -87,8 +98,11 @@ const ContinueWatching = () => {
               progressMap[item.link] = Math.min(Math.max(percentage, 0), 100);
             }
 
-            if (parsed.episodeTitle) {
-              episodeTitleMap[item.link] = parsed.episodeTitle;
+            if (parsed.episodeTitle || parsed.episodeNumber != null) {
+              episodeMetaMap[item.link] = {
+                episodeTitle: parsed.episodeTitle,
+                episodeNumber: normalizeNumericValue(parsed.episodeNumber),
+              };
             }
           } else if (item.currentTime && item.duration) {
             const percentage = (item.currentTime / item.duration) * 100;
@@ -100,7 +114,7 @@ const ContinueWatching = () => {
       });
 
       setProgressData(progressMap);
-      setEpisodeTitleData(episodeTitleMap);
+      setEpisodeMetaData(episodeMetaMap);
     };
 
     loadProgressData();
@@ -231,9 +245,11 @@ const ContinueWatching = () => {
         renderItem={({item}) => {
           const progress = progressData[item.link] || 0;
           const isSelected = selectedItems.has(item.link);
-          const episodeLabel = getEpisodeLabel(
-            episodeTitleData[item.link] || item.episodeTitle,
-          );
+          const episodeLabel = getEpisodeLabel({
+            episodeTitle: episodeMetaData[item.link]?.episodeTitle || item.episodeTitle,
+            episodeNumber:
+              episodeMetaData[item.link]?.episodeNumber ?? item.episodeNumber,
+          });
           const showItaBadge = hasItaBadge(item.title);
 
           return (

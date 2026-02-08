@@ -27,6 +27,8 @@ export interface WatchHistoryItem {
   currentTime?: number;
   playbackRate?: number;
   episodeTitle?: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
   cachedInfoData?: any; // Add cached info data
 }
 

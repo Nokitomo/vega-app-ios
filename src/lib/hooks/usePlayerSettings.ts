@@ -87,6 +87,16 @@ export const usePlayerProgress = ({
           const historyKey = routeParams.infoUrl || link;
           const historyProgressKey = `watch_history_progress_${historyKey}`;
           const percentage = (currentTime / duration) * 100;
+          const parsedEpisodeNumber = Number(activeEpisode?.episodeNumber);
+          const episodeNumber = Number.isFinite(parsedEpisodeNumber)
+            ? parsedEpisodeNumber
+            : undefined;
+          const parsedSeasonNumber = Number(
+            activeEpisode?.seasonNumber ?? routeParams?.seasonNumber,
+          );
+          const seasonNumber = Number.isFinite(parsedSeasonNumber)
+            ? parsedSeasonNumber
+            : undefined;
 
           const progressData = {
             currentTime,
@@ -95,8 +105,10 @@ export const usePlayerProgress = ({
             infoUrl: routeParams.infoUrl || '',
             title: routeParams?.primaryTitle || '',
             episodeTitle: activeEpisode?.title || routeParams?.secondaryTitle || '',
+            episodeNumber,
             episodeLink: activeEpisode?.link || '',
             seasonTitle: routeParams?.secondaryTitle || '',
+            seasonNumber,
             seasonEpisodesLink: routeParams?.seasonEpisodesLink || '',
             updatedAt: Date.now(),
           };
@@ -124,7 +136,13 @@ export const usePlayerProgress = ({
         console.error('Error storing watch progress for history:', error);
       }
     },
-    [routeParams, activeEpisode?.title, activeEpisode?.link],
+    [
+      routeParams,
+      activeEpisode?.title,
+      activeEpisode?.link,
+      activeEpisode?.episodeNumber,
+      activeEpisode?.seasonNumber,
+    ],
   );
 
   return {

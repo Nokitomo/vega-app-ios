@@ -69,6 +69,7 @@ interface PlayHandlerProps {
   primaryTitle: string;
   secondaryTitle?: string;
   seasonTitle: string;
+  seasonNumber?: number;
   episodeData: EpisodeLink[] | Link['directLinks'];
   seasonEpisodesLink?: string;
 }
@@ -83,8 +84,10 @@ interface ResumeProgress {
   currentTime: number;
   duration?: number;
   episodeTitle?: string;
+  episodeNumber?: number;
   episodeLink?: string;
   seasonTitle?: string;
+  seasonNumber?: number;
   seasonEpisodesLink?: string;
 }
 
@@ -93,12 +96,15 @@ interface PendingPlay {
   episodeNumber?: number;
   episodeTitle?: string;
   episodeLink?: string;
+  seasonNumber?: number;
   seasonEpisodesLink?: string;
 }
 
 type PlayableItem = {
   title?: string;
   link?: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
 };
 
 const formatResumeTime = (seconds: number) => {
@@ -129,8 +135,10 @@ const areResumeProgressEqual = (
     left.currentTime === right.currentTime &&
     left.duration === right.duration &&
     left.episodeTitle === right.episodeTitle &&
+    left.episodeNumber === right.episodeNumber &&
     left.episodeLink === right.episodeLink &&
     left.seasonTitle === right.seasonTitle &&
+    left.seasonNumber === right.seasonNumber &&
     left.seasonEpisodesLink === right.seasonEpisodesLink
   );
 };
@@ -160,6 +168,11 @@ const getEpisodeNumber = (title?: string) => {
   }
 
   const parsed = Number.parseInt(match[0], 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const normalizeNumericValue = (value: unknown): number | undefined => {
+  const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
@@ -196,6 +209,22 @@ const findSeasonForEpisodeNumber = (linkList: Link[], episodeNumber: number) =>
     }
     return episodeNumber >= range.start && episodeNumber <= range.end;
   });
+
+const resolveSeasonNumber = (item?: Link): number | undefined => {
+  if (!item) {
+    return undefined;
+  }
+  const parsedSeasonNumber = normalizeNumericValue(
+    item.seasonNumber ?? item.titleParams?.number,
+  );
+  if (!parsedSeasonNumber || parsedSeasonNumber <= 0) {
+    return undefined;
+  }
+  if (item.titleKey === 'Season {{number}}') {
+    return parsedSeasonNumber;
+  }
+  return undefined;
+};
 
 const parseIsoDateAsUtc = (value: string): Date | null => {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -244,17 +273,28 @@ const SeasonList: React.FC<SeasonListProps> = ({
     [t],
   );
   const getEpisodeLabel = useCallback(
-    (episodeTitle?: string) => {
-      if (!episodeTitle) {
+    ({
+      episodeTitle,
+      episodeNumber,
+      seasonNumber,
+    }: {
+      episodeTitle?: string;
+      episodeNumber?: number;
+      seasonNumber?: number;
+    }) => {
+      const parsedEpisodeNumber =
+        normalizeNumericValue(episodeNumber) ?? getEpisodeNumber(episodeTitle);
+      if (!parsedEpisodeNumber) {
         return undefined;
       }
-
-      const match = episodeTitle.match(/\d+/);
-      if (!match) {
-        return undefined;
+      const parsedSeasonNumber = normalizeNumericValue(seasonNumber);
+      if (parsedSeasonNumber && parsedSeasonNumber > 0) {
+        return t('S{{season}}-Ep. {{episode}}', {
+          season: parsedSeasonNumber,
+          episode: parsedEpisodeNumber,
+        });
       }
-
-      return t('Ep. {{number}}', {number: match[0]});
+      return t('Ep. {{number}}', {number: parsedEpisodeNumber});
     },
     [t],
   );
@@ -347,6 +387,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
     return LinkList[activeSeasonIndex + 1];
   }, [LinkList, activeSeasonIndex]);
+  const activeSeasonNumber = useMemo(
+    () => resolveSeasonNumber(activeSeasonValue || activeSeason),
+    [activeSeasonValue, activeSeason],
+  );
   const shouldFetchEpisodes = useMemo(
     () =>
       Boolean(
@@ -415,6 +459,20 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
     return t('No stream found');
   }, [activeSeasonValue?.availabilityStatus, t]);
+  const resumeEpisodeLabel = useMemo(
+    () =>
+      getEpisodeLabel({
+        episodeTitle: resumeProgress?.episodeTitle,
+        episodeNumber: resumeProgress?.episodeNumber,
+        seasonNumber: resumeProgress?.seasonNumber,
+      }),
+    [
+      getEpisodeLabel,
+      resumeProgress?.episodeTitle,
+      resumeProgress?.episodeNumber,
+      resumeProgress?.seasonNumber,
+    ],
+  );
 
   // React Query for episodes
   const {
@@ -636,8 +694,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
             currentTime: parsed.currentTime,
             duration: parsed.duration,
             episodeTitle: parsed.episodeTitle,
+            episodeNumber: normalizeNumericValue(parsed.episodeNumber),
             episodeLink: parsed.episodeLink,
             seasonTitle: parsed.seasonTitle || undefined,
+            seasonNumber: normalizeNumericValue(parsed.seasonNumber),
             seasonEpisodesLink: parsed.seasonEpisodesLink || undefined,
           };
         } else {
@@ -750,9 +810,16 @@ const SeasonList: React.FC<SeasonListProps> = ({
       primaryTitle,
       secondaryTitle,
       seasonTitle,
+      seasonNumber,
       episodeData,
       seasonEpisodesLink,
     }: PlayHandlerProps) => {
+      const selectedEpisode = episodeData?.[linkIndex];
+      const parsedEpisodeNumber =
+        normalizeNumericValue(selectedEpisode?.episodeNumber) ??
+        getEpisodeNumber(selectedEpisode?.title);
+      const resolvedSeasonNumber =
+        normalizeNumericValue(seasonNumber) ?? resolveSeasonNumber(activeSeason);
       addItem({
         id: routeParams.link,
         link: routeParams.link,
@@ -761,6 +828,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
         provider: providerValue,
         lastPlayed: Date.now(),
         episodeTitle: secondaryTitle,
+        episodeNumber: parsedEpisodeNumber,
+        seasonNumber: resolvedSeasonNumber,
         playbackRate: 1,
         currentTime: 0,
         duration: 1,
@@ -803,6 +872,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
         type: contentType,
         primaryTitle: primaryTitle,
         secondaryTitle: seasonTitle,
+        episodeNumber: parsedEpisodeNumber,
+        seasonNumber: resolvedSeasonNumber,
         seasonEpisodesLink: seasonEpisodesLink,
         poster: poster,
         providerValue: providerValue,
@@ -813,6 +884,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     },
     [
       addItem,
+      activeSeason,
       activeSeasonIndex,
       routeParams.link,
       poster,
@@ -907,7 +979,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
       if (target.episodeNumber != null) {
         const byNumber = list.findIndex(
-          item => getEpisodeNumber(item.title) === target.episodeNumber,
+          item =>
+            (normalizeNumericValue(item.episodeNumber) ??
+              getEpisodeNumber(item.title)) === target.episodeNumber,
         );
         if (byNumber >= 0) {
           return byNumber;
@@ -967,9 +1041,11 @@ const SeasonList: React.FC<SeasonListProps> = ({
       return;
     }
 
-    const targetNumber = resumeProgress.episodeTitle
-      ? getEpisodeNumber(resumeProgress.episodeTitle)
-      : 1;
+    const targetNumber =
+      normalizeNumericValue(resumeProgress.episodeNumber) ??
+      (resumeProgress.episodeTitle
+        ? getEpisodeNumber(resumeProgress.episodeTitle)
+        : 1);
     if (!targetNumber) {
       return;
     }
@@ -1024,6 +1100,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
       primaryTitle: metaTitle,
       secondaryTitle: resumeItem.title,
       seasonTitle: activeSeason?.title || '',
+      seasonNumber:
+        normalizeNumericValue(resumeItem.seasonNumber) ?? activeSeasonNumber,
       episodeData: resumeList,
     });
     setPendingPlay(null);
@@ -1032,6 +1110,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     episodeLoading,
     activeSeason?.episodesLink,
     activeSeason?.title,
+    activeSeasonNumber,
     getPlayableList,
     resolveEpisodeIndex,
     playHandler,
@@ -1042,7 +1121,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
   const handleResume = useCallback(() => {
     const isResume = !!resumeProgress;
     const targetEpisodeNumber = isResume
-      ? getEpisodeNumber(resumeProgress?.episodeTitle)
+      ? normalizeNumericValue(resumeProgress?.episodeNumber) ??
+        getEpisodeNumber(resumeProgress?.episodeTitle)
       : 1;
 
     const target: PendingPlay = {
@@ -1050,6 +1130,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       episodeNumber: targetEpisodeNumber,
       episodeTitle: resumeProgress?.episodeTitle,
       episodeLink: resumeProgress?.episodeLink,
+      seasonNumber: resumeProgress?.seasonNumber,
     };
 
     let targetSeason: Link | undefined;
@@ -1068,6 +1149,14 @@ const SeasonList: React.FC<SeasonListProps> = ({
             item => normalizeTitle(item.title) === normalizedSeason,
           );
         }
+      }
+
+      if (!targetSeason && resumeProgress?.seasonNumber) {
+        targetSeason = LinkList.find(
+          item =>
+            resolveSeasonNumber(item) ===
+            normalizeNumericValue(resumeProgress.seasonNumber),
+        );
       }
 
       if (!targetSeason && targetEpisodeNumber != null) {
@@ -1113,6 +1202,8 @@ const SeasonList: React.FC<SeasonListProps> = ({
       primaryTitle: metaTitle,
       secondaryTitle: resumeItem.title,
       seasonTitle: activeSeason?.title || '',
+      seasonNumber:
+        normalizeNumericValue(resumeItem.seasonNumber) ?? activeSeasonNumber,
       episodeData: resumeList,
     });
   }, [
@@ -1124,6 +1215,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     type,
     metaTitle,
     activeSeason,
+    activeSeasonNumber,
     handleSeasonChange,
     isSameSeason,
   ]);
@@ -1159,6 +1251,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   primaryTitle: metaTitle,
                   secondaryTitle: item.title,
                   seasonTitle: activeSeason?.title || '',
+                  seasonNumber:
+                    normalizeNumericValue(item.seasonNumber) ??
+                    activeSeasonNumber,
                   episodeData: filteredAndSortedEpisodes,
                   seasonEpisodesLink: activeSeason?.episodesLink,
                 })
@@ -1214,6 +1309,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       metaTitle,
       activeSeason?.title,
       activeSeason?.episodesLink,
+      activeSeasonNumber,
       filteredAndSortedEpisodes,
       onLongPressHandler,
       primary,
@@ -1253,6 +1349,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
                   primaryTitle: metaTitle,
                   secondaryTitle: item.title,
                   seasonTitle: activeSeason?.title || '',
+                  seasonNumber:
+                    normalizeNumericValue(item.seasonNumber) ??
+                    activeSeasonNumber,
                   episodeData: filteredAndSortedDirectLinks,
                   seasonEpisodesLink: activeSeason?.episodesLink,
                 })
@@ -1314,6 +1413,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
       activeSeason?.title,
       activeSeason?.episodesLink,
       activeSeason?.directLinks,
+      activeSeasonNumber,
       filteredAndSortedDirectLinks,
       onLongPressHandler,
       primary,
@@ -1527,10 +1627,9 @@ const SeasonList: React.FC<SeasonListProps> = ({
               <Text className="text-white font-semibold">
                 {resumeProgress?.currentTime ? t('Resume') : t('Play')}
               </Text>
-              {resumeProgress?.episodeTitle &&
-              getEpisodeLabel(resumeProgress.episodeTitle) ? (
+              {resumeEpisodeLabel ? (
                 <Text className="text-white/80 text-xs">
-                  {`- ${getEpisodeLabel(resumeProgress.episodeTitle)}`}
+                  {`- ${resumeEpisodeLabel}`}
                 </Text>
               ) : (
                 <Text className="text-white/80 text-xs">
