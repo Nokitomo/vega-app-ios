@@ -135,7 +135,7 @@ const WatchHistory = ({navigation}: Props) => {
       navigation.navigate('Info', {
         link: linkData,
         provider: item.provider || 'multiStream',
-        poster: item.image || '',
+        poster: item.poster || '',
       });
     } catch (error) {
       console.error('Navigation error:', error);
@@ -194,7 +194,7 @@ const WatchHistory = ({navigation}: Props) => {
                 activeOpacity={0.8}>
                 <View className="relative overflow-hidden">
                   <Image
-                    source={{uri: item.image}}
+                    source={{uri: item.poster}}
                     className="w-full aspect-[2/3] rounded-lg"
                   />
                   {showItaBadge ? (
