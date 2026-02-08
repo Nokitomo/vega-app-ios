@@ -37,6 +37,14 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - L'app usa le chiavi se presenti, altrimenti mostra il testo originale.
 - Al momento queste chiavi sono usate solo da AnimeUnity e dai provider futuri.
 
+## Disponibilita contenuti futuri (upcoming)
+- I provider possono valorizzare in `Info.linkList[]` i campi opzionali:
+  - `availabilityStatus`: `upcoming` o `available`
+  - `availabilityDate`: data normalizzata (`YYYY-MM-DD` o `YYYY`)
+  - `availabilityPrecision`: `day`, `year` o `unknown`
+- Quando una stagione/film e `upcoming` e non ci sono episodi/link, la UI mostra uno stato "In arrivo" con data (se disponibile) invece di una lista vuota.
+- Implementato attualmente per: `streamingunity`, `altadefinizionez`, `animeunity`.
+
 ## Priorita metadati (sinossi)
 - Quando sono presenti metadati esterni (Stremio per imdbId, AniList/Jikan per malId/anilistId), la UI usa quelli esterni.
 - Se manca l'imdbId ma sono disponibili malId/anilistId, la UI prova prima AniList e poi Jikan.
