@@ -664,17 +664,6 @@ const SeasonList: React.FC<SeasonListProps> = ({
     return links;
   }, [normalizedDirectLinks, searchText, sortOrder]);
 
-  // Memoized title alignment
-  const titleAlignment = useMemo(() => {
-    const hasLongTitles =
-      filteredAndSortedEpisodes.some(ep => ep?.title && ep.title.length > 27) ||
-      filteredAndSortedDirectLinks.some(
-        link => link?.title && link.title.length > 27,
-      );
-
-    return hasLongTitles ? 'justify-start' : 'justify-center';
-  }, [filteredAndSortedEpisodes, filteredAndSortedDirectLinks]);
-
   const sortedEpisodes = useMemo(() => {
     if (sortOrder === 'desc') {
       return [...normalizedEpisodes].reverse();
@@ -1317,7 +1306,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         `}>
           <View className="flex-row w-full justify-between gap-2 items-center">
             <TouchableOpacity
-              className={`rounded-md bg-white/30 w-[80%] h-12 items-center p-1 flex-row gap-x-2 relative ${titleAlignment}`}
+              className="rounded-md bg-white/30 w-[80%] h-12 items-center p-1 flex-row gap-x-2 relative justify-start"
               onPress={() =>
                 playHandler({
                   linkIndex: index,
@@ -1333,8 +1322,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 })
               }
               onLongPress={() => onLongPressHandler(true, item.link, 'series')}>
-              <Ionicons name="play-circle" size={28} color={primary} />
-              <Text className="text-white">
+              <View className="w-8 items-center justify-center">
+                <Ionicons name="play-circle" size={28} color={primary} />
+              </View>
+              <Text className="text-white flex-1" numberOfLines={1}>
                 {episodeTitle.length > 30
                   ? episodeTitle.slice(0, 30) + '...'
                   : episodeTitle}
@@ -1378,7 +1369,6 @@ const SeasonList: React.FC<SeasonListProps> = ({
     [
       isCompleted,
       stickyMenu.link,
-      titleAlignment,
       playHandler,
       metaTitle,
       activeSeason?.title,
@@ -1415,7 +1405,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
         `}>
           <View className="flex-row w-full justify-between gap-2 items-center">
             <TouchableOpacity
-              className={`rounded-md bg-white/30 w-[80%] h-12 items-center p-2 flex-row gap-x-2 relative ${titleAlignment}`}
+              className="rounded-md bg-white/30 w-[80%] h-12 items-center p-2 flex-row gap-x-2 relative justify-start"
               onPress={() =>
                 playHandler({
                   linkIndex: index,
@@ -1433,8 +1423,10 @@ const SeasonList: React.FC<SeasonListProps> = ({
               onLongPress={() =>
                 onLongPressHandler(true, item.link, item?.type || 'series')
               }>
-              <Ionicons name="play-circle" size={28} color={primary} />
-              <Text className="text-white">
+              <View className="w-8 items-center justify-center">
+                <Ionicons name="play-circle" size={28} color={primary} />
+              </View>
+              <Text className="text-white flex-1" numberOfLines={1}>
                 {activeSeason?.directLinks?.length &&
                 activeSeason?.directLinks?.length > 1
                   ? directTitle?.length > 27
@@ -1481,7 +1473,6 @@ const SeasonList: React.FC<SeasonListProps> = ({
     [
       isCompleted,
       stickyMenu.link,
-      titleAlignment,
       playHandler,
       metaTitle,
       activeSeason?.title,
