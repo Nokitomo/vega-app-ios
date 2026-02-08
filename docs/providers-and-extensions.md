@@ -45,6 +45,15 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Quando una stagione/film e `upcoming` e non ci sono episodi/link, la UI mostra uno stato "In arrivo" con data (se disponibile) invece di una lista vuota.
 - Implementato attualmente per: `streamingunity`, `altadefinizionez`, `animeunity`.
 
+## Metadati episodio/stagione per resume
+- I provider possono valorizzare su `EpisodeLink` e `Link.directLinks[]`:
+  - `episodeNumber`: numero episodio strutturato
+  - `seasonNumber`: numero stagione reale (quando applicabile)
+- La UI usa questi campi per:
+  - badge episodio in "Continua a guardare"
+  - etichetta del bottone resume (`Sx-Epy` per stagioni reali, `Epy` negli altri casi)
+- Fallback retrocompatibile: se i campi mancano, la UI prova a estrarre il numero dal titolo episodio.
+
 ## Priorita metadati (sinossi)
 - Quando sono presenti metadati esterni (Stremio per imdbId, AniList/Jikan per malId/anilistId), la UI usa quelli esterni.
 - Se manca l'imdbId ma sono disponibili malId/anilistId, la UI prova prima AniList e poi Jikan.

@@ -960,6 +960,28 @@ const Player = ({route}: Props): React.JSX.Element => {
   // Add to watch history
   useEffect(() => {
     if (route.params?.primaryTitle && !route.params?.doNotTrack) {
+      const routeEpisode =
+        route.params?.episodeList?.[route.params?.linkIndex] || undefined;
+      const episodeTitle =
+        activeEpisode?.title ||
+        routeEpisode?.title ||
+        route.params?.secondaryTitle;
+      const parsedEpisodeNumber = Number(
+        activeEpisode?.episodeNumber ??
+          routeEpisode?.episodeNumber ??
+          route.params?.episodeNumber,
+      );
+      const episodeNumber = Number.isFinite(parsedEpisodeNumber)
+        ? parsedEpisodeNumber
+        : undefined;
+      const parsedSeasonNumber = Number(
+        activeEpisode?.seasonNumber ??
+          routeEpisode?.seasonNumber ??
+          route.params?.seasonNumber,
+      );
+      const seasonNumber = Number.isFinite(parsedSeasonNumber)
+        ? parsedSeasonNumber
+        : undefined;
       addItem({
         id: route.params.infoUrl || activeEpisode.link,
         title: route.params.primaryTitle,
@@ -971,7 +993,9 @@ const Player = ({route}: Props): React.JSX.Element => {
         duration: 0,
         currentTime: 0,
         playbackRate: 1,
-        episodeTitle: route.params?.secondaryTitle || activeEpisode?.title,
+        episodeTitle,
+        episodeNumber,
+        seasonNumber,
       });
 
       updateItemWithInfo(

@@ -21,6 +21,9 @@ export const usePlayerProgress = ({
   const handleProgress = useCallback(
     (e: {currentTime: number; seekableDuration: number}) => {
       const {currentTime, seekableDuration} = e;
+      const routeEpisodeLink =
+        routeParams?.episodeList?.[routeParams?.linkIndex]?.link ||
+        activeEpisode?.link;
 
       videoPositionRef.current = {
         position: currentTime,
@@ -31,22 +34,20 @@ export const usePlayerProgress = ({
       if (
         routeParams?.episodeList &&
         routeParams?.linkIndex !== undefined &&
-        !routeParams?.doNotTrack
+        !routeParams?.doNotTrack &&
+        routeEpisodeLink
       ) {
-        updatePlaybackInfo(
-          routeParams.episodeList[routeParams.linkIndex].link,
-          {
-            currentTime,
-            duration: seekableDuration,
-            playbackRate,
-          },
-        );
+        updatePlaybackInfo(routeEpisodeLink, {
+          currentTime,
+          duration: seekableDuration,
+          playbackRate,
+        });
       }
 
       // Store progress data for watch history display
-      if (!routeParams?.doNotTrack) {
+      if (!routeParams?.doNotTrack && routeEpisodeLink) {
         storeWatchProgressForHistory(
-          routeParams.episodeList[routeParams.linkIndex].link,
+          routeEpisodeLink,
           currentTime,
           seekableDuration,
         );
@@ -87,6 +88,30 @@ export const usePlayerProgress = ({
           const historyKey = routeParams.infoUrl || link;
           const historyProgressKey = `watch_history_progress_${historyKey}`;
           const percentage = (currentTime / duration) * 100;
+          const routeEpisode =
+            routeParams?.episodeList?.[routeParams?.linkIndex] || undefined;
+          const episodeTitle =
+            activeEpisode?.title ||
+            routeEpisode?.title ||
+            routeParams?.secondaryTitle ||
+            '';
+          const episodeLink = activeEpisode?.link || routeEpisode?.link || link;
+          const parsedEpisodeNumber = Number(
+            activeEpisode?.episodeNumber ??
+              routeEpisode?.episodeNumber ??
+              routeParams?.episodeNumber,
+          );
+          const episodeNumber = Number.isFinite(parsedEpisodeNumber)
+            ? parsedEpisodeNumber
+            : undefined;
+          const parsedSeasonNumber = Number(
+            activeEpisode?.seasonNumber ??
+              routeEpisode?.seasonNumber ??
+              routeParams?.seasonNumber,
+          );
+          const seasonNumber = Number.isFinite(parsedSeasonNumber)
+            ? parsedSeasonNumber
+            : undefined;
 
           const progressData = {
             currentTime,
@@ -94,9 +119,11 @@ export const usePlayerProgress = ({
             percentage: percentage,
             infoUrl: routeParams.infoUrl || '',
             title: routeParams?.primaryTitle || '',
-            episodeTitle: activeEpisode?.title || routeParams?.secondaryTitle || '',
-            episodeLink: activeEpisode?.link || '',
+            episodeTitle,
+            episodeNumber,
+            episodeLink,
             seasonTitle: routeParams?.secondaryTitle || '',
+            seasonNumber,
             seasonEpisodesLink: routeParams?.seasonEpisodesLink || '',
             updatedAt: Date.now(),
           };
@@ -108,23 +135,29 @@ export const usePlayerProgress = ({
           watchHistoryStorage.addProgressKey(historyProgressKey);
 
           // Also store with episodeTitle-specific key for series episodes
-          if (activeEpisode?.title) {
-            const episodeKey = `watch_history_progress_${historyKey}_${activeEpisode.title.replace(
+          if (episodeTitle) {
+            const episodeKey = `watch_history_progress_${historyKey}_${episodeTitle.replace(
               /\s+/g,
               '_',
             )}`;
             mainStorage.setString(episodeKey, JSON.stringify(progressData));
             watchHistoryStorage.addProgressKey(episodeKey);
           }
-          if (activeEpisode?.link) {
-            watchHistoryStorage.addEpisodeKey(historyKey, activeEpisode.link);
+          if (episodeLink) {
+            watchHistoryStorage.addEpisodeKey(historyKey, episodeLink);
           }
         }
       } catch (error) {
         console.error('Error storing watch progress for history:', error);
       }
     },
-    [routeParams, activeEpisode?.title, activeEpisode?.link],
+    [
+      routeParams,
+      activeEpisode?.title,
+      activeEpisode?.link,
+      activeEpisode?.episodeNumber,
+      activeEpisode?.seasonNumber,
+    ],
   );
 
   return {

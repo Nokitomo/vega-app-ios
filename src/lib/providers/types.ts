@@ -115,6 +115,8 @@ export interface EpisodeLink {
   title: string;
   titleKey?: string;
   titleParams?: I18nParams;
+  episodeNumber?: number;
+  seasonNumber?: number;
   link: string;
 }
 
@@ -123,6 +125,7 @@ export interface Link {
   titleKey?: string;
   titleParams?: I18nParams;
   quality?: string;
+  seasonNumber?: number;
   availabilityStatus?: 'upcoming' | 'available';
   availabilityDate?: string;
   availabilityPrecision?: 'day' | 'year' | 'unknown';
@@ -131,6 +134,8 @@ export interface Link {
     title: string;
     titleKey?: string;
     titleParams?: I18nParams;
+    episodeNumber?: number;
+    seasonNumber?: number;
     link: string;
     type?: 'movie' | 'series';
   }[];

@@ -272,6 +272,7 @@
   "Continue Watching": "Continua a guardare",
   "{{count}} selected": "{{count}} selezionati",
   "Ep. {{number}}": "Ep. {{number}}",
+  "S{{season}}-Ep. {{episode}}": "S{{season}}-Ep. {{episode}}",
   "ITA": "ITA",
   "Search in {{provider}}": "Cerca in {{provider}}",
   "Play": "Riproduci",
