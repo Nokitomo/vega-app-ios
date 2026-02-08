@@ -72,7 +72,7 @@ export class SettingsStorage {
   // UI preferences
   getAppLanguage(): 'en' | 'it' {
     const stored = mainStorage.getString(SettingsKeys.APP_LANGUAGE);
-    return stored === 'it' ? 'it' : 'en';
+    return stored === 'en' ? 'en' : 'it';
   }
 
   setAppLanguage(language: 'en' | 'it'): void {
