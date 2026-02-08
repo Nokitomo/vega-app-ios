@@ -15,13 +15,16 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - I titoli nelle card di home/ricerca/lista possono andare su due righe con ellissi finale per ridurre il taglio aggressivo.
 - La vista "more" del calendario usa una griglia con sezioni per giorno.
 - La vista "more" del calendario include anche la sezione "Undetermined".
-- L'hero usa una cache settimanale per ridurre refresh involontari.
+- L'hero usa una cache giornaliera (24 ore) per provider; il refresh manuale della home non invalida la selezione, che cambia solo a scadenza o se l'immagine hero risulta non valida.
+- Per il titolo Hero, quando e disponibile un logo viene usata priorita: logo provider -> logo Cinemeta (fallback) -> titolo testuale.
+- La home usa cache e refresh per categoria (chiave provider+filter): all'avvio vengono richieste solo le categorie stale, e una categoria con dati invariati non forza l'aggiornamento delle altre.
 
 2) Ricerca
 - Ricerca per titolo o filtro.
 - La schermata Search usa OMDb per suggerimenti rapidi e salva la cronologia locale.
 - Risultati raggruppati per provider.
 - La ricerca globale usa cache LRU (max 10 query): resta valida mentre la tab Search e attiva, poi scade dopo 10 minuti dall'uscita.
+- La cache della ricerca globale include un fingerprint dei provider installati (value/version/lastUpdated) e una TTL interna: se cambiano provider o versione, la stessa query viene ricalcolata evitando risultati parziali.
 
 3) Dettaglio contenuto (Info)
 - Metadati, poster, trama e accesso alle sorgenti/episodi.
@@ -66,5 +69,6 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 
 ## Lingua e localizzazione (i18n)
 - Lingue supportate: inglese e italiano (selezione in Preferenze).
+- Al primo avvio, la lingua predefinita e italiano.
 - Le stringhe UI usano `react-i18next` con chiavi in `src/i18n/en.json` e `src/i18n/it.json`.
 - Per nuove funzionalita, aggiungere la chiave in entrambi i file e usare `t(...)` nei componenti o `i18n.t(...)` nei servizi.

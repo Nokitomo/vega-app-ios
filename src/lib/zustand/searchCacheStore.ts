@@ -3,6 +3,8 @@ import {create} from 'zustand';
 const MAX_CACHE_ENTRIES = 10;
 
 export interface SearchCacheEntry {
+  providerFingerprint: string;
+  cachedAt: number;
   searchData: Array<{
     title: string;
     Posts: any[];

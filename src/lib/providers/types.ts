@@ -139,6 +139,7 @@ export interface Catalog {
   titleKey?: string;
   titleParams?: I18nParams;
   filter: string;
+  staleTimeMs?: number;
 }
 
 export interface ProviderType {

@@ -1,11 +1,23 @@
-import {useQuery} from '@tanstack/react-query';
-import {getHomePageData, HomePageData} from '../getHomepagedata';
+import {useMemo} from 'react';
+import {useQueries, useQuery} from '@tanstack/react-query';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
+import {providerManager} from '../services/ProviderManager';
+import {queryClient} from '../client';
+import {Post} from '../providers/types';
 import {
   buildEnhancedMetaKey,
   fetchEnhancedMetadata,
 } from '../services/enhancedMeta';
+
+export interface HomePageData {
+  title: string;
+  titleKey?: string;
+  titleParams?: Record<string, string | number>;
+  Posts: Post[];
+  filter: string;
+  error?: string;
+}
 
 interface UseHomePageDataOptions {
   provider: Content['provider'];
@@ -16,47 +28,208 @@ export const useHomePageData = ({
   provider,
   enabled = true,
 }: UseHomePageDataOptions) => {
-  return useQuery<HomePageData[], Error>({
-    queryKey: ['homePageData', provider.value],
-    queryFn: async ({signal}) => {
-      // Fetch fresh data - cache is handled by React Query
-      const data = await getHomePageData(provider, signal);
-      return data;
-    },
-    enabled: enabled && !!provider?.value,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
-    retry: (failureCount, error) => {
-      if (error.name === 'AbortError') {
-        return false;
-      }
-      return failureCount < 3;
-    },
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    // Add initial data from cache for instant loading
-    initialData: () => {
-      const cache = cacheStorage.getString('homeData' + provider.value);
-      if (cache) {
-        try {
-          return JSON.parse(cache);
-        } catch {
-          return undefined;
-        }
-      }
+  const providerValue = provider?.value || '';
+  const categories = useMemo(
+    () =>
+      providerValue
+        ? providerManager.getCatalog({providerValue}) || []
+        : [],
+    [providerValue],
+  );
+
+  type CategoryQueryData = {
+    Posts: Post[];
+    signature: string;
+    updatedAt: number;
+  };
+
+  const buildCategoryCacheKey = (filter: string) =>
+    `homeCategoryData:${providerValue}:${filter}`;
+
+  const readCategoryCache = (filter: string): CategoryQueryData | undefined => {
+    const raw = cacheStorage.getString(buildCategoryCacheKey(filter));
+    if (!raw) {
       return undefined;
-    },
-    // Cache successful responses
-    meta: {
-      onSuccess: (data: HomePageData[]) => {
-        if (data && data.length > 0) {
-          cacheStorage.setString(
-            'homeData' + provider.value,
-            JSON.stringify(data),
-          );
-        }
-      },
-    },
+    }
+    try {
+      const parsed = JSON.parse(raw) as CategoryQueryData;
+      if (!Array.isArray(parsed?.Posts)) {
+        return undefined;
+      }
+      return {
+        Posts: parsed.Posts,
+        signature: typeof parsed.signature === 'string' ? parsed.signature : '',
+        updatedAt:
+          typeof parsed.updatedAt === 'number' && Number.isFinite(parsed.updatedAt)
+            ? parsed.updatedAt
+            : Date.now(),
+      };
+    } catch {
+      return undefined;
+    }
+  };
+
+  const writeCategoryCache = (filter: string, data: CategoryQueryData) => {
+    cacheStorage.setString(buildCategoryCacheKey(filter), JSON.stringify(data));
+  };
+
+  const getCategoryStaleTime = (filter: string, catalogStaleTimeMs?: number) => {
+    if (
+      typeof catalogStaleTimeMs === 'number' &&
+      Number.isFinite(catalogStaleTimeMs) &&
+      catalogStaleTimeMs > 0
+    ) {
+      return catalogStaleTimeMs;
+    }
+
+    const normalized = filter.toLowerCase();
+
+    if (
+      normalized.includes('latest') ||
+      normalized.includes('recent') ||
+      normalized.includes('calendar') ||
+      normalized.includes('top10') ||
+      normalized.includes('trending')
+    ) {
+      return 10 * 60 * 1000;
+    }
+
+    if (
+      normalized.includes('popular') ||
+      normalized.includes('favorites') ||
+      normalized.includes('most_viewed') ||
+      normalized.includes('upcoming') ||
+      normalized.includes('ongoing')
+    ) {
+      return 30 * 60 * 1000;
+    }
+
+    if (normalized.includes('archive') || normalized.includes('catalog/all')) {
+      return 6 * 60 * 60 * 1000;
+    }
+
+    return 60 * 60 * 1000;
+  };
+
+  const buildPostsSignature = (posts: Post[]) => {
+    if (!Array.isArray(posts) || posts.length === 0) {
+      return 'empty';
+    }
+
+    return posts
+      .map(post =>
+        [
+          post?.link || '',
+          post?.episodeId ?? '',
+          post?.episodeLabel ?? '',
+          post?.title ?? '',
+          post?.image ?? '',
+        ].join('|'),
+      )
+      .join('||');
+  };
+
+  const queryResults = useQueries({
+    queries: categories.map(category => {
+      const queryKey = [
+        'homeCategoryData',
+        providerValue,
+        category.filter,
+      ] as const;
+      const cached = readCategoryCache(category.filter);
+
+      return {
+        queryKey,
+        enabled: enabled && !!providerValue,
+        staleTime: getCategoryStaleTime(category.filter, category.staleTimeMs),
+        gcTime: 30 * 60 * 1000,
+        refetchOnMount: true,
+        refetchOnReconnect: true,
+        queryFn: async ({signal}: {signal: AbortSignal}) => {
+          const posts = await providerManager.getPosts({
+            filter: category.filter,
+            page: 1,
+            providerValue,
+            signal,
+          });
+          const nextPosts = Array.isArray(posts) ? posts : [];
+          const nextSignature = buildPostsSignature(nextPosts);
+          const previous = queryClient.getQueryData<CategoryQueryData>(queryKey);
+
+          if (previous && previous.signature === nextSignature) {
+            const sameData = {
+              ...previous,
+              updatedAt: Date.now(),
+            };
+            writeCategoryCache(category.filter, sameData);
+            return sameData;
+          }
+
+          const payload = {
+            Posts: nextPosts,
+            signature: nextSignature,
+            updatedAt: Date.now(),
+          };
+          writeCategoryCache(category.filter, payload);
+          return payload;
+        },
+        initialData: cached,
+        initialDataUpdatedAt: cached?.updatedAt,
+        retry: (failureCount: number, error: Error) => {
+          if (error.name === 'AbortError') {
+            return false;
+          }
+          return failureCount < 3;
+        },
+        retryDelay: (attemptIndex: number) =>
+          Math.min(1000 * 2 ** attemptIndex, 30000),
+      };
+    }),
   });
+
+  const homeData = useMemo<HomePageData[]>(
+    () =>
+      categories.map((category, index) => {
+        const result = queryResults[index];
+        const queryData = result?.data as CategoryQueryData | undefined;
+
+        return {
+          title: category.title,
+          titleKey: category.titleKey,
+          titleParams: category.titleParams,
+          Posts: queryData?.Posts || [],
+          filter: category.filter,
+          error:
+            result?.error instanceof Error ? result.error.message : undefined,
+        };
+      }),
+    [categories, queryResults],
+  );
+
+  const isLoading = queryResults.some(
+    result => result.isLoading || result.isPending,
+  );
+  const isRefetching = queryResults.some(result => result.isRefetching);
+  const firstError =
+    queryResults.find(result => result.error)?.error || null;
+
+  return {
+    data: homeData,
+    isLoading,
+    isRefetching,
+    error: firstError as Error | null,
+    refetch: async () => {
+      await Promise.all(queryResults.map(result => result.refetch()));
+      return {data: homeData};
+    },
+    refetchCategory: async (filter: string) => {
+      const index = categories.findIndex(item => item.filter === filter);
+      if (index < 0 || !queryResults[index]) {
+        return;
+      }
+      await queryResults[index].refetch();
+    },
+  };
 };
 
 // Store hero selection per provider to prevent re-randomization on tab switch
@@ -109,8 +282,10 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
   return useQuery({
     queryKey: ['heroMetadata', heroLink, providerValue],
     queryFn: async () => {
-      const {providerManager} = await import('../services/ProviderManager');
-      const info = await providerManager.getMetaData({
+      const {providerManager: importedProviderManager} = await import(
+        '../services/ProviderManager'
+      );
+      const info = await importedProviderManager.getMetaData({
         link: heroLink,
         provider: providerValue,
       });
@@ -154,6 +329,9 @@ export const useHeroMetadata = (heroLink: string, providerValue: string) => {
         );
         merged.genres = pickValue(enhancedMeta.genres, providerInfo.genres);
         merged.cast = pickValue(enhancedMeta.cast, providerInfo.cast);
+        merged.providerLogo = providerInfo.logo;
+        merged.cinemetaLogo = enhancedMeta.logo;
+        merged.logo = pickValue(providerInfo.logo, enhancedMeta.logo);
 
         const providerTags = Array.isArray(providerInfo?.tags)
           ? providerInfo.tags
