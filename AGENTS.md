@@ -20,12 +20,12 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 - Usare commit piccoli e descrittivi; evitare di includere modifiche non correlate.
 
 ## Regole di lavoro
-1) Dopo ogni modifica a un file, eseguire git e creare un commit che registri la modifica.
-2) Aggiornare questo file (AGENTS.md) ogni volta che vengono introdotte nuove regole, flussi di lavoro o vincoli di progetto.
-3) Mantenere la documentazione in `docs/` sincronizzata con lo stato reale del progetto. Se una modifica influisce su comportamento, build, CI o funzionalita, aggiornare la documentazione nello stesso set di modifiche.
+1) Creare commit atomici e coerenti per implementazione (feature/fix/refactor/docs). Evitare commit per singolo file, salvo casi eccezionali.
+2) Aggiornare questo file (AGENTS.md) quando vengono introdotte nuove regole, flussi di lavoro o vincoli di progetto stabili.
+3) Mantenere la documentazione in `docs/` sincronizzata con lo stato reale del progetto. Se una modifica influisce su comportamento, build, CI o funzionalita, aggiornare la documentazione nello stesso set/PR di modifiche.
 4) Rispondere sempre in italiano.
-5) Dopo ogni modifica al codice, eseguire il comando di analisi/lint appropriato (es. `flutter analyze` o equivalente). Gli info possono essere ignorati. Correggere solo errori bloccanti (rossi) e warning (gialli) senza cambiare comportamento o rompere l'app. Se non e certo che il fix non alteri il comportamento, fermarsi e fornire un report dettagliato con possibili soluzioni.
-6) Quando si eseguono git e commit, verificare con attenzione cosa si sta salvando nella storia del progetto. Se ci sono file che non andrebbero committati, non farlo e informare l'utente indicando quali file e perche.
+5) Eseguire il comando di analisi/lint appropriato prima di ogni commit che modifica codice e sempre prima di push/PR (es. `npm run lint`, `flutter analyze` o equivalente). Gli info possono essere ignorati. Correggere errori bloccanti (rossi) e warning (gialli) introdotti dalle modifiche senza cambiare comportamento o rompere l'app. Se non e certo che il fix non alteri il comportamento, fermarsi e fornire un report dettagliato con possibili soluzioni.
+6) Quando si eseguono git e commit, verificare con attenzione cosa si sta salvando nella storia del progetto (es. `git status` e `git diff --staged`). Se ci sono file che non andrebbero committati, non farlo e informare l'utente indicando quali file e perche.
 7) Sono presenti customizzazioni manuali in `android/`: non eseguire `npx expo prebuild` (neanche con `--clean`).
 8) Standard EOL del progetto: LF. Eccezione: script `.bat`/`.cmd` restano CRLF per compatibilita Windows. Regole in `.gitattributes`.
 9) Lingue supportate: inglese e italiano. Non aggiungere altre lingue senza richiesta esplicita.
@@ -33,8 +33,8 @@ Queste regole sono vincolanti per ogni intervento su questo progetto.
 11) Per testi provenienti dai provider (es. AnimeUnity) usare `titleKey`/`titleParams`, `episodeLabelKey`/`episodeLabelParams` e `tagKeys` quando presenti, mantenendo il fallback su `title`/`episodeLabel`.
 12) Autolinking iOS per `@react-native-firebase/*` e disabilitato in `react-native.config.js`; riattivarlo richiede configurazione Firebase e chiavi.
 13) Usare la skill `gh-fix-ci` quando una pipeline GitHub Actions e rossa o una PR e bloccata da controlli CI, prima di tentare fix manuali non strutturati.
-14) Usare la skill `security-threat-model` quando una modifica introduce o altera superfici di attacco (provider dinamici/remoti, networking, permessi, gestione token, download, esecuzione contenuti esterni).
-15) Usare la skill `security-best-practices` per modifiche a dipendenze, configurazioni sensibili, gestione segreti/chiavi, storage locale di dati sensibili e preparazione release.
-16) Usare la skill `doc` per modifiche che impattano comportamento applicativo, setup/build, CI/CD, flussi operativi o regole di progetto, aggiornando la documentazione nello stesso set di modifiche.
-17) Usare la skill `screenshot` quando una modifica cambia UI/UX in modo visibile e serve evidenza grafica per PR, verifica o documentazione.
+14) Usare la skill `security-threat-model` quando applicabile e affidabile per modifiche che introducono o alterano superfici di attacco (provider dinamici/remoti, networking, permessi, gestione token, download, esecuzione contenuti esterni).
+15) Usare la skill `security-best-practices` quando applicabile e affidabile per modifiche a dipendenze, configurazioni sensibili, gestione segreti/chiavi, storage locale di dati sensibili e preparazione release.
+16) Usare la skill `doc` solo quando applicabile (es. file `.docx`). Per documentazione del repository (`docs/`, `AGENTS.md`, Markdown) aggiornare i file direttamente nello stesso set di modifiche.
+17) Usare la skill `screenshot` quando una modifica cambia UI/UX in modo visibile e serve evidenza grafica (es. PR, verifica o documentazione), oppure quando richiesto esplicitamente.
 18) Se una skill richiesta non e disponibile o non applicabile in modo affidabile, procedere con fallback manuale esplicitando nel report finale motivazione, limiti e verifiche eseguite.
