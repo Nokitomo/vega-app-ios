@@ -134,7 +134,7 @@ const WatchHistory = ({navigation}: Props) => {
       // Simple direct navigation to Info screen
       navigation.navigate('Info', {
         link: linkData,
-        provider: item.provider || 'multiStream',
+        provider: item.provider,
         poster: item.poster || '',
       });
     } catch (error) {
