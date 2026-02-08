@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
   extends: '@react-native',
+  ignorePatterns: ['src/vendor/media-console/**'],
   rules: {
     'prettier/prettier': 0,
     'react-native/no-inline-styles': 0,

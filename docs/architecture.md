@@ -19,6 +19,7 @@
 - Download e notifiche: DownloadManager + Notifee.
 - Networking/cache: TanStack React Query (QueryClientProvider in App).
 - Localizzazione: i18next + react-i18next con risorse in `src/i18n/`.
+- Player interno: implementazione locale in `src/vendor/media-console` basata su `react-native-video` (senza dipendenza runtime da `@8man/react-native-media-console`).
 
 ## Nuova architettura
 - newArchEnabled e disattivo in app.config.js e gradle.properties (stabilita).

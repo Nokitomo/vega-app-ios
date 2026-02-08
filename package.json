@@ -17,7 +17,6 @@
     "expo-font": "13.0.4"
   },
   "dependencies": {
-    "@8man/react-native-media-console": "^2.2.4-alpha.33",
     "@dr.pogodin/react-native-fs": "^2.34.0",
     "@expo/config-plugins": "~54.0.4",
     "@expo/metro-runtime": "~6.1.2",

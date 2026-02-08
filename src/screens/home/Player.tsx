@@ -19,7 +19,7 @@ import Animated, {
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
 import {cacheStorage, settingsStorage} from '../../lib/storage';
-import VideoPlayer from '@8man/react-native-media-console';
+import VideoPlayer from '../../vendor/media-console';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {BlurView} from 'expo-blur';
