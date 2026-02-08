@@ -197,6 +197,28 @@ const findSeasonForEpisodeNumber = (linkList: Link[], episodeNumber: number) =>
     return episodeNumber >= range.start && episodeNumber <= range.end;
   });
 
+const parseIsoDateAsUtc = (value: string): Date | null => {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    !Number.isFinite(day)
+  ) {
+    return null;
+  }
+
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  return Number.isFinite(utcDate.getTime()) ? utcDate : null;
+};
+
 const SeasonList: React.FC<SeasonListProps> = ({
   LinkList,
   poster,
@@ -207,7 +229,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
   routeParams,
 }) => {
   const {primary} = useThemeStore(state => state);
-  const {t} = useTranslation();
+  const {t, i18n} = useTranslation();
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -266,7 +288,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
           link => link.title === parsedSeason.title,
         );
         if (seasonExists) {
-          return parsedSeason;
+          return seasonExists;
         }
       } catch (error) {
         console.warn('Failed to parse cached season:', error);
@@ -325,6 +347,74 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
     return LinkList[activeSeasonIndex + 1];
   }, [LinkList, activeSeasonIndex]);
+  const shouldFetchEpisodes = useMemo(
+    () =>
+      Boolean(
+        activeSeason?.episodesLink &&
+          activeSeason?.availabilityStatus !== 'upcoming',
+      ),
+    [activeSeason?.episodesLink, activeSeason?.availabilityStatus],
+  );
+  const formatAvailabilityDate = useCallback(
+    (
+      availabilityDate?: string,
+      availabilityPrecision?: Link['availabilityPrecision'],
+    ) => {
+      if (!availabilityDate) {
+        return undefined;
+      }
+
+      if (availabilityPrecision === 'year') {
+        const yearMatch = availabilityDate.match(/\d{4}/);
+        return yearMatch?.[0] || availabilityDate;
+      }
+
+      if (availabilityPrecision === 'day') {
+        const parsedDate = parseIsoDateAsUtc(availabilityDate);
+        if (!parsedDate) {
+          return availabilityDate;
+        }
+        return new Intl.DateTimeFormat(
+          i18n.language?.toLowerCase().startsWith('it') ? 'it-IT' : 'en-US',
+          {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC',
+          },
+        ).format(parsedDate);
+      }
+
+      return availabilityDate;
+    },
+    [i18n.language],
+  );
+  const upcomingMessage = useMemo(() => {
+    if (activeSeasonValue?.availabilityStatus !== 'upcoming') {
+      return undefined;
+    }
+
+    const formattedDate = formatAvailabilityDate(
+      activeSeasonValue.availabilityDate,
+      activeSeasonValue.availabilityPrecision,
+    );
+
+    if (!formattedDate) {
+      return t('Content coming soon');
+    }
+
+    if (activeSeasonValue.availabilityPrecision === 'year') {
+      return t('Coming in {{year}}', {year: formattedDate});
+    }
+
+    return t('Available on {{date}}', {date: formattedDate});
+  }, [activeSeasonValue, formatAvailabilityDate, t]);
+  const noContentMessage = useMemo(() => {
+    if (activeSeasonValue?.availabilityStatus === 'upcoming') {
+      return t('Upcoming');
+    }
+    return t('No stream found');
+  }, [activeSeasonValue?.availabilityStatus, t]);
 
   // React Query for episodes
   const {
@@ -335,7 +425,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
   } = useEpisodes(
     activeSeason?.episodesLink,
     providerValue,
-    activeSeason?.episodesLink ? true : false,
+    shouldFetchEpisodes,
   );
 
   // UI state
@@ -1495,11 +1585,18 @@ const SeasonList: React.FC<SeasonListProps> = ({
 
         {/* No Content Available */}
         {filteredAndSortedEpisodes.length === 0 &&
-          filteredAndSortedDirectLinks.length === 0 &&
-          LinkList?.length === 0 && (
-            <Text className="text-white text-lg font-semibold min-h-20">
-              {t('No stream found')}
-            </Text>
+          filteredAndSortedDirectLinks.length === 0 && (
+            <View className="w-full min-h-20 items-center justify-center px-4">
+              <Text className="text-white text-lg font-semibold text-center">
+                {noContentMessage}
+              </Text>
+              {activeSeasonValue?.availabilityStatus === 'upcoming' &&
+              upcomingMessage ? (
+                <Text className="text-white/80 text-sm text-center mt-1">
+                  {upcomingMessage}
+                </Text>
+              ) : null}
+            </View>
           )}
       </View>
 

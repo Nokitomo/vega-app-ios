@@ -123,6 +123,9 @@ export interface Link {
   titleKey?: string;
   titleParams?: I18nParams;
   quality?: string;
+  availabilityStatus?: 'upcoming' | 'available';
+  availabilityDate?: string;
+  availabilityPrecision?: 'day' | 'year' | 'unknown';
   episodesLink?: string;
   directLinks?: {
     title: string;
