@@ -563,6 +563,11 @@ const SeasonList: React.FC<SeasonListProps> = ({
   }, [episodeList]);
 
   const normalizedDirectLinks = useMemo(() => {
+    // If episodes are available from episodesLink, prefer that source and hide directLinks.
+    if (normalizedEpisodes.length > 0) {
+      return [];
+    }
+
     if (
       !activeSeason?.directLinks ||
       !Array.isArray(activeSeason.directLinks)
@@ -573,7 +578,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
     return activeSeason.directLinks.filter(
       link => link && link.title && link.link,
     );
-  }, [activeSeason?.directLinks]);
+  }, [activeSeason?.directLinks, normalizedEpisodes.length]);
   const resumeEpisodeLabel = useMemo(() => {
     if (!resumeProgress) {
       return undefined;
