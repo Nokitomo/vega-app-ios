@@ -49,8 +49,8 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per StreamingUnity la sinossi usa sempre quella del provider; se manca fa fallback ai metadati esterni.
 - Per StreamingUnity il titolo mostrato in app usa prima il logo del provider (se presente); altrimenti la traduzione italiana se diversa dall'originale o con caratteri latini, ma se coincide con l'originale e contiene CJK viene ignorata; poi inglese con la stessa regola, quindi lo slug normalizzato e infine il titolo originale.
 - Per AltadefinizioneZ gli altri metadati del provider sono usati solo se i metadati esterni sono assenti.
-- Per StreamingUnity, quando sono presenti metadati esterni (imdbId), gli altri metadati del provider non vengono usati; fa eccezione il badge "Episodi", che usa sempre il conteggio del provider.
-- In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
+- Per StreamingUnity, quando sono presenti metadati esterni (imdbId), la UI usa fallback per campo: anno, durata, rating, generi e cast usano prima i metadati esterni e, se mancanti, i corrispondenti campi del provider; il badge "Episodi" usa sempre il conteggio del provider.
+- In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, rating, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
 - Per AltadefinizioneZ e StreamingUnity, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
 - Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
 - Se l'immagine dell'hero fallisce, il titolo viene scartato e si seleziona un altro hero casuale.
