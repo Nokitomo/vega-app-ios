@@ -298,6 +298,44 @@ const SeasonList: React.FC<SeasonListProps> = ({
     },
     [t],
   );
+  const findCachedEpisodeByLink = useCallback(
+    (
+      episodesLink?: string,
+      episodeLink?: string,
+    ): PlayableItem | undefined => {
+      if (!episodesLink || !episodeLink) {
+        return undefined;
+      }
+
+      const cached = cacheStorage.getString(episodesLink);
+      if (!cached) {
+        return undefined;
+      }
+
+      try {
+        const parsed = JSON.parse(cached);
+        if (!Array.isArray(parsed)) {
+          return undefined;
+        }
+
+        const matched = parsed.find(item => item?.link === episodeLink);
+        if (!matched || !matched.link) {
+          return undefined;
+        }
+
+        return {
+          title: matched.title,
+          link: matched.link,
+          episodeNumber: normalizeNumericValue(matched.episodeNumber),
+          seasonNumber: normalizeNumericValue(matched.seasonNumber),
+        };
+      } catch (error) {
+        console.warn('Failed to parse cached episodes for resume label:', error);
+        return undefined;
+      }
+    },
+    [],
+  );
 
   // Early return if no LinkList provided
   if (!LinkList || LinkList.length === 0) {
@@ -459,21 +497,6 @@ const SeasonList: React.FC<SeasonListProps> = ({
     }
     return t('No stream found');
   }, [activeSeasonValue?.availabilityStatus, t]);
-  const resumeEpisodeLabel = useMemo(
-    () =>
-      getEpisodeLabel({
-        episodeTitle: resumeProgress?.episodeTitle,
-        episodeNumber: resumeProgress?.episodeNumber,
-        seasonNumber: resumeProgress?.seasonNumber,
-      }),
-    [
-      getEpisodeLabel,
-      resumeProgress?.episodeTitle,
-      resumeProgress?.episodeNumber,
-      resumeProgress?.seasonNumber,
-    ],
-  );
-
   // React Query for episodes
   const {
     data: episodeList = [],
@@ -551,6 +574,52 @@ const SeasonList: React.FC<SeasonListProps> = ({
       link => link && link.title && link.link,
     );
   }, [activeSeason?.directLinks]);
+  const resumeEpisodeLabel = useMemo(() => {
+    if (!resumeProgress) {
+      return undefined;
+    }
+
+    let episodeTitle = resumeProgress.episodeTitle;
+    let episodeNumber = normalizeNumericValue(resumeProgress.episodeNumber);
+    let seasonNumber = normalizeNumericValue(resumeProgress.seasonNumber);
+
+    if (!episodeTitle || !episodeNumber) {
+      const episodeLink = resumeProgress.episodeLink;
+      let matched: PlayableItem | undefined;
+
+      if (episodeLink) {
+        matched =
+          normalizedEpisodes.find(item => item.link === episodeLink) ||
+          normalizedDirectLinks.find(item => item.link === episodeLink) ||
+          LinkList.flatMap(item =>
+            Array.isArray(item.directLinks) ? item.directLinks : [],
+          ).find(item => item.link === episodeLink) ||
+          findCachedEpisodeByLink(resumeProgress.seasonEpisodesLink, episodeLink);
+      }
+
+      if (matched) {
+        episodeTitle = episodeTitle || matched.title;
+        episodeNumber =
+          episodeNumber ??
+          normalizeNumericValue(matched.episodeNumber) ??
+          getEpisodeNumber(matched.title);
+        seasonNumber = seasonNumber ?? normalizeNumericValue(matched.seasonNumber);
+      }
+    }
+
+    return getEpisodeLabel({
+      episodeTitle,
+      episodeNumber,
+      seasonNumber,
+    });
+  }, [
+    LinkList,
+    findCachedEpisodeByLink,
+    getEpisodeLabel,
+    normalizedDirectLinks,
+    normalizedEpisodes,
+    resumeProgress,
+  ]);
 
   // Memoized filtering and sorting logic for episodes
   const filteredAndSortedEpisodes = useMemo(() => {
@@ -1631,11 +1700,7 @@ const SeasonList: React.FC<SeasonListProps> = ({
                 <Text className="text-white/80 text-xs">
                   {`- ${resumeEpisodeLabel}`}
                 </Text>
-              ) : (
-                <Text className="text-white/80 text-xs">
-                  {`- ${t('Ep. {{number}}', {number: 1})}`}
-                </Text>
-              )}
+              ) : null}
             </View>
             <Text className="text-white/80 text-xs">
               {formatResumeTime(resumeProgress?.currentTime ?? 0)}
