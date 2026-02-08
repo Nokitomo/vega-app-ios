@@ -49,6 +49,8 @@ import {
 import * as NavigationBar from 'expo-navigation-bar';
 import {StatusBar} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {extensionManager} from '../../lib/services/ExtensionManager';
+import {providerManager} from '../../lib/services/ProviderManager';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Player'>;
 
@@ -478,6 +480,77 @@ const Player = ({route}: Props): React.JSX.Element => {
     return list.filter(item => item && item.link && item.title);
   }, []);
 
+  const hasEpisodesModule = useMemo(
+    () =>
+      !!providerValue &&
+      !!extensionManager.getProviderModules(providerValue)?.modules.episodes,
+    [providerValue],
+  );
+
+  const getCachedEpisodes = useCallback(
+    (episodesLink?: string) => {
+      if (!episodesLink) {
+        return [];
+      }
+      const cached = cacheStorage.getString(episodesLink);
+      if (!cached) {
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(cached);
+        return normalizeEpisodeList(parsed);
+      } catch (error) {
+        console.warn('Failed to parse episodes cache:', error);
+        return [];
+      }
+    },
+    [normalizeEpisodeList],
+  );
+
+  const loadSeasonEpisodes = useCallback(
+    async (season?: any) => {
+      if (!season) {
+        return [];
+      }
+      if (
+        Array.isArray(season?.directLinks) &&
+        season.directLinks.length > 0
+      ) {
+        return normalizeEpisodeList(season.directLinks);
+      }
+      if (!season?.episodesLink) {
+        return [];
+      }
+
+      const cachedEpisodes = getCachedEpisodes(season.episodesLink);
+      if (cachedEpisodes.length > 0) {
+        return cachedEpisodes;
+      }
+      if (!hasEpisodesModule) {
+        return [];
+      }
+
+      try {
+        const episodes = await providerManager.getEpisodes({
+          url: season.episodesLink,
+          providerValue,
+        });
+        const normalizedEpisodes = normalizeEpisodeList(episodes);
+        if (normalizedEpisodes.length > 0) {
+          cacheStorage.setString(
+            season.episodesLink,
+            JSON.stringify(normalizedEpisodes),
+          );
+        }
+        return normalizedEpisodes;
+      } catch (error) {
+        console.error('Failed to load season episodes in player:', error);
+        return [];
+      }
+    },
+    [getCachedEpisodes, hasEpisodesModule, normalizeEpisodeList, providerValue],
+  );
+
   const nextSeasonInfo = useMemo(() => {
     const seasons = route.params?.seasons;
     const seasonIndex = route.params?.seasonIndex;
@@ -496,15 +569,7 @@ const Player = ({route}: Props): React.JSX.Element => {
     ) {
       episodeList = normalizeEpisodeList(nextSeason.directLinks);
     } else if (nextSeason?.episodesLink) {
-      const cached = cacheStorage.getString(nextSeason.episodesLink);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          episodeList = normalizeEpisodeList(parsed);
-        } catch (error) {
-          console.warn('Failed to parse next season cache:', error);
-        }
-      }
+      episodeList = getCachedEpisodes(nextSeason.episodesLink);
     }
 
     return {
@@ -512,10 +577,15 @@ const Player = ({route}: Props): React.JSX.Element => {
       episodeList,
       seasonIndex: seasonIndex + 1,
     };
-  }, [normalizeEpisodeList, route.params?.seasonIndex, route.params?.seasons]);
+  }, [
+    getCachedEpisodes,
+    normalizeEpisodeList,
+    route.params?.seasonIndex,
+    route.params?.seasons,
+  ]);
 
   // Memoized next episode handler
-  const handleNextEpisode = useCallback(() => {
+  const handleNextEpisode = useCallback(async () => {
     const episodeList = route.params?.episodeList || [];
     const currentIndex = episodeList.findIndex(
       item => item?.link === activeEpisode?.link,
@@ -529,26 +599,37 @@ const Player = ({route}: Props): React.JSX.Element => {
       return;
     }
 
-    if (nextSeasonInfo?.episodeList?.length) {
-      navigation.replace('Player', {
-        linkIndex: 0,
-        episodeList: nextSeasonInfo.episodeList,
-        type: route.params?.type,
-        primaryTitle: route.params?.primaryTitle,
-        secondaryTitle: nextSeasonInfo.season.title,
-        seasonEpisodesLink: nextSeasonInfo.season.episodesLink,
-        poster: route.params?.poster,
-        providerValue: route.params?.providerValue,
-        infoUrl: route.params?.infoUrl,
-        seasons: route.params?.seasons,
-        seasonIndex: nextSeasonInfo.seasonIndex,
-      });
-      return;
+    if (nextSeasonInfo?.season) {
+      let nextSeasonEpisodeList = nextSeasonInfo.episodeList || [];
+      if (
+        nextSeasonEpisodeList.length === 0 &&
+        nextSeasonInfo.season?.episodesLink
+      ) {
+        nextSeasonEpisodeList = await loadSeasonEpisodes(nextSeasonInfo.season);
+      }
+
+      if (nextSeasonEpisodeList.length > 0) {
+        navigation.replace('Player', {
+          linkIndex: 0,
+          episodeList: nextSeasonEpisodeList,
+          type: route.params?.type,
+          primaryTitle: route.params?.primaryTitle,
+          secondaryTitle: nextSeasonInfo.season.title,
+          seasonEpisodesLink: nextSeasonInfo.season.episodesLink,
+          poster: route.params?.poster,
+          providerValue: route.params?.providerValue,
+          infoUrl: route.params?.infoUrl,
+          seasons: route.params?.seasons,
+          seasonIndex: nextSeasonInfo.seasonIndex,
+        });
+        return;
+      }
     }
 
     ToastAndroid.show(t('No more episodes'), ToastAndroid.SHORT);
   }, [
     activeEpisode?.link,
+    loadSeasonEpisodes,
     navigation,
     nextSeasonInfo,
     route.params?.episodeList,
@@ -1302,9 +1383,14 @@ const Player = ({route}: Props): React.JSX.Element => {
   const episodeNumber = episodeNumberFromTitle ?? fallbackEpisodeNumber;
   const hasNextEpisodeInSeason =
     currentEpisodeIndex >= 0 && currentEpisodeIndex < episodeList.length - 1;
+  const hasNextEpisodeFromLoadedNextSeason =
+    (nextSeasonInfo?.episodeList?.length || 0) > 0;
+  const canLoadNextSeasonOnDemand =
+    !!nextSeasonInfo?.season?.episodesLink && hasEpisodesModule;
   const hasNextEpisode =
     hasNextEpisodeInSeason ||
-    (nextSeasonInfo?.episodeList?.length || 0) > 0;
+    hasNextEpisodeFromLoadedNextSeason ||
+    canLoadNextSeasonOnDemand;
   const remainingSeconds =
     effectiveDuration > 0
       ? Math.max(0, effectiveDuration - currentPosition)
