@@ -141,6 +141,10 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
   }, [route.params.link, removeItem]);
 
   // Memoized computed values
+  const isStreamingUnity = useMemo(
+    () => providerValue === 'streamingunity',
+    [providerValue],
+  );
   const hasImdbMeta = useMemo(() => !!meta?.name, [meta?.name]);
   const allowProviderMetadata = useMemo(
     () =>
@@ -226,22 +230,42 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     if (hasMetaYear) {
       return meta.year;
     }
+    if (isStreamingUnity) {
+      return info?.year;
+    }
     return allowProviderYear ? info?.year : undefined;
-  }, [hasMetaYear, meta?.year, allowProviderYear, info?.year]);
+  }, [hasMetaYear, meta?.year, isStreamingUnity, allowProviderYear, info?.year]);
   const badgeRuntime = useMemo(() => {
     if (hasMetaRuntime) {
       return meta.runtime;
     }
+    if (isStreamingUnity) {
+      return info?.runtime;
+    }
     return allowProviderRuntime ? info?.runtime : undefined;
-  }, [hasMetaRuntime, meta?.runtime, allowProviderRuntime, info?.runtime]);
+  }, [
+    hasMetaRuntime,
+    meta?.runtime,
+    isStreamingUnity,
+    allowProviderRuntime,
+    info?.runtime,
+  ]);
   const displayRating = useMemo(
     () =>
       hasMetaRating
         ? meta?.imdbRating
+        : isStreamingUnity
+          ? info?.rating
         : allowProviderRating
           ? info?.rating
           : undefined,
-    [hasMetaRating, meta?.imdbRating, allowProviderRating, info?.rating],
+    [
+      hasMetaRating,
+      meta?.imdbRating,
+      isStreamingUnity,
+      allowProviderRating,
+      info?.rating,
+    ],
   );
   const showProviderFallback = useMemo(() => !meta?.name, [meta?.name]);
   const showMetaDetails = true;
@@ -402,33 +426,53 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
     statusTag?.tag,
     t,
   ]);
-  const localizedGenres = useMemo(() => {
-    if (!allowProviderGenres || !info?.genres || info.genres.length === 0) {
+  const providerLocalizedGenres = useMemo(() => {
+    if (!info?.genres || info.genres.length === 0) {
       return [];
     }
     return info.genres.map(genre => {
       const key = info.tagKeys?.[genre];
       return key ? t(key) : genre;
     });
-  }, [allowProviderGenres, info?.genres, info?.tagKeys, t]);
+  }, [info?.genres, info?.tagKeys, t]);
+  const localizedGenres = useMemo(() => {
+    if (!allowProviderGenres || !info?.genres || info.genres.length === 0) {
+      return [];
+    }
+    return providerLocalizedGenres;
+  }, [allowProviderGenres, info?.genres, providerLocalizedGenres]);
   const badgeGenres = useMemo(() => {
     if (meta?.genres && meta.genres.length > 0) {
       return meta.genres.slice(0, 2);
+    }
+    if (isStreamingUnity && providerLocalizedGenres.length > 0) {
+      return providerLocalizedGenres.slice(0, 2);
     }
     if (localizedGenres.length > 0) {
       return localizedGenres.slice(0, 2);
     }
     return [];
-  }, [meta?.genres, localizedGenres]);
+  }, [meta?.genres, isStreamingUnity, providerLocalizedGenres, localizedGenres]);
   const metaCast = useMemo(() => meta?.cast ?? [], [meta?.cast]);
   const providerCast = useMemo(
-    () => (allowProviderCast ? info?.cast ?? [] : []),
-    [allowProviderCast, info?.cast],
+    () =>
+      isStreamingUnity
+        ? info?.cast ?? []
+        : allowProviderCast
+          ? info?.cast ?? []
+          : [],
+    [isStreamingUnity, allowProviderCast, info?.cast],
   );
-  const hasCast = useMemo(
-    () => metaCast.length > 0 || providerCast.length > 0,
-    [metaCast, providerCast],
+  const displayCast = useMemo(
+    () =>
+      isStreamingUnity
+        ? metaCast.length > 0
+          ? metaCast
+          : providerCast
+        : [...metaCast, ...providerCast],
+    [isStreamingUnity, metaCast, providerCast],
   );
+  const hasCast = useMemo(() => displayCast.length > 0, [displayCast]);
   const showInfoDetails = useMemo(
     () =>
       showMetaDetails &&
@@ -683,9 +727,9 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                         {t('Cast')}
                       </Text>
                       <View className="flex-row gap-1 flex-wrap">
-                        {metaCast.slice(0, 3).map((actor, index) => (
+                        {displayCast.slice(0, 3).map((actor, index) => (
                           <Text
-                            key={actor}
+                            key={`${actor}-${index}`}
                             numberOfLines={1}
                             className={`text-xs bg-tertiary p-1 px-2 rounded-md ${
                               index % 3 === 0
@@ -696,20 +740,6 @@ export default function Info({route, navigation}: Props): React.JSX.Element {
                             }`}>
                             {actor}
                           </Text>
-                        ))}
-                        {providerCast.slice(0, 3).map((actor, index) => (
-                            <Text
-                              key={actor}
-                              numberOfLines={1}
-                              className={`text-xs bg-tertiary p-1 px-2 rounded-md ${
-                                index % 3 === 0
-                                  ? 'text-red-500'
-                                  : index % 3 === 1
-                                    ? 'text-blue-500'
-                                    : 'text-green-500'
-                              }`}>
-                              {actor}
-                            </Text>
                         ))}
                       </View>
                     </View>
