@@ -71,6 +71,7 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - Per StreamingUnity, quando sono presenti metadati esterni (imdbId), la UI usa fallback per campo: anno, durata, rating, generi e cast usano prima i metadati esterni e, se mancanti, i corrispondenti campi del provider; il badge "Episodi" usa sempre il conteggio del provider.
 - In assenza di metadati esterni, la UI usa i campi del provider (anno, durata, rating, generi, cast) per popolare le stesse sezioni mostrate con Stremio.
 - Per AltadefinizioneZ e StreamingUnity, quando mancano metadati esterni, lo sfondo in Info usa il background del provider se disponibile.
+- In Home, per StreamingUnity l'hero viene estratto dall'archivio con filtro casuale (`archive?random=true`) per evitare una selezione limitata alle sole sezioni in pagina.
 - Se un'immagine esterna non e caricabile (es. 404), la UI fa fallback alle immagini del provider quando disponibili.
 - Se l'immagine dell'hero fallisce, il titolo viene scartato e si seleziona un altro hero casuale.
 - Se i metadati esterni falliscono ma il provider risponde correttamente, la scheda Info resta disponibile usando i dati del provider.

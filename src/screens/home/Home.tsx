@@ -37,12 +37,18 @@ const HERO_HISTORY_LIMIT = 5;
 const HERO_MAX_ATTEMPTS = 3;
 const HERO_IMAGE_RETRY_LIMIT = 3;
 
-const ARCHIVE_HERO_PROVIDERS = new Set(['animeunity', 'altadefinizionez']);
+const ARCHIVE_HERO_PROVIDERS = new Set([
+  'animeunity',
+  'altadefinizionez',
+  'streamingunity',
+]);
 const getHeroBadLinkKey = (providerValue: string) =>
   `heroBadLink:${providerValue}`;
 
 const getArchiveHeroFilter = (providerValue: string) =>
-  providerValue === 'animeunity' ? 'archive?random=true' : 'catalog/all?random=true';
+  providerValue === 'animeunity' || providerValue === 'streamingunity'
+    ? 'archive?random=true'
+    : 'catalog/all?random=true';
 
 const parseHeroHistory = (raw: string | null): string[] => {
   if (!raw) {
