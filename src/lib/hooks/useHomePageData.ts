@@ -28,6 +28,7 @@ interface UseHomePageDataOptions {
 const STREAMINGUNITY_PROVIDER = 'streamingunity';
 const HOME_SECTION_STEP_DELAY_MS = 200;
 const HIDDEN_STREAMINGUNITY_TYPES = new Set(['movie', 'tv']);
+const HOME_CATEGORY_MAX_ITEMS = 30;
 
 const shouldHideHomeCategory = (providerValue: string, filter: string): boolean => {
   if (providerValue !== STREAMINGUNITY_PROVIDER) {
@@ -80,7 +81,7 @@ export const useHomePageData = ({
         return undefined;
       }
       return {
-        Posts: parsed.Posts,
+        Posts: parsed.Posts.slice(0, HOME_CATEGORY_MAX_ITEMS),
         signature: typeof parsed.signature === 'string' ? parsed.signature : '',
         updatedAt:
           typeof parsed.updatedAt === 'number' && Number.isFinite(parsed.updatedAt)
@@ -179,7 +180,9 @@ export const useHomePageData = ({
             providerValue,
             signal,
           });
-          const nextPosts = Array.isArray(posts) ? posts : [];
+          const nextPosts = Array.isArray(posts)
+            ? posts.slice(0, HOME_CATEGORY_MAX_ITEMS)
+            : [];
           const nextSignature = buildPostsSignature(nextPosts);
           const previous = queryClient.getQueryData<CategoryQueryData>(queryKey);
 
