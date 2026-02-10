@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
@@ -16,6 +16,7 @@ export interface HomePageData {
   titleParams?: Record<string, string | number>;
   Posts: Post[];
   filter: string;
+  isLoading?: boolean;
   error?: string;
 }
 
@@ -24,15 +25,37 @@ interface UseHomePageDataOptions {
   enabled?: boolean;
 }
 
+const STREAMINGUNITY_PROVIDER = 'streamingunity';
+const HOME_SECTION_STEP_DELAY_MS = 200;
+const HIDDEN_STREAMINGUNITY_TYPES = new Set(['movie', 'tv']);
+
+const shouldHideHomeCategory = (providerValue: string, filter: string): boolean => {
+  if (providerValue !== STREAMINGUNITY_PROVIDER) {
+    return false;
+  }
+
+  const [pathPart, queryPart = ''] = String(filter || '').split('?', 2);
+  if (pathPart.trim().toLowerCase() !== 'archive') {
+    return false;
+  }
+
+  const params = new URLSearchParams(queryPart);
+  const type = (params.get('type') || '').trim().toLowerCase();
+  return HIDDEN_STREAMINGUNITY_TYPES.has(type);
+};
+
 export const useHomePageData = ({
   provider,
   enabled = true,
 }: UseHomePageDataOptions) => {
   const providerValue = provider?.value || '';
+  const [staleCheckTick, setStaleCheckTick] = useState(0);
   const categories = useMemo(
     () =>
       providerValue
-        ? providerManager.getCatalog({providerValue}) || []
+        ? (providerManager.getCatalog({providerValue}) || []).filter(
+            category => !shouldHideHomeCategory(providerValue, category.filter),
+          )
         : [],
     [providerValue],
   );
@@ -137,14 +160,18 @@ export const useHomePageData = ({
         category.filter,
       ] as const;
       const cached = readCategoryCache(category.filter);
-
+      const staleTime = getCategoryStaleTime(
+        category.filter,
+        category.staleTimeMs,
+      );
       return {
         queryKey,
-        enabled: enabled && !!providerValue,
-        staleTime: getCategoryStaleTime(category.filter, category.staleTimeMs),
+        enabled: false,
+        staleTime,
         gcTime: 30 * 60 * 1000,
-        refetchOnMount: true,
-        refetchOnReconnect: true,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
         queryFn: async ({signal}: {signal: AbortSignal}) => {
           const posts = await providerManager.getPosts({
             filter: category.filter,
@@ -187,6 +214,108 @@ export const useHomePageData = ({
     }),
   });
 
+  const staleCategoryIndexes = useMemo(() => {
+    return categories
+      .map((category, index) => {
+        const cached = readCategoryCache(category.filter);
+        const staleTime = getCategoryStaleTime(
+          category.filter,
+          category.staleTimeMs,
+        );
+        const isStale = !cached || Date.now() - cached.updatedAt >= staleTime;
+        return isStale ? index : -1;
+      })
+      .filter(index => index >= 0);
+  }, [categories, staleCheckTick]);
+
+  useEffect(() => {
+    if (!enabled || !providerValue) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setStaleCheckTick(value => value + 1);
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [enabled, providerValue]);
+
+  const staleCategoryFingerprint = useMemo(
+    () => `${providerValue}:${staleCategoryIndexes.join(',')}`,
+    [providerValue, staleCategoryIndexes],
+  );
+
+  const [activeFetchIndex, setActiveFetchIndex] = useState<number | null>(null);
+  const requestedCategoryIndexesRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    requestedCategoryIndexesRef.current = new Set();
+  }, [staleCategoryFingerprint]);
+
+  useEffect(() => {
+    if (!enabled || !providerValue || staleCategoryIndexes.length === 0) {
+      setActiveFetchIndex(null);
+      return;
+    }
+
+    setActiveFetchIndex(current => {
+      if (current != null && staleCategoryIndexes.includes(current)) {
+        return current;
+      }
+      return staleCategoryIndexes[0];
+    });
+  }, [enabled, providerValue, staleCategoryFingerprint, staleCategoryIndexes]);
+
+  useEffect(() => {
+    if (activeFetchIndex == null || !enabled || !providerValue) {
+      return;
+    }
+
+    const currentPosition = staleCategoryIndexes.indexOf(activeFetchIndex);
+    if (currentPosition < 0) {
+      setActiveFetchIndex(staleCategoryIndexes[0] ?? null);
+      return;
+    }
+
+    const currentResult = queryResults[activeFetchIndex];
+    if (!currentResult) {
+      return;
+    }
+
+    if (!requestedCategoryIndexesRef.current.has(activeFetchIndex)) {
+      requestedCategoryIndexesRef.current.add(activeFetchIndex);
+      currentResult.refetch();
+      return;
+    }
+
+    const isCurrentFetching =
+      currentResult.isLoading ||
+      currentResult.isPending ||
+      currentResult.isFetching ||
+      currentResult.fetchStatus === 'fetching';
+
+    if (!isCurrentFetching) {
+      const nextIndex = staleCategoryIndexes[currentPosition + 1];
+      if (typeof nextIndex !== 'number') {
+        setActiveFetchIndex(null);
+        return;
+      }
+
+      const timeout = setTimeout(
+        () => setActiveFetchIndex(nextIndex),
+        HOME_SECTION_STEP_DELAY_MS,
+      );
+
+      return () => clearTimeout(timeout);
+    }
+  }, [
+    activeFetchIndex,
+    enabled,
+    providerValue,
+    queryResults,
+    staleCategoryIndexes,
+  ]);
+
   const homeData = useMemo<HomePageData[]>(
     () =>
       categories.map((category, index) => {
@@ -199,6 +328,9 @@ export const useHomePageData = ({
           titleParams: category.titleParams,
           Posts: queryData?.Posts || [],
           filter: category.filter,
+          isLoading:
+            !!result &&
+            (result.isLoading || result.isPending || result.isFetching),
           error:
             result?.error instanceof Error ? result.error.message : undefined,
         };
@@ -219,7 +351,9 @@ export const useHomePageData = ({
     isRefetching,
     error: firstError as Error | null,
     refetch: async () => {
-      await Promise.all(queryResults.map(result => result.refetch()));
+      for (let index = 0; index < queryResults.length; index += 1) {
+        await queryResults[index].refetch();
+      }
       return {data: homeData};
     },
     refetchCategory: async (filter: string) => {
@@ -247,25 +381,31 @@ export const getRandomHeroPost = (
     return null;
   }
 
-  const lastCategory = homeData[homeData.length - 1];
-  if (!lastCategory.Posts || lastCategory.Posts.length === 0) {
+  const heroCategoryIndex = [...homeData]
+    .map((category, index) => ({category, index}))
+    .reverse()
+    .find(item => Array.isArray(item.category.Posts) && item.category.Posts.length > 0);
+
+  if (!heroCategoryIndex) {
     return null;
   }
+
+  const {category: heroCategory, index: categoryIndex} = heroCategoryIndex;
 
   const cacheKey = providerValue || 'default';
   const cached = heroSelectionCache.get(cacheKey);
 
   // If we have a cached index and it's still valid for this data, use it
-  if (cached && cached.postIndex < lastCategory.Posts.length) {
-    return lastCategory.Posts[cached.postIndex];
+  if (cached && cached.postIndex < heroCategory.Posts.length) {
+    return heroCategory.Posts[cached.postIndex];
   }
 
-  const randomIndex = Math.floor(Math.random() * lastCategory.Posts.length);
+  const randomIndex = Math.floor(Math.random() * heroCategory.Posts.length);
   heroSelectionCache.set(cacheKey, {
     postIndex: randomIndex,
-    categoryIndex: homeData.length - 1,
+    categoryIndex,
   });
-  return lastCategory.Posts[randomIndex];
+  return heroCategory.Posts[randomIndex];
 };
 
 // Function to clear hero cache when explicitly refreshing

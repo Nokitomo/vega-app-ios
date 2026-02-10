@@ -27,7 +27,9 @@ Esempi: `archive?order=rating`, `archive?type=tv&status=ongoing&genres=Action,Fa
 - `catalog.js` puo esportare `archiveFilters` con metadati (order, status, type, season, years, dubbed, genres).
 - `genres` espone scorciatoie per filtri di archive (usabili come sezioni o menu).
 - AltadefinizioneZ include i filtri `catalog/all?sorting=popserie` e `catalog/all?sorting=popfilm` per le sezioni "Serie TV del momento" e "Film del momento" in home.
-- StreamingUnity usa `browse/trending`, `browse/latest`, `browse/top10` per le sezioni home e `archive` per l'archivio, con filtri `search`, `sort`, `type`, `genre[]`, `year`, `score`, `views`, `service`, `quality`, `age` (valori normalizzati dal provider).
+- StreamingUnity usa `browse/trending`, `browse/latest`, `browse/top10`, `browse/upcoming` e `browse/genre?g=...` per le sezioni home, oltre ad `archive` per l'archivio.
+- Per le sezioni genre di StreamingUnity il provider usa i percorsi `browse/genre` (sito/API) invece del fallback `archive?genre[]`, cosi ordine e contenuti restano allineati al sito.
+- In home app, per StreamingUnity le sezioni `archive?type=movie` e `archive?type=tv` restano nel catalogo provider ma vengono nascoste solo nella schermata Home.
 
 ## i18n dai provider (AnimeUnity)
 - Alcuni campi possono includere chiavi i18n opzionali per tradurre etichette in app.

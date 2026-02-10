@@ -292,30 +292,11 @@ const Home = ({}: Props) => {
     }
   }, [refetch]);
 
-  // Memoized loading skeleton
-  const loadingSliders = useMemo(() => {
-    if (!provider?.value) {
-      return [];
-    }
-
-    return providerManager
-      .getCatalog({providerValue: provider.value})
-      .map((item, index) => (
-        <Slider
-          isLoading={true}
-          key={`loading-${item.filter}-${index}`}
-          title={resolveCatalogTitle(item)}
-          posts={[]}
-          filter={item.filter}
-        />
-      ));
-  }, [provider?.value, resolveCatalogTitle]);
-
   // Memoized content sliders
   const contentSliders = useMemo(() => {
     return homeData.map(item => (
       <Slider
-        isLoading={false}
+        isLoading={!!item.isLoading}
         key={`content-${item.filter}`}
         title={resolveCatalogTitle(item)}
         posts={item.Posts}
@@ -325,8 +306,8 @@ const Home = ({}: Props) => {
   }, [homeData, resolveCatalogTitle]);
 
   const scrollKey = useMemo(() => {
-    return `${provider?.value ?? 'none'}:${homeData.length}:${isLoading}`;
-  }, [provider?.value, homeData.length, isLoading]);
+    return `${provider?.value ?? 'none'}:${homeData.length}`;
+  }, [provider?.value, homeData.length]);
 
   // Memoized error message
   const errorComponent = useMemo(() => {
@@ -404,7 +385,7 @@ const Home = ({}: Props) => {
               <ContinueWatching />
 
               <View className="-mt-6 relative z-20">
-                {isLoading ? loadingSliders : contentSliders}
+                {contentSliders}
                 {errorComponent}
               </View>
 
