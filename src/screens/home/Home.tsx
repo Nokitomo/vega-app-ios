@@ -1,6 +1,6 @@
 import {
   SafeAreaView,
-  ScrollView,
+  FlatList,
   RefreshControl,
   View,
   Text,
@@ -15,6 +15,7 @@ import {
   useHomePageData,
   getRandomHeroPost,
   clearHeroCache,
+  type HomePageData,
 } from '../../lib/hooks/useHomePageData';
 import useThemeStore from '../../lib/zustand/themeStore';
 import ProviderDrawer from '../../components/ProviderDrawer';
@@ -298,18 +299,23 @@ const Home = ({}: Props) => {
     }
   }, [refetch]);
 
-  // Memoized content sliders
-  const contentSliders = useMemo(() => {
-    return homeData.map(item => (
+  const keyExtractor = useCallback((item: HomePageData) => item.filter, []);
+
+  const renderSliderItem = useCallback(
+    ({item, index}: {item: HomePageData; index: number}) => (
+      <View
+        className="relative z-20"
+        style={index === 0 ? {marginTop: -24} : undefined}>
       <Slider
         isLoading={!!item.isLoading}
-        key={`content-${item.filter}`}
         title={resolveCatalogTitle(item)}
         posts={item.Posts}
         filter={item.filter}
       />
-    ));
-  }, [homeData, resolveCatalogTitle]);
+      </View>
+    ),
+    [resolveCatalogTitle],
+  );
 
   const scrollKey = useMemo(() => {
     return `${provider?.value ?? 'none'}:${homeData.length}`;
@@ -367,12 +373,37 @@ const Home = ({}: Props) => {
               backgroundColor={backgroundColor}
             />
 
-            <ScrollView
+            <FlatList
               key={scrollKey}
+              data={homeData}
+              keyExtractor={keyExtractor}
+              renderItem={renderSliderItem}
               onScroll={handleScroll}
               scrollEventThrottle={16} // Optimize scroll performance
               showsVerticalScrollIndicator={false}
-              className="bg-black"
+              style={{backgroundColor: 'black'}}
+              initialNumToRender={3}
+              maxToRenderPerBatch={2}
+              windowSize={5}
+              updateCellsBatchingPeriod={50}
+              removeClippedSubviews
+              ListHeaderComponent={
+                <>
+                  <HeroOptimized
+                    isDrawerOpen={isDrawerOpen}
+                    onOpenDrawer={() => setIsDrawerOpen(true)}
+                    onImageError={handleHeroImageError}
+                  />
+
+                  <ContinueWatching />
+                </>
+              }
+              ListFooterComponent={
+                <>
+                  {errorComponent}
+                  <View className="h-16" />
+                </>
+              }
               refreshControl={
                 <RefreshControl
                   colors={[primary]}
@@ -381,22 +412,8 @@ const Home = ({}: Props) => {
                   refreshing={isRefetching}
                   onRefresh={handleRefresh}
                 />
-              }>
-              <HeroOptimized
-                isDrawerOpen={isDrawerOpen}
-                onOpenDrawer={() => setIsDrawerOpen(true)}
-                onImageError={handleHeroImageError}
-              />
-
-              <ContinueWatching />
-
-              <View className="-mt-6 relative z-20">
-                {contentSliders}
-                {errorComponent}
-              </View>
-
-              <View className="h-16" />
-            </ScrollView>
+              }
+            />
           </Drawer>
         </SafeAreaView>
       </GestureHandlerRootView>
