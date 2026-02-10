@@ -50,7 +50,6 @@ export const useHomePageData = ({
   enabled = true,
 }: UseHomePageDataOptions) => {
   const providerValue = provider?.value || '';
-  const [staleCheckTick, setStaleCheckTick] = useState(0);
   const categories = useMemo(
     () =>
       providerValue
@@ -229,19 +228,7 @@ export const useHomePageData = ({
         return isStale ? index : -1;
       })
       .filter(index => index >= 0);
-  }, [categories, staleCheckTick]);
-
-  useEffect(() => {
-    if (!enabled || !providerValue) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setStaleCheckTick(value => value + 1);
-    }, 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [enabled, providerValue]);
+  }, [categories]);
 
   const staleCategoryFingerprint = useMemo(
     () => `${providerValue}:${staleCategoryIndexes.join(',')}`,
