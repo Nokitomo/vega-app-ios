@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
@@ -26,6 +26,7 @@ interface UseHomePageDataOptions {
 }
 
 const STREAMINGUNITY_PROVIDER = 'streamingunity';
+const HOME_SECTION_PARALLEL_LIMIT = 4;
 const HOME_SECTION_STEP_DELAY_MS = 200;
 const HIDDEN_STREAMINGUNITY_TYPES = new Set(['movie', 'tv']);
 const HOME_CATEGORY_MAX_ITEMS = 30;
@@ -43,6 +44,33 @@ const shouldHideHomeCategory = (providerValue: string, filter: string): boolean 
   const params = new URLSearchParams(queryPart);
   const type = (params.get('type') || '').trim().toLowerCase();
   return HIDDEN_STREAMINGUNITY_TYPES.has(type);
+};
+
+const isArchivePriorityFilter = (filter: string): boolean => {
+  const normalized = String(filter || '').trim().toLowerCase();
+  return (
+    normalized.startsWith('archive') ||
+    normalized.startsWith('/archive') ||
+    normalized.startsWith('catalog/all') ||
+    normalized.includes('archive?') ||
+    normalized.includes('catalog/all')
+  );
+};
+
+const sortCategoryIndexesByPriority = (
+  indexes: number[],
+  categories: Array<{filter: string}>,
+): number[] => {
+  return [...indexes].sort((left, right) => {
+    const leftIsArchive = isArchivePriorityFilter(categories[left]?.filter || '');
+    const rightIsArchive = isArchivePriorityFilter(
+      categories[right]?.filter || '',
+    );
+    if (leftIsArchive !== rightIsArchive) {
+      return leftIsArchive ? -1 : 1;
+    }
+    return left - right;
+  });
 };
 
 export const useHomePageData = ({
@@ -215,6 +243,11 @@ export const useHomePageData = ({
       };
     }),
   });
+  const queryResultsRef = useRef(queryResults);
+
+  useEffect(() => {
+    queryResultsRef.current = queryResults;
+  }, [queryResults]);
 
   const staleCategoryIndexes = useMemo(() => {
     return categories
@@ -235,75 +268,129 @@ export const useHomePageData = ({
     [providerValue, staleCategoryIndexes],
   );
 
-  const [activeFetchIndex, setActiveFetchIndex] = useState<number | null>(null);
   const requestedCategoryIndexesRef = useRef<Set<number>>(new Set());
+  const fetchingCategoryIndexesRef = useRef<Set<number>>(new Set());
+  const refreshGenerationRef = useRef(0);
+  const isBatchRefreshRunningRef = useRef(false);
+
+  const runBatchedRefetch = async (indexes: number[]) => {
+    if (!Array.isArray(indexes) || indexes.length === 0) {
+      return;
+    }
+
+    const orderedIndexes = sortCategoryIndexesByPriority(indexes, categories);
+
+    for (
+      let batchStart = 0;
+      batchStart < orderedIndexes.length;
+      batchStart += HOME_SECTION_PARALLEL_LIMIT
+    ) {
+      const batch = orderedIndexes.slice(
+        batchStart,
+        batchStart + HOME_SECTION_PARALLEL_LIMIT,
+      );
+
+      await Promise.all(
+        batch.map(async index => {
+          const queryResult = queryResultsRef.current[index];
+          if (!queryResult) {
+            return;
+          }
+          await queryResult.refetch();
+        }),
+      );
+    }
+  };
+
+  const prioritizedStaleCategoryIndexes = useMemo(
+    () => sortCategoryIndexesByPriority(staleCategoryIndexes, categories),
+    [categories, staleCategoryIndexes],
+  );
 
   useEffect(() => {
     requestedCategoryIndexesRef.current = new Set();
+    fetchingCategoryIndexesRef.current = new Set();
+    refreshGenerationRef.current += 1;
+    isBatchRefreshRunningRef.current = false;
   }, [staleCategoryFingerprint]);
 
   useEffect(() => {
-    if (!enabled || !providerValue || staleCategoryIndexes.length === 0) {
-      setActiveFetchIndex(null);
+    if (!enabled || !providerValue || prioritizedStaleCategoryIndexes.length === 0) {
+      return;
+    }
+    if (isBatchRefreshRunningRef.current) {
       return;
     }
 
-    setActiveFetchIndex(current => {
-      if (current != null && staleCategoryIndexes.includes(current)) {
-        return current;
+    const pendingIndexes = prioritizedStaleCategoryIndexes.filter(
+      index =>
+        !requestedCategoryIndexesRef.current.has(index) &&
+        !fetchingCategoryIndexesRef.current.has(index),
+    );
+    if (pendingIndexes.length === 0) {
+      return;
+    }
+
+    isBatchRefreshRunningRef.current = true;
+    const generation = refreshGenerationRef.current;
+    let cancelled = false;
+
+    const run = async () => {
+      while (!cancelled && generation === refreshGenerationRef.current) {
+        const currentPending = prioritizedStaleCategoryIndexes.filter(
+          index =>
+            !requestedCategoryIndexesRef.current.has(index) &&
+            !fetchingCategoryIndexesRef.current.has(index),
+        );
+        if (currentPending.length === 0) {
+          break;
+        }
+
+        const batch = currentPending.slice(0, HOME_SECTION_PARALLEL_LIMIT);
+        batch.forEach(index => fetchingCategoryIndexesRef.current.add(index));
+
+        await Promise.all(
+          batch.map(async index => {
+            try {
+              const queryResult = queryResultsRef.current[index];
+              if (!queryResult) {
+                return;
+              }
+              await queryResult.refetch();
+            } finally {
+              fetchingCategoryIndexesRef.current.delete(index);
+              requestedCategoryIndexesRef.current.add(index);
+            }
+          }),
+        );
+
+        if (
+          HOME_SECTION_STEP_DELAY_MS > 0 &&
+          generation === refreshGenerationRef.current
+        ) {
+          await new Promise(resolve =>
+            setTimeout(resolve, HOME_SECTION_STEP_DELAY_MS),
+          );
+        }
       }
-      return staleCategoryIndexes[0];
+    };
+
+    run().finally(() => {
+      if (generation === refreshGenerationRef.current) {
+        isBatchRefreshRunningRef.current = false;
+      }
     });
-  }, [enabled, providerValue, staleCategoryFingerprint, staleCategoryIndexes]);
 
-  useEffect(() => {
-    if (activeFetchIndex == null || !enabled || !providerValue) {
-      return;
-    }
-
-    const currentPosition = staleCategoryIndexes.indexOf(activeFetchIndex);
-    if (currentPosition < 0) {
-      setActiveFetchIndex(staleCategoryIndexes[0] ?? null);
-      return;
-    }
-
-    const currentResult = queryResults[activeFetchIndex];
-    if (!currentResult) {
-      return;
-    }
-
-    if (!requestedCategoryIndexesRef.current.has(activeFetchIndex)) {
-      requestedCategoryIndexesRef.current.add(activeFetchIndex);
-      currentResult.refetch();
-      return;
-    }
-
-    const isCurrentFetching =
-      currentResult.isLoading ||
-      currentResult.isPending ||
-      currentResult.isFetching ||
-      currentResult.fetchStatus === 'fetching';
-
-    if (!isCurrentFetching) {
-      const nextIndex = staleCategoryIndexes[currentPosition + 1];
-      if (typeof nextIndex !== 'number') {
-        setActiveFetchIndex(null);
-        return;
+    return () => {
+      cancelled = true;
+      if (generation === refreshGenerationRef.current) {
+        isBatchRefreshRunningRef.current = false;
       }
-
-      const timeout = setTimeout(
-        () => setActiveFetchIndex(nextIndex),
-        HOME_SECTION_STEP_DELAY_MS,
-      );
-
-      return () => clearTimeout(timeout);
-    }
+    };
   }, [
-    activeFetchIndex,
     enabled,
     providerValue,
-    queryResults,
-    staleCategoryIndexes,
+    prioritizedStaleCategoryIndexes,
   ]);
 
   const homeData = useMemo<HomePageData[]>(
@@ -341,9 +428,9 @@ export const useHomePageData = ({
     isRefetching,
     error: firstError as Error | null,
     refetch: async () => {
-      for (let index = 0; index < queryResults.length; index += 1) {
-        await queryResults[index].refetch();
-      }
+      await runBatchedRefetch(
+        categories.map((_, index) => index),
+      );
       return {data: homeData};
     },
     refetchCategory: async (filter: string) => {
