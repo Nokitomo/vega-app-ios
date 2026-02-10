@@ -23,6 +23,7 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '../../App';
 import {Drawer} from 'react-native-drawer-layout';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import type {PanGesture} from 'react-native-gesture-handler';
 import ContinueWatching from '../../components/ContinueWatching';
 import {providerManager} from '../../lib/services/ProviderManager';
 import Tutorial from '../../components/Touturial';
@@ -38,6 +39,8 @@ const HERO_HISTORY_LIMIT = 5;
 const HERO_MAX_ATTEMPTS = 3;
 const HERO_IMAGE_RETRY_LIMIT = 3;
 const DRAWER_SWIPE_EDGE_WIDTH = 20;
+const DRAWER_OPEN_ACTIVE_OFFSET_X = 24;
+const DRAWER_GESTURE_FAIL_OFFSET_Y: [number, number] = [-12, 12];
 
 const ARCHIVE_HERO_PROVIDERS = new Set([
   'animeunity',
@@ -170,6 +173,21 @@ const Home = ({}: Props) => {
       event.nativeEvent.contentOffset.y > 0 ? 'black' : 'transparent';
     setBackgroundColor(newBackgroundColor);
   }, []);
+
+  const configureDrawerGestureHandler = useCallback(
+    (gesture: PanGesture): PanGesture => {
+      let configured = gesture.failOffsetY(DRAWER_GESTURE_FAIL_OFFSET_Y);
+
+      // When drawer is closed, activate only on a meaningful right swipe.
+      // This avoids accidental opens after horizontal list interactions.
+      if (!isDrawerOpen) {
+        configured = configured.activeOffsetX(DRAWER_OPEN_ACTIVE_OFFSET_X);
+      }
+
+      return configured;
+    },
+    [isDrawerOpen],
+  );
 
   // Stable hero post calculation
   const heroPost = useMemo(() => {
@@ -362,6 +380,7 @@ const Home = ({}: Props) => {
             drawerStyle={{width: 200, backgroundColor: 'transparent'}}
             swipeEdgeWidth={disableDrawer ? 0 : DRAWER_SWIPE_EDGE_WIDTH}
             swipeEnabled={!disableDrawer}
+            configureGestureHandler={configureDrawerGestureHandler}
             renderDrawerContent={() =>
               !disableDrawer ? (
                 <ProviderDrawer onClose={() => setIsDrawerOpen(false)} />
