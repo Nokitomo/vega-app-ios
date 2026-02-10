@@ -37,6 +37,7 @@ const HERO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const HERO_HISTORY_LIMIT = 5;
 const HERO_MAX_ATTEMPTS = 3;
 const HERO_IMAGE_RETRY_LIMIT = 3;
+const DRAWER_SWIPE_EDGE_WIDTH = 20;
 
 const ARCHIVE_HERO_PROVIDERS = new Set([
   'animeunity',
@@ -359,7 +360,7 @@ const Home = ({}: Props) => {
             drawerPosition="left"
             drawerType="front"
             drawerStyle={{width: 200, backgroundColor: 'transparent'}}
-            swipeEdgeWidth={disableDrawer ? 0 : 70}
+            swipeEdgeWidth={disableDrawer ? 0 : DRAWER_SWIPE_EDGE_WIDTH}
             swipeEnabled={!disableDrawer}
             renderDrawerContent={() =>
               !disableDrawer ? (

@@ -21,6 +21,7 @@ Vega e una app Android e iOS per lo streaming di contenuti multimediali. La UI e
 - Il refresh automatico della home e progressivo per sezione (non globale): all'avvio (e al cambio provider) le categorie stale vengono richieste a batch fino a 4 in parallelo, con priorita alle sezioni archivio/catalogo completo; nessun polling periodico ogni 60 secondi.
 - La lista verticale della Home e virtualizzata (FlatList): vengono montate principalmente le sezioni visibili e quelle vicine, riducendo memoria e lavoro sul thread JS rispetto a una ScrollView unica.
 - Ogni slider in home gestisce loading/error in modo indipendente; un refresh di una sezione non blocca le altre gia mostrate.
+- L'apertura swipe del drawer provider in Home e limitata al bordo sinistro (20px) per ridurre aperture involontarie durante lo scroll orizzontale delle sezioni.
 
 2) Ricerca
 - Ricerca per titolo o filtro.
