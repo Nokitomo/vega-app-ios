@@ -4,6 +4,7 @@ import {
   RefreshControl,
   View,
   Text,
+  PanResponder,
 } from 'react-native';
 import Slider from '../../components/Slider';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -23,7 +24,6 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '../../App';
 import {Drawer} from 'react-native-drawer-layout';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import type {PanGesture} from 'react-native-gesture-handler';
 import {useIsFocused} from '@react-navigation/native';
 import ContinueWatching from '../../components/ContinueWatching';
 import {providerManager} from '../../lib/services/ProviderManager';
@@ -39,9 +39,9 @@ const HERO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const HERO_HISTORY_LIMIT = 5;
 const HERO_MAX_ATTEMPTS = 3;
 const HERO_IMAGE_RETRY_LIMIT = 3;
-const DRAWER_SWIPE_EDGE_WIDTH = 20;
-const DRAWER_OPEN_ACTIVE_OFFSET_X = 24;
-const DRAWER_GESTURE_FAIL_OFFSET_Y: [number, number] = [-12, 12];
+const DRAWER_EDGE_HANDLE_WIDTH = 16;
+const DRAWER_EDGE_OPEN_MIN_DISTANCE = 24;
+const DRAWER_EDGE_MAX_VERTICAL_DRIFT = 14;
 const DRAWER_UNLOCK_DELAY_MS = 180;
 
 const ARCHIVE_HERO_PROVIDERS = new Set([
@@ -183,21 +183,6 @@ const Home = ({}: Props) => {
     setBackgroundColor(newBackgroundColor);
   }, []);
 
-  const configureDrawerGestureHandler = useCallback(
-    (gesture: PanGesture): PanGesture => {
-      let configured = gesture.failOffsetY(DRAWER_GESTURE_FAIL_OFFSET_Y);
-
-      // When drawer is closed, activate only on a meaningful right swipe.
-      // This avoids accidental opens after horizontal list interactions.
-      if (!isDrawerOpen) {
-        configured = configured.activeOffsetX(DRAWER_OPEN_ACTIVE_OFFSET_X);
-      }
-
-      return configured;
-    },
-    [isDrawerOpen],
-  );
-
   const clearDrawerUnlockTimeout = useCallback(() => {
     if (drawerUnlockTimeoutRef.current) {
       clearTimeout(drawerUnlockTimeoutRef.current);
@@ -223,6 +208,44 @@ const Home = ({}: Props) => {
       clearDrawerUnlockTimeout();
     };
   }, [clearDrawerUnlockTimeout]);
+
+  const canOpenDrawerFromEdge =
+    !disableDrawer && !isDrawerOpen && !isHorizontalListDragging;
+
+  const edgeHandlePanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          if (!canOpenDrawerFromEdge) {
+            return false;
+          }
+
+          const {dx, dy, x0} = gestureState;
+          const startsInsideEdge = x0 <= DRAWER_EDGE_HANDLE_WIDTH + 2;
+          const isHorizontalSwipe = dx > 4 && Math.abs(dx) > Math.abs(dy);
+          const verticalDriftInRange =
+            Math.abs(dy) <= DRAWER_EDGE_MAX_VERTICAL_DRIFT;
+
+          return startsInsideEdge && isHorizontalSwipe && verticalDriftInRange;
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (!canOpenDrawerFromEdge) {
+            return;
+          }
+
+          const {dx, dy, vx} = gestureState;
+          const shouldOpenByDistance = dx >= DRAWER_EDGE_OPEN_MIN_DISTANCE;
+          const shouldOpenByVelocity = dx > 8 && vx > 0.45;
+          const verticalDriftInRange =
+            Math.abs(dy) <= DRAWER_EDGE_MAX_VERTICAL_DRIFT;
+
+          if ((shouldOpenByDistance || shouldOpenByVelocity) && verticalDriftInRange) {
+            setIsDrawerOpen(true);
+          }
+        },
+      }),
+    [canOpenDrawerFromEdge],
+  );
 
   // Stable hero post calculation
   const heroPost = useMemo(() => {
@@ -419,11 +442,8 @@ const Home = ({}: Props) => {
             drawerPosition="left"
             drawerType="front"
             drawerStyle={{width: 200, backgroundColor: 'transparent'}}
-            swipeEdgeWidth={disableDrawer ? 0 : DRAWER_SWIPE_EDGE_WIDTH}
-            swipeEnabled={
-              !disableDrawer && (isDrawerOpen || !isHorizontalListDragging)
-            }
-            configureGestureHandler={configureDrawerGestureHandler}
+            swipeEdgeWidth={0}
+            swipeEnabled={!disableDrawer && isDrawerOpen}
             renderDrawerContent={() =>
               !disableDrawer ? (
                 <ProviderDrawer onClose={() => setIsDrawerOpen(false)} />
@@ -480,6 +500,20 @@ const Home = ({}: Props) => {
                 />
               }
             />
+            {canOpenDrawerFromEdge ? (
+              <View
+                {...edgeHandlePanResponder.panHandlers}
+                pointerEvents="box-only"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: DRAWER_EDGE_HANDLE_WIDTH,
+                  zIndex: 30,
+                }}
+              />
+            ) : null}
           </Drawer>
         </SafeAreaView>
       </GestureHandlerRootView>
