@@ -6,7 +6,7 @@ import {
   Text,
 } from 'react-native';
 import Slider from '../../components/Slider';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import HeroOptimized from '../../components/Hero';
 import {cacheStorage, mainStorage} from '../../lib/storage';
 import useContentStore from '../../lib/zustand/contentStore';
@@ -41,6 +41,7 @@ const HERO_IMAGE_RETRY_LIMIT = 3;
 const DRAWER_SWIPE_EDGE_WIDTH = 20;
 const DRAWER_OPEN_ACTIVE_OFFSET_X = 24;
 const DRAWER_GESTURE_FAIL_OFFSET_Y: [number, number] = [-12, 12];
+const DRAWER_UNLOCK_DELAY_MS = 180;
 
 const ARCHIVE_HERO_PROVIDERS = new Set([
   'animeunity',
@@ -135,8 +136,13 @@ const Home = ({}: Props) => {
   const {t} = useTranslation();
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isHorizontalListDragging, setIsHorizontalListDragging] =
+    useState(false);
   const [heroRetryNonce, setHeroRetryNonce] = useState(0);
   const heroImageErrorCountRef = useRef(0);
+  const drawerUnlockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // Memoize static values
   const disableDrawer = useMemo(
@@ -188,6 +194,32 @@ const Home = ({}: Props) => {
     },
     [isDrawerOpen],
   );
+
+  const clearDrawerUnlockTimeout = useCallback(() => {
+    if (drawerUnlockTimeoutRef.current) {
+      clearTimeout(drawerUnlockTimeoutRef.current);
+      drawerUnlockTimeoutRef.current = null;
+    }
+  }, []);
+
+  const lockDrawerDuringHorizontalDrag = useCallback(() => {
+    clearDrawerUnlockTimeout();
+    setIsHorizontalListDragging(true);
+  }, [clearDrawerUnlockTimeout]);
+
+  const releaseDrawerAfterHorizontalDrag = useCallback(() => {
+    clearDrawerUnlockTimeout();
+    drawerUnlockTimeoutRef.current = setTimeout(() => {
+      setIsHorizontalListDragging(false);
+      drawerUnlockTimeoutRef.current = null;
+    }, DRAWER_UNLOCK_DELAY_MS);
+  }, [clearDrawerUnlockTimeout]);
+
+  useEffect(() => {
+    return () => {
+      clearDrawerUnlockTimeout();
+    };
+  }, [clearDrawerUnlockTimeout]);
 
   // Stable hero post calculation
   const heroPost = useMemo(() => {
@@ -330,10 +362,16 @@ const Home = ({}: Props) => {
         title={resolveCatalogTitle(item)}
         posts={item.Posts}
         filter={item.filter}
+        onHorizontalDragStart={lockDrawerDuringHorizontalDrag}
+        onHorizontalDragEnd={releaseDrawerAfterHorizontalDrag}
       />
       </View>
     ),
-    [resolveCatalogTitle],
+    [
+      lockDrawerDuringHorizontalDrag,
+      releaseDrawerAfterHorizontalDrag,
+      resolveCatalogTitle,
+    ],
   );
 
   const scrollKey = useMemo(() => {
@@ -379,7 +417,9 @@ const Home = ({}: Props) => {
             drawerType="front"
             drawerStyle={{width: 200, backgroundColor: 'transparent'}}
             swipeEdgeWidth={disableDrawer ? 0 : DRAWER_SWIPE_EDGE_WIDTH}
-            swipeEnabled={!disableDrawer}
+            swipeEnabled={
+              !disableDrawer && (isDrawerOpen || !isHorizontalListDragging)
+            }
             configureGestureHandler={configureDrawerGestureHandler}
             renderDrawerContent={() =>
               !disableDrawer ? (
@@ -415,7 +455,10 @@ const Home = ({}: Props) => {
                     onImageError={handleHeroImageError}
                   />
 
-                  <ContinueWatching />
+                  <ContinueWatching
+                    onHorizontalDragStart={lockDrawerDuringHorizontalDrag}
+                    onHorizontalDragEnd={releaseDrawerAfterHorizontalDrag}
+                  />
                 </>
               }
               ListFooterComponent={

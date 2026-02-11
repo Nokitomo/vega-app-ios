@@ -31,7 +31,13 @@ const normalizeNumericValue = (value: unknown): number | undefined => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
-const ContinueWatching = () => {
+const ContinueWatching = ({
+  onHorizontalDragStart,
+  onHorizontalDragEnd,
+}: {
+  onHorizontalDragStart?: () => void;
+  onHorizontalDragEnd?: () => void;
+}) => {
   const {primary} = useThemeStore(state => state);
   const {t} = useTranslation();
   const navigation =
@@ -252,6 +258,10 @@ const ContinueWatching = () => {
       <FlatList
         data={recentItems}
         horizontal
+        onScrollBeginDrag={onHorizontalDragStart}
+        onMomentumScrollBegin={onHorizontalDragStart}
+        onScrollEndDrag={onHorizontalDragEnd}
+        onMomentumScrollEnd={onHorizontalDragEnd}
         showsHorizontalScrollIndicator={false}
         keyExtractor={item => item.link}
         contentContainerStyle={{paddingHorizontal: 12}}

@@ -22,6 +22,8 @@ const Slider = ({
   filter,
   providerValue,
   isSearch = false,
+  onHorizontalDragStart,
+  onHorizontalDragEnd,
 }: {
   isLoading: boolean;
   title: string;
@@ -29,6 +31,8 @@ const Slider = ({
   filter: string;
   providerValue?: string;
   isSearch?: boolean;
+  onHorizontalDragStart?: () => void;
+  onHorizontalDragEnd?: () => void;
 }): JSX.Element => {
   const {provider} = useContentStore(state => state);
   const {primary} = useThemeStore(state => state);
@@ -181,6 +185,10 @@ const Slider = ({
           data={posts}
           extraData={isSelected}
           horizontal
+          onScrollBeginDrag={onHorizontalDragStart}
+          onMomentumScrollBegin={onHorizontalDragStart}
+          onScrollEndDrag={onHorizontalDragEnd}
+          onMomentumScrollEnd={onHorizontalDragEnd}
           contentContainerStyle={{paddingHorizontal: 3, paddingTop: 7}}
           renderItem={renderItem}
           ListFooterComponent={
