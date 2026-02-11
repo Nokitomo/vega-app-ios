@@ -24,6 +24,7 @@ import {HomeStackParamList} from '../../App';
 import {Drawer} from 'react-native-drawer-layout';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import type {PanGesture} from 'react-native-gesture-handler';
+import {useIsFocused} from '@react-navigation/native';
 import ContinueWatching from '../../components/ContinueWatching';
 import {providerManager} from '../../lib/services/ProviderManager';
 import Tutorial from '../../components/Touturial';
@@ -152,6 +153,7 @@ const Home = ({}: Props) => {
 
   const {provider, installedProviders} = useContentStore(state => state);
   const {setHero} = useHeroStore(state => state);
+  const isHomeFocused = useIsFocused();
   const heroCacheTtlMs = HERO_CACHE_TTL_MS;
 
   const resolveCatalogTitle = useCallback(
@@ -171,6 +173,7 @@ const Home = ({}: Props) => {
   } = useHomePageData({
     provider,
     enabled: !!(installedProviders?.length && provider?.value),
+    isScreenActive: isHomeFocused,
   });
 
   // Memoized scroll handler

@@ -1,5 +1,6 @@
-import {useEffect, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';
+import {AppState, type AppStateStatus} from 'react-native';
 import {Content} from '../zustand/contentStore';
 import {cacheStorage} from '../storage';
 import {providerManager} from '../services/ProviderManager';
@@ -23,11 +24,13 @@ export interface HomePageData {
 interface UseHomePageDataOptions {
   provider: Content['provider'];
   enabled?: boolean;
+  isScreenActive?: boolean;
 }
 
 const STREAMINGUNITY_PROVIDER = 'streamingunity';
 const HOME_SECTION_PARALLEL_LIMIT = 4;
 const HOME_SECTION_STEP_DELAY_MS = 200;
+const HOME_STALE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const HIDDEN_STREAMINGUNITY_TYPES = new Set(['movie', 'tv']);
 const HOME_CATEGORY_MAX_ITEMS = 30;
 
@@ -76,8 +79,11 @@ const sortCategoryIndexesByPriority = (
 export const useHomePageData = ({
   provider,
   enabled = true,
+  isScreenActive = true,
 }: UseHomePageDataOptions) => {
   const providerValue = provider?.value || '';
+  const [staleCheckTick, setStaleCheckTick] = useState(0);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const categories = useMemo(
     () =>
       providerValue
@@ -87,6 +93,10 @@ export const useHomePageData = ({
         : [],
     [providerValue],
   );
+
+  const triggerStaleCheck = useCallback(() => {
+    setStaleCheckTick(value => value + 1);
+  }, []);
 
   type CategoryQueryData = {
     Posts: Post[];
@@ -261,7 +271,53 @@ export const useHomePageData = ({
         return isStale ? index : -1;
       })
       .filter(index => index >= 0);
-  }, [categories]);
+  }, [categories, staleCheckTick]);
+
+  useEffect(() => {
+    appStateRef.current = AppState.currentState;
+  }, []);
+
+  useEffect(() => {
+    if (!enabled || !providerValue || !isScreenActive) {
+      return;
+    }
+    triggerStaleCheck();
+  }, [enabled, providerValue, isScreenActive, triggerStaleCheck]);
+
+  useEffect(() => {
+    if (!enabled || !providerValue || !isScreenActive) {
+      return;
+    }
+
+    const subscription = AppState.addEventListener('change', nextState => {
+      const previousState = appStateRef.current;
+      appStateRef.current = nextState;
+      const wasInBackground =
+        previousState === 'background' || previousState === 'inactive';
+
+      if (wasInBackground && nextState === 'active') {
+        triggerStaleCheck();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [enabled, providerValue, isScreenActive, triggerStaleCheck]);
+
+  useEffect(() => {
+    if (!enabled || !providerValue || !isScreenActive) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      triggerStaleCheck();
+    }, HOME_STALE_CHECK_INTERVAL_MS);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [enabled, providerValue, isScreenActive, triggerStaleCheck]);
 
   const staleCategoryFingerprint = useMemo(
     () => `${providerValue}:${staleCategoryIndexes.join(',')}`,
