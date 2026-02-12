@@ -65,3 +65,21 @@ Se Expo segnala che Expo Go non e installato in offline mode:
 Sintomo: testi in inglese o chiavi raw (es. `Some Key`).
 - Verifica che la chiave esista in `src/i18n/en.json` e `src/i18n/it.json`.
 - Nei componenti usare `t(...)`; nei servizi usare `i18n.t(...)`.
+
+## Provider installato ma nessun contenuto (DNS/NXDOMAIN)
+Sintomi tipici:
+- Il provider risulta installato ma home/search/info tornano liste vuote.
+- In log compaiono errori di rete senza status HTTP (es. `ERR_NETWORK`, `NO_STATUS`).
+- In Chrome sullo stesso device compare `dns_probe_finished_nxdomain` aprendo il dominio del provider.
+
+Diagnosi:
+- In questi casi il problema e spesso DNS/rete del device (resolver locale, carrier, hotspot, policy DNS), non necessariamente il codice del provider.
+- Se con DNS alternativi o VPN il provider torna a funzionare, la causa e confermata.
+
+Mitigazioni consigliate:
+1) Imposta DNS privato affidabile sul device (es. Cloudflare o Google DNS).
+2) In alternativa usa app DNS dedicata (es. `1.1.1.1`) o VPN.
+3) Verifica da browser del device che il dominio provider sia raggiungibile.
+
+Nota:
+- Provider diversi possono avere esiti diversi sulla stessa rete: uno puo funzionare e un altro no, in base a come viene risolto il dominio.
